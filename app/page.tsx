@@ -140,8 +140,8 @@ function Proof({ tone, children }: { tone: "panel" | "citron" | "sky" | "yellow"
 function SectionHeading({ id, title, children, inverse = false }: { id: string; title: React.ReactNode; children?: React.ReactNode; inverse?: boolean }) {
   return (
     <div className="flex max-w-[620px] flex-col gap-4">
-      <h2 id={id} className={cn("text-display-m text-balance", inverse ? "text-sw-cream" : "text-ink")}>{title}</h2>
-      {children ? <p className={cn("text-body-l", inverse ? "text-sw-cream/80" : "text-ink-secondary")}>{children}</p> : null}
+      <h2 id={id} className={cn("sr-rise text-display-m text-balance", inverse ? "text-sw-cream" : "text-ink")}>{title}</h2>
+      {children ? <p className={cn("sr-fade text-body-l", inverse ? "text-sw-cream/80" : "text-ink-secondary")}>{children}</p> : null}
     </div>
   );
 }
@@ -204,7 +204,7 @@ export default async function HomePage() {
               {[0, 11].map((index) => (
                 <span key={index} className="absolute top-0 size-3 -translate-x-1/2 rounded-full border-2 border-primary bg-canvas" style={{ left: `${((index + 0.5) / 12) * 100}%` }} />
               ))}
-              <span className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full border-2 border-primary bg-canvas" style={{ left: `${(2 / 12) * 100}%`, width: `${(9 / 12) * 100}%` }} />
+              <span className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full border-2 border-primary" style={{ left: `${(2 / 12) * 100}%`, width: `${(9 / 12) * 100}%` }} />
             </div>
             <div className="grid grid-cols-12 text-caption tabular-nums text-ink-muted">
               {MONTHS.map((month, index) => (
@@ -219,7 +219,7 @@ export default async function HomePage() {
           <ol className="relative flex flex-col">
             <span aria-hidden className="absolute bottom-6 left-[5.5rem] top-6 w-px bg-line max-sm:left-[0.4375rem]" />
             {YEAR.map((stop) => (
-              <li key={`${stop.when}-${stop.title}`} className="relative grid gap-x-8 gap-y-2 py-6 max-sm:pl-8 sm:grid-cols-[4.5rem_minmax(0,1fr)] lg:grid-cols-[4.5rem_minmax(0,0.9fr)_minmax(0,1fr)]">
+              <li key={`${stop.when}-${stop.title}`} className="sr-left relative grid gap-x-8 gap-y-2 py-6 max-sm:pl-8 sm:grid-cols-[4.5rem_minmax(0,1fr)] lg:grid-cols-[4.5rem_minmax(0,0.9fr)_minmax(0,1fr)]">
                 <span aria-hidden className="absolute left-[5.25rem] top-[1.95rem] size-2.5 rounded-full border-2 border-primary bg-canvas max-sm:left-[0.1875rem]" />
                 <p className="pt-0.5 text-label font-semibold tabular-nums text-ink-muted">{stop.when}</p>
                 <div className="flex flex-col gap-1.5 sm:pl-6">
@@ -246,7 +246,7 @@ export default async function HomePage() {
                 "Receipt numbers never skip within a financial year, April to March.",
                 "A mistake is reversed with a credit note, never edited away.",
               ].map((point) => (
-                <li key={point} className="flex gap-3 text-body-ui text-sw-cream/85">
+                <li key={point} className="sr-left flex gap-3 text-body-ui text-sw-cream/85">
                   <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sw-citron text-sw-ink">
                     <Check aria-hidden className="size-3.5" />
                   </span>
@@ -305,7 +305,7 @@ export default async function HomePage() {
           </SectionHeading>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <figure className="flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
+            <figure className="sr-up flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
               <figcaption className="text-label font-semibold text-ink">Units</figcaption>
               <ul className="flex flex-col">
                 <li className="flex items-center justify-between py-2 text-label font-semibold text-ink">
@@ -325,7 +325,7 @@ export default async function HomePage() {
               <p className="mt-auto text-caption text-ink-muted">Sample members per unit</p>
             </figure>
 
-            <figure className="flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
+            <figure className="sr-up flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6" style={{ ["--sr-offset" as string]: 8 }}>
               <figcaption className="text-label font-semibold text-ink">The SpaceWorks team</figcaption>
               <ul className="flex flex-col">
                 {TEAM.map((person) => (
@@ -341,14 +341,14 @@ export default async function HomePage() {
               <p className="mt-auto text-caption text-ink-muted">Sample team. Each role sets what that person can see and do.</p>
             </figure>
 
-            <figure className="flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
+            <figure className="sr-up flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6" style={{ ["--sr-offset" as string]: 16 }}>
               <figcaption className="flex items-baseline justify-between gap-3">
                 <span className="text-label font-semibold text-ink">Active members, 2026–27</span>
                 <span className="text-h3 tabular-nums text-ink">268</span>
               </figcaption>
               <div className="flex h-36 items-end gap-1.5" role="img" aria-label="Sample chart: active members rise from 180 in April to 268 in March.">
                 {ACTIVE.map((value, index) => (
-                  <span key={MONTHS[index]} className={cn("flex-1 rounded-t-md", index === ACTIVE.length - 1 ? "bg-primary" : "bg-emphasis")} style={{ height: `${(value / 280) * 100}%` }} />
+                  <span key={MONTHS[index]} className={cn("sr-bar flex-1 rounded-t-md", index === ACTIVE.length - 1 ? "bg-primary" : "bg-emphasis")} style={{ height: `${(value / 280) * 100}%`, ["--sr-offset" as string]: index * 2 }} />
                 ))}
               </div>
               <div aria-hidden className="flex gap-1.5 text-center text-[11px] tabular-nums text-ink-muted">
@@ -383,7 +383,7 @@ export default async function HomePage() {
             </a>
           </div>
 
-          <figure className="overflow-hidden rounded-[20px] bg-sw-ink text-sw-cream shadow-[0_30px_70px_-30px_rgb(0_0_0/0.6)]">
+          <figure className="sr-right overflow-hidden rounded-[20px] bg-sw-ink text-sw-cream shadow-[0_30px_70px_-30px_rgb(0_0_0/0.6)]">
             <div className="flex items-center justify-between gap-3 border-b border-sw-cream/10 px-5 py-3">
               <figcaption className="text-caption text-sw-cream/70">Terminal preview</figcaption>
               <CopyCommand command={INSTALL} />
@@ -427,7 +427,7 @@ export default async function HomePage() {
       {/* Close. */}
       <section aria-labelledby="close" className="landing-boxes overflow-hidden border-t border-line">
         <div className="mx-auto flex w-full max-w-[1160px] flex-col items-start gap-6 px-4 py-20 sm:px-6 lg:py-28">
-          <h2 id="close" className="text-display-l text-balance text-ink">
+          <h2 id="close" className="sr-rise text-display-l text-balance text-ink">
             Start next year
             <br />
             with a clean register.

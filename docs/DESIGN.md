@@ -71,7 +71,7 @@ April to March. It shares its vocabulary with the sister Space Works site:
 - **Action.** Workshop Orange (`highlight` button) is used only for "Apply for your organisation".
 - **Objects.** Member card, receipt slip, reminder note, proof chips and terminal are flat brand objects.
   Every one is labelled as a sample; the page makes no customer or usage claims.
-- **Motion** (all in `components/marketing/landing.css`, all still under reduced motion):
+- **Motion** (all in `components/marketing/landing.css`, all still under reduced motion). Scroll-driven reveals (`.sr-*`) give each section its own entrance: the hero deck fans apart as it leaves, headings rise, timeline rows arrive from the left, panels lift, report bars grow and the terminal slides in. Load and interaction motion:
   - The hero fills the first screen; its headline lines slide up and the deck is dealt once.
   - The card flips to its QR side on demand.
   - A strip of sample cards slides past under the hero and pauses on hover, focus or its button.

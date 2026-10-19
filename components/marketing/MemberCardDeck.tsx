@@ -43,13 +43,18 @@ export function MemberCardDeck({ qrSvg }: { qrSvg: string }) {
     <div className="relative mx-auto w-full max-w-[520px]">
       <div className="relative h-[330px] sm:h-[400px]">
         <div className="landing-deal absolute right-0 top-0 rotate-[4deg] max-sm:right-[-10px] max-sm:origin-top-right max-sm:scale-[0.82]" style={{ ["--deal-delay" as string]: "60ms", ["--deal-from" as string]: "16deg" }}>
-          <ReceiptSlip />
+          <div className="sr-drift-up">
+            <ReceiptSlip />
+          </div>
         </div>
         <div className="landing-deal absolute bottom-0 left-0 -rotate-[3deg] max-sm:left-[-8px] max-sm:origin-bottom-left max-sm:scale-[0.82]" style={{ ["--deal-delay" as string]: "180ms", ["--deal-from" as string]: "-12deg" }}>
-          <ReminderNote />
+          <div className="sr-drift-down">
+            <ReminderNote />
+          </div>
         </div>
 
         <div className="landing-deal absolute left-1/2 top-[52px] w-[min(400px,84vw)] -translate-x-1/2 sm:top-[62px]" style={{ ["--deal-delay" as string]: "320ms", ["--deal-from" as string]: "6deg" }}>
+          <div className="sr-drift-card">
           <div className="landing-flip -rotate-[2deg]" data-flipped={flipped}>
             <div className="landing-flip-inner">
               {/* Front: what the member carries. */}
@@ -81,6 +86,7 @@ export function MemberCardDeck({ qrSvg }: { qrSvg: string }) {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>
