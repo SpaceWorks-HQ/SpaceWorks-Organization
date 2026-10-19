@@ -2,10 +2,8 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { ORGANISATION_NOTICES, type OrganisationNotice } from "@/lib/organisationLifecycle";
 import { absoluteUrl, sendBrandedEmail } from "./message";
-
-/** Lifecycle decisions an organisation's owners are told about. */
-export type OrganisationNotice = "received" | "approved" | "changes-requested" | "rejected" | "suspended" | "reactivated" | "created";
 
 type NoticePayload = { to: string; organisationId: string; notice: OrganisationNotice; reason?: string };
 type AdminPayload = { to: string; organisationId: string; resubmitted?: boolean };
@@ -15,11 +13,10 @@ function record(value: Prisma.JsonValue): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 const isText = (value: unknown, max: number): value is string => typeof value === "string" && value.length > 0 && value.length <= max;
-const NOTICES: OrganisationNotice[] = ["received", "approved", "changes-requested", "rejected", "suspended", "reactivated", "created"];
 
 export function asNoticePayload(value: Prisma.JsonValue): NoticePayload | null {
   const p = record(value);
-  if (!p || !isText(p.to, 320) || !isText(p.organisationId, 64) || !NOTICES.includes(p.notice as OrganisationNotice)) return null;
+  if (!p || !isText(p.to, 320) || !isText(p.organisationId, 64) || !ORGANISATION_NOTICES.includes(p.notice as OrganisationNotice)) return null;
   if (p.reason !== undefined && !isText(p.reason, 2000)) return null;
   return p as NoticePayload;
 }

@@ -11,6 +11,8 @@ import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { recordAuditEvent } from "@/lib/audit";
+import { organisationAllows } from "@/lib/permissionRoles";
+import { ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 
 const revalidatePath = trackedRevalidation(nextRevalidatePath);
 
@@ -44,6 +46,7 @@ export async function createOrgInvite(input: unknown): Promise<
     where: { slug: organisationSlug },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "team.manage")) return { ok: false, error: ORGANISATION_LOCKED };
 
   const membership = await getMembership(session.user.id, org.id);
   if (!membership || !canManageTeam(membership)) {
@@ -113,6 +116,7 @@ export async function revokeOrgInvite(input: unknown): Promise<ActionResult> {
     where: { slug: organisationSlug },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "team.manage")) return { ok: false, error: ORGANISATION_LOCKED };
 
   const membership = await getMembership(session.user.id, org.id);
   if (!membership || !canManageTeam(membership)) {

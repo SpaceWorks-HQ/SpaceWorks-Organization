@@ -5,6 +5,7 @@ import { loadSuperAdminOrgsView } from "@/lib/views/app__super-admin__orgs__page
 import { AdminPager, AdminSearchForm, NameCell } from "@/components/super-admin/AdminPanel";
 import { ORGANISATION_STATUS_LABELS, OrganisationStatusChip } from "@/components/org/OrganisationStatusChip";
 import { buttonClasses } from "@/components/ui/button";
+import { OrganisationApplicationsControl } from "@/components/super-admin/OrganisationApplicationsControl";
 import { PageHeader } from "@/components/ui/display";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { cn } from "@/lib/cn";
@@ -15,7 +16,7 @@ type Props = {
 
 export default async function SuperAdminOrgsPage({ searchParams }: Props) {
   await requireSuperAdminMfa();
-  const { q, status, page, orgs, total, counts } = await loadSuperAdminOrgsView({ searchParams });
+  const { applicationsOpen, q, status, page, orgs, total, counts } = await loadSuperAdminOrgsView({ searchParams });
   const chip = (href: string, label: string, count: number, active: boolean) => (
     <Link
       key={href}
@@ -41,6 +42,7 @@ export default async function SuperAdminOrgsPage({ searchParams }: Props) {
           </Link>
         }
       />
+      <OrganisationApplicationsControl initialEnabled={applicationsOpen} />
       <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
         {chip("/super-admin/orgs", "All", total, status === null)}
         {counts.filter((row) => row.count > 0 || row.status === "PENDING_REVIEW").map((row) =>

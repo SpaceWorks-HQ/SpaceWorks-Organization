@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import type { TeamRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { isOrgAdmin, requireOrgMembership } from "@/lib/permissions";
+import { isOrgAdmin, requireOrgCapability } from "@/lib/permissions";
 import { formatRelativeTime } from "@/lib/format/datetime";
 import { firstName, type RoleCounts, type TeamMemberRow } from "@/components/team/memberSummary";
 type Props = { params: Promise<{ orgSlug: string; }>; searchParams: Promise<{ page?: string; }>; };
@@ -13,7 +13,7 @@ const joinedFormatter = new Intl.DateTimeFormat("en-GB", { month: "short", year:
 export async function loadOrgMembersView({ params, searchParams }: Props) {
   const { orgSlug } = await params;
   const requestedPage = Math.max(1, Number.parseInt((await searchParams).page ?? "1", 10) || 1);
-  const { organisation, membership } = await requireOrgMembership(orgSlug);
+  const { organisation, membership } = await requireOrgCapability(orgSlug, "org.view");
   const adminView = isOrgAdmin(membership.role);
   const h = await headers();
   const now = new Date();

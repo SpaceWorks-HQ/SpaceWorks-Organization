@@ -90,19 +90,6 @@ export type OrgAccessContext = {
 };
 
 /**
- * Capabilities a suspended or archived organisation keeps: money already received must still be
- * confirmed, refunded and receipted, and finance records exported (plan: suspension behaviour).
- */
-const SUSPENDED_ALLOWED: ReadonlySet<Capability> = new Set<Capability>(["org.view", "payments.view", "payments.manage", "reports.finance", "members.export"]);
-
-/** Whether an organisation in this status may use a capability at all. */
-export function organisationAllows(status: OrganisationStatus, capability: Capability): boolean {
-  if (status === "ACTIVE") return true;
-  if (status === "SUSPENDED" || status === "ARCHIVED") return SUSPENDED_ALLOWED.has(capability);
-  return false;
-}
-
-/**
  * Team access to an organisation, whatever its status. Use only for the application page and other
  * screens that must work before approval; everything else goes through requireOrgRole/Capability.
  */
@@ -168,6 +155,6 @@ export async function orgActionAccess(orgSlug: unknown, capability: Capability):
   return { ok: true, organisation: org, membership, userId: session.user.id };
 }
 
-export { can, hasRoleAtLeast, isOrgAdmin, canManageTeam, canManageTeamMember, canDeleteOrg } from "@/lib/permissionRoles";
+export { can, hasRoleAtLeast, isOrgAdmin, canManageTeam, canManageTeamMember, canDeleteOrg, organisationAllows } from "@/lib/permissionRoles";
 
-import { can, hasRoleAtLeast, type Capability } from "./permissionRoles";
+import { can, hasRoleAtLeast, organisationAllows, type Capability } from "./permissionRoles";

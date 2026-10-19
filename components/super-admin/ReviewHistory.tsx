@@ -1,23 +1,12 @@
 import type { OrganisationReviewAction } from "@prisma/client";
-
-const LABELS: Record<OrganisationReviewAction, string> = {
-  SUBMITTED: "Application submitted",
-  RESUBMITTED: "Application resubmitted",
-  APPROVED: "Approved",
-  CHANGES_REQUESTED: "Changes requested",
-  REJECTED: "Not approved",
-  SUSPENDED: "Suspended",
-  REACTIVATED: "Reactivated",
-  ARCHIVED: "Archived",
-  CREATED: "Added by a platform admin",
-};
+import { REVIEW_ACTION_LABELS } from "@/lib/organisationLifecycle";
 
 export type ReviewRow = {
   id: string;
   action: OrganisationReviewAction;
   reason: string | null;
   createdAt: Date;
-  actor: { name: string | null; email: string | null } | null;
+  actor?: { name: string | null; email: string | null } | null;
 };
 
 /** An organisation's lifecycle timeline: the decision, who made it, when and why. */
@@ -27,7 +16,7 @@ export function ReviewHistory({ reviews, showActor = true }: { reviews: ReviewRo
     <ol className="flex flex-col gap-4">
       {reviews.map((review) => (
         <li key={review.id} className="flex flex-col gap-0.5 border-l-2 border-line pl-4">
-          <span className="text-label font-semibold text-ink">{LABELS[review.action]}</span>
+          <span className="text-label font-semibold text-ink">{REVIEW_ACTION_LABELS[review.action]}</span>
           <span className="text-caption text-ink-muted">
             {review.createdAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
             {showActor && review.actor ? ` · ${review.actor.name ?? review.actor.email}` : ""}

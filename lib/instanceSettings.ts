@@ -14,6 +14,15 @@ export async function isNewUserRegistrationEnabled(): Promise<boolean> {
   return settings?.allowNewUserSignups ?? true;
 }
 
+/** Whether people can apply for a new organisation at /start. Platform admins can always create one. */
+export async function isOrganisationApplicationsEnabled(): Promise<boolean> {
+  const settings = await prisma.instanceSetting.findUnique({
+    where: { id: INSTANCE_SETTINGS_ID },
+    select: { allowOrganisationApplications: true },
+  });
+  return settings?.allowOrganisationApplications ?? true;
+}
+
 export async function getGoogleSsoSettings() {
   const settings = await prisma.instanceSetting.findUnique({
     where: { id: INSTANCE_SETTINGS_ID },

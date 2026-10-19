@@ -17,6 +17,8 @@ import {
 } from "@/lib/validators";
 import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
+import { organisationAllows } from "@/lib/permissionRoles";
+import { canDeleteInStatus, ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 import { recordAuditEvent } from "@/lib/audit";
 import { hasRecentAuthentication } from "@/lib/reauth";
 
@@ -44,6 +46,7 @@ export async function updateTeamRole(
     where: { slug: organisationSlug },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "team.manage")) return { ok: false, error: ORGANISATION_LOCKED };
 
   const actor = await getMembership(session.user.id, org.id);
   if (!actor || !canManageTeam(actor)) {
@@ -105,6 +108,7 @@ export async function removeTeamMember(input: unknown): Promise<ActionResult> {
     where: { slug: organisationSlug },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "team.manage")) return { ok: false, error: ORGANISATION_LOCKED };
 
   const actor = await getMembership(session.user.id, org.id);
   if (!actor || !canManageTeam(actor)) {
@@ -153,6 +157,8 @@ export async function deleteOrganisation(input: unknown): Promise<ActionResult> 
     where: { slug: parsed.data.organisationSlug },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+
+  if (!canDeleteInStatus(org.status)) return { ok: false, error: "A suspended or archived organisation keeps its records and can't be deleted." };
 
   const membership = await getMembership(session.user.id, org.id);
   if (!canDeleteOrg(membership)) {

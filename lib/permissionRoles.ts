@@ -1,4 +1,4 @@
-import type { TeamMember, TeamRole } from "@prisma/client";
+import type { OrganisationStatus, TeamMember, TeamRole } from "@prisma/client";
 
 /**
  * What each organisation role may do. OWNER and ADMIN run the organisation; TREASURER runs money and
@@ -27,6 +27,19 @@ export type Capability = keyof typeof CAPABILITIES;
 
 export function can(role: TeamRole | null | undefined, capability: Capability): boolean {
   return role != null && (CAPABILITIES[capability] as readonly TeamRole[]).includes(role);
+}
+
+/**
+ * Capabilities a suspended or archived organisation keeps: money already received must still be
+ * confirmed, refunded and receipted, and finance records exported. Everything else waits.
+ */
+export const SUSPENDED_CAPABILITIES: ReadonlySet<Capability> = new Set<Capability>(["org.view", "payments.view", "payments.manage", "reports.finance", "members.export"]);
+
+/** Whether an organisation in this status may use a capability at all. Before approval: none. */
+export function organisationAllows(status: OrganisationStatus, capability: Capability): boolean {
+  if (status === "ACTIVE") return true;
+  if (status === "SUSPENDED" || status === "ARCHIVED") return SUSPENDED_CAPABILITIES.has(capability);
+  return false;
 }
 
 /** Seniority, only for "at least" gates and for who may change whose role. */

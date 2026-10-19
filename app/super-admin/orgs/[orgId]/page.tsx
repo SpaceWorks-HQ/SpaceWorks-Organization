@@ -7,6 +7,10 @@ import { AuditTable } from "@/components/super-admin/AuditTable";
 import { OrganisationStatusChip } from "@/components/org/OrganisationStatusChip";
 import { ReviewHistory } from "@/components/super-admin/ReviewHistory";
 import { formatBytes } from "@/lib/superAdminInsights";
+import { indianStateName } from "@/lib/indianStates";
+import { OrganisationDecisionPanel } from "@/components/super-admin/OrganisationDecisionPanel";
+import { OrganisationLimitsForm } from "@/components/super-admin/OrganisationLimitsForm";
+import { OwnerInviteResend } from "@/components/super-admin/OwnerInviteResend";
 import { ROLE_LABELS } from "@/lib/permissionRoles";
 import { Chip, OrgLogo, StatTile } from "@/components/ui/display";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -18,7 +22,9 @@ type Props = {
 export default async function SuperAdminOrgDetailPage({ params }: Props) {
   await requireSuperAdminMfa();
   const { org, reviews, members, invites, assetStats, auditEvents, now } = await loadSuperAdminOrgDetailView({ params });
-  const address = [org.addressLine, org.city, org.stateCode, org.postalCode, org.country].filter(Boolean).join(", ");
+  const address = [org.addressLine, org.city, indianStateName(org.stateCode), org.postalCode].filter(Boolean).join(", ");
+  const hasOwner = members.some((m) => m.role === "OWNER");
+  const ownerInviteEmail = invites.find((invite) => invite.role === "OWNER" && invite.email)?.email ?? "";
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
@@ -45,6 +51,9 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
         ) : null}
       </header>
 
+      <OrganisationDecisionPanel organisationId={org.id} status={org.status} />
+      {!hasOwner && org.status !== "REJECTED" ? <OwnerInviteResend organisationId={org.id} defaultEmail={ownerInviteEmail} /> : null}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminPanel title="Application details">
           <MetricRows
@@ -63,10 +72,12 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
         </AdminPanel>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <StatTile className="rounded-xl" label="Team" value={org._count.teamMembers.toLocaleString("en-IN")} />
-        <StatTile className="rounded-xl" label="Stored files" value={assetStats._count._all.toLocaleString("en-IN")} hint={formatBytes(assetStats._sum.byteSize == null ? 0 : Number(assetStats._sum.byteSize))} />
-        <StatTile className="rounded-xl" label="Member limit" value={org.memberLimit == null ? "Default" : org.memberLimit.toLocaleString("en-IN")} hint={org.managerLimit == null ? "Default team size" : `Up to ${org.managerLimit} on the team`} />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-2 content-start gap-3">
+          <StatTile className="rounded-xl" label="Team" value={org._count.teamMembers.toLocaleString("en-IN")} />
+          <StatTile className="rounded-xl" label="Stored files" value={assetStats._count._all.toLocaleString("en-IN")} hint={formatBytes(assetStats._sum.byteSize == null ? 0 : Number(assetStats._sum.byteSize))} />
+        </div>
+        <OrganisationLimitsForm organisationId={org.id} memberLimit={org.memberLimit} managerLimit={org.managerLimit} />
       </div>
 
       <AdminPanel title="Team">

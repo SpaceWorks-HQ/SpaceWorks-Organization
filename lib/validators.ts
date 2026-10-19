@@ -12,13 +12,6 @@ export const organisationSlugSchema = z
   .regex(slugRegex, "Use lowercase letters, numbers and single hyphens")
   .refine((slug) => !isReservedOrganisationSlug(slug), "That web address is reserved");
 
-export const createOrganisationSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
-  slug: organisationSlugSchema,
-  description: z.string().trim().max(2000).optional().default(""),
-  logoUrl: z.literal(""),
-});
-
 export const updateOrganisationSchema = z.object({
   organisationSlug: z.string().trim().min(1),
   name: z.string().trim().min(1, "Name is required").max(120),

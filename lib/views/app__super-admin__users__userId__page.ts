@@ -8,7 +8,7 @@ type Props = {
 export async function loadSuperAdminUserDetailView({ params }: Props) {
 
   // Layout checks don't re-run on client navigation, so every page checks too.
-  await requireSuperAdminMfa();
+  const session = await requireSuperAdminMfa();
   const { userId } = await params;
   const now = new Date();
 
@@ -47,5 +47,5 @@ export async function loadSuperAdminUserDetailView({ params }: Props) {
   const displayName = user.name ?? user.email ?? "Unnamed user";
 
 
-  return { user, hasPassword, accounts, activeSessions, memberships, auditEvents, displayName, now };
+  return { user, hasPassword, accounts, activeSessions, memberships, auditEvents, displayName, now, viewerId: session.user.id };
 }

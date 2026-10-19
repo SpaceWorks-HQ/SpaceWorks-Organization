@@ -8,7 +8,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { ArrowUpRight, ChevronsUpDown, Home, LogOut, Menu as MenuIcon, Moon, Plus, Sun, UserRound, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { ShellOrganisation, ShellUser } from "@/lib/appShell";
-import { can, ROLE_LABELS, type Capability } from "@/lib/permissionRoles";
+import { can, organisationAllows, ROLE_LABELS, type Capability } from "@/lib/permissionRoles";
 import { SpaceWorksProductLogo } from "@/components/brand/SpaceWorksLogo";
 import { useAppColorMode } from "@/components/providers";
 import { Avatar, OrgLogo } from "@/components/ui/display";
@@ -151,20 +151,19 @@ function SidebarContents({ user, organisations, onNavigate }: { user: ShellUser;
         <>
           <OrganisationSwitcher current={current} organisations={organisations} onNavigate={onNavigate} />
           <nav aria-label="Organisation" className="flex flex-col gap-1">
-            {active ? (
-              ORG_NAV.filter((item) => can(current.role, item.capability)).map((item) => {
-                const href = `${base}${item.path}`;
-                const isActive = item.exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
-                return (
-                  <NavItem key={item.path} href={href} active={isActive} onNavigate={onNavigate}>
-                    {item.label}
-                  </NavItem>
-                );
-              })
-            ) : (
-              // Under review, rejected, suspended or archived: only the application status page.
+            {ORG_NAV.filter((item) => organisationAllows(current.status, item.capability) && can(current.role, item.capability)).map((item) => {
+              const href = `${base}${item.path}`;
+              const isActive = item.exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <NavItem key={item.path} href={href} active={isActive} onNavigate={onNavigate}>
+                  {item.label}
+                </NavItem>
+              );
+            })}
+            {active ? null : (
+              // Under review, declined, suspended or archived: the status page explains what is open.
               <NavItem href={`${base}/application`} active={pathname.startsWith(`${base}/application`)} onNavigate={onNavigate}>
-                Application
+                {current.status === "SUSPENDED" || current.status === "ARCHIVED" ? "Status" : "Application"}
               </NavItem>
             )}
           </nav>

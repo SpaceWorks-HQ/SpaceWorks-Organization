@@ -1,3 +1,4 @@
+import { isOrganisationApplicationsEnabled } from "@/lib/instanceSettings";
 import { OrganisationStatus, type Prisma } from "@prisma/client";
 import { requireSuperAdminMfa } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
@@ -36,5 +37,6 @@ export async function loadSuperAdminOrgsView({ searchParams }: Props) {
   ]);
   const countFor = (value: OrganisationStatus) => counts.find((row) => row.status === value)?._count._all ?? 0;
   const total = counts.reduce((sum, row) => sum + row._count._all, 0);
-  return { q, status, page, orgs, total, counts: STATUSES.map((value) => ({ status: value, count: countFor(value) })) };
+  const applicationsOpen = await isOrganisationApplicationsEnabled();
+  return { applicationsOpen, q, status, page, orgs, total, counts: STATUSES.map((value) => ({ status: value, count: countFor(value) })) };
 }

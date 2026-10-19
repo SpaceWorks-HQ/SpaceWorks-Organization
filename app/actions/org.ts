@@ -4,14 +4,13 @@ import { revalidatePath as nextRevalidatePath } from "next/cache";
 import { trackedRevalidation } from "@/lib/frontend/revalidation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import {
-  createOrganisationSchema,
-  updateOrganisationSchema,
-} from "@/lib/validators";
+import { updateOrganisationSchema } from "@/lib/validators";
 import { flattenZodErrors } from "./utils";
 import { recordAuditEvent } from "@/lib/audit";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { isOrganisationUploadUrl } from "@/lib/uploadUrl";
+import { organisationAllows } from "@/lib/permissionRoles";
+import { ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 
 const revalidatePath = trackedRevalidation(nextRevalidatePath);
 
@@ -25,86 +24,15 @@ export type ActionResult<T = void> =
     needsForce?: boolean;
   };
 
-export async function createOrganisation(
-  input: unknown,
-): Promise<ActionResult<{ slug: string; }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { ok: false, error: "You must be signed in." };
-  }
-  if (await isActionRateLimited("create", session.user.id)) {
-    return {
-      ok: false,
-      error: "Too many creation attempts. Please try again later.",
-    };
-  }
-
-  const parsed = createOrganisationSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: "Invalid input.",
-      fieldErrors: flattenZodErrors(parsed.error),
-    };
-  }
-
-  const { name, slug, description, logoUrl } = parsed.data;
-  const userId = session.user.id;
-
-  try {
-    const org = await prisma.$transaction(async (tx) => {
-      const created = await tx.organisation.create({
-        data: {
-          name,
-          slug,
-          description: description ?? "",
-          logoUrl: logoUrl || null,
-        },
-      });
-      await tx.teamMember.create({
-        data: {
-          userId,
-          organisationId: created.id,
-          role: "OWNER",
-        },
-      });
-      return created;
-    });
-
-    await recordAuditEvent({
-      action: "ORGANISATION_CREATED",
-      actorUserId: session.user.id,
-      organisationId: org.id,
-      targetType: "Organisation",
-      targetId: org.id,
-    });
-
-    revalidatePath("/dashboard");
-    return { ok: true, data: { slug: org.slug } };
-  } catch (e: unknown) {
-    if (
-      typeof e === "object" &&
-      e !== null &&
-      "code" in e &&
-      (e as { code: string; }).code === "P2002"
-    ) {
-      return {
-        ok: false,
-        error: "That organisation URL is already taken.",
-        fieldErrors: { slug: ["Already taken"] },
-      };
-    }
-    console.error("[organisation] creation failed");
-    return { ok: false, error: "Could not create organisation." };
-  }
-}
-
 export async function updateOrganisation(
   input: unknown,
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) {
     return { ok: false, error: "You must be signed in." };
+  }
+  if (await isActionRateLimited("action", session.user.id)) {
+    return { ok: false, error: "Too many requests. Try again shortly." };
   }
 
   const parsed = updateOrganisationSchema.safeParse(input);
@@ -119,9 +47,10 @@ export async function updateOrganisation(
   const { organisationSlug, name, description, logoUrl } = parsed.data;
   const org = await prisma.organisation.findUnique({
     where: { slug: organisationSlug },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, status: true },
   });
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "org.settings")) return { ok: false, error: ORGANISATION_LOCKED };
 
   const membership = await prisma.teamMember.findUnique({
     where: {
@@ -170,22 +99,4 @@ export async function updateOrganisation(
     console.error("[organisation] update failed");
     return { ok: false, error: "Could not update organisation." };
   }
-}
-
-/** Format, reserved-word and uniqueness check for the create form; `error` explains an unusable slug. */
-export async function checkSlugAvailability(
-  slug: string,
-): Promise<{ available: boolean; error?: string; }> {
-  const parsed = createOrganisationSchema.shape.slug.safeParse(String(slug ?? "").toLowerCase());
-  if (!parsed.success) {
-    return { available: false, error: parsed.error.issues[0]?.message ?? "That URL can't be used" };
-  }
-
-  const count = await prisma.organisation.count({
-    where: { slug: parsed.data },
-  });
-
-  return count === 0
-    ? { available: true }
-    : { available: false, error: "That URL is already taken" };
 }

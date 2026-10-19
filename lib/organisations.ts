@@ -6,7 +6,7 @@ import { isIndianStateCode } from "@/lib/indianStates";
 import { isBootstrapSuperAdminEmail } from "@/lib/permissions";
 import { organisationSlugSchema } from "@/lib/validators";
 import { enqueueOutbox, type OutboxClient } from "@/lib/outbox";
-import type { OrganisationNotice } from "@/lib/email/organisation";
+import type { OrganisationNotice } from "@/lib/organisationLifecycle";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().transform((value) => value || null);
 
@@ -32,9 +32,6 @@ export type OrganisationProfile = z.infer<typeof organisationProfileSchema>;
 export function applicationSnapshot(profile: OrganisationProfile & { slug: string }): Prisma.InputJsonValue {
   return { ...profile, submittedAt: new Date().toISOString() };
 }
-
-/** States in which an organisation's team may still edit and (re)submit its application. */
-export const EDITABLE_APPLICATION_STATES: OrganisationStatus[] = [OrganisationStatus.PENDING_REVIEW, OrganisationStatus.CHANGES_REQUESTED];
 
 /** Verified platform admins who should hear about new applications. */
 export async function platformAdminEmails(client: OutboxClient): Promise<string[]> {
@@ -71,10 +68,13 @@ const SLUG_HOLD_DAYS = 30;
  * A declined application keeps its web address for 30 days, so links in its emails keep working.
  * After that, a new application may take the address: the old record moves to a unique address.
  */
+export function isSlugReleasable(holder: { status: OrganisationStatus; updatedAt: Date }, now = new Date()) {
+  return holder.status === OrganisationStatus.REJECTED && now.getTime() - holder.updatedAt.getTime() >= SLUG_HOLD_DAYS * 24 * 60 * 60_000;
+}
+
 export async function releaseHeldSlug(client: Prisma.TransactionClient, slug: string, now = new Date()) {
   const holder = await client.organisation.findUnique({ where: { slug }, select: { id: true, status: true, updatedAt: true } });
-  if (!holder || holder.status !== OrganisationStatus.REJECTED) return false;
-  if (now.getTime() - holder.updatedAt.getTime() < SLUG_HOLD_DAYS * 24 * 60 * 60_000) return false;
+  if (!holder || !isSlugReleasable(holder, now)) return false;
   await client.organisation.update({ where: { id: holder.id }, data: { slug: `declined-${holder.id}` } });
   return true;
 }

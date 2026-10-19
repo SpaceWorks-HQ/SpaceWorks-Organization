@@ -2,7 +2,8 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { can, getMembership } from "@/lib/permissions";
+import { can, getMembership, organisationAllows } from "@/lib/permissions";
+import { ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { createSafeWebpDerivative } from "@/lib/imageValidation";
 import { getPublicUrl, uploadFile } from "@/lib/storage";
@@ -36,10 +37,11 @@ export async function uploadOrganisationLogo(
   const org = slug
     ? await prisma.organisation.findUnique({
         where: { slug },
-        select: { id: true, slug: true },
+        select: { id: true, slug: true, status: true },
       })
     : null;
   if (!org) return { ok: false, error: "Organisation not found." };
+  if (!organisationAllows(org.status, "org.settings")) return { ok: false, error: ORGANISATION_LOCKED };
   const membership = await getMembership(session.user.id, org.id);
   if (!membership || !can(membership.role, "org.settings"))
     return { ok: false, error: "Only organisation owners and admins can upload logos." };

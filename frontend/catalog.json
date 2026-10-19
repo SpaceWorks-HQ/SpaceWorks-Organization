@@ -31,9 +31,19 @@
       "id": "app__dashboard__layout:loadDashboardShell"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__application__page",
+      "name": "loadOrgApplicationView",
+      "id": "app__dashboard__orgSlug__application__page:loadOrgApplicationView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__layout",
       "name": "loadOrgSlugShell",
       "id": "app__dashboard__orgSlug__layout:loadOrgSlugShell"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__page",
+      "name": "loadOrgOverviewView",
+      "id": "app__dashboard__orgSlug__page:loadOrgOverviewView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__settings__page",
@@ -54,6 +64,11 @@
       "module": "lib/views/app__join__org__token__page",
       "name": "loadJoinOrganisationView",
       "id": "app__join__org__token__page:loadJoinOrganisationView"
+    },
+    {
+      "module": "lib/views/app__start__page",
+      "name": "loadStartView",
+      "id": "app__start__page:loadStartView"
     },
     {
       "module": "lib/views/app__super-admin-mfa__page",
@@ -89,6 +104,11 @@
       "module": "lib/views/app__super-admin__operations__page",
       "name": "loadSuperAdminOperationsView",
       "id": "app__super-admin__operations__page:loadSuperAdminOperationsView"
+    },
+    {
+      "module": "lib/views/app__super-admin__orgs__new__page",
+      "name": "loadSuperAdminNewOrgView",
+      "id": "app__super-admin__orgs__new__page:loadSuperAdminNewOrgView"
     },
     {
       "module": "lib/views/app__super-admin__orgs__orgId__page",
@@ -169,6 +189,11 @@
     },
     {
       "module": "app/actions/instance-settings",
+      "name": "setOrganisationApplicationsEnabled",
+      "id": "instance-settings:setOrganisationApplicationsEnabled"
+    },
+    {
+      "module": "app/actions/instance-settings",
       "name": "saveInstanceServiceSettings",
       "id": "instance-settings:saveInstanceServiceSettings"
     },
@@ -219,18 +244,23 @@
     },
     {
       "module": "app/actions/org",
-      "name": "createOrganisation",
-      "id": "org:createOrganisation"
-    },
-    {
-      "module": "app/actions/org",
       "name": "updateOrganisation",
       "id": "org:updateOrganisation"
     },
     {
-      "module": "app/actions/org",
-      "name": "checkSlugAvailability",
-      "id": "org:checkSlugAvailability"
+      "module": "app/actions/organisation-application",
+      "name": "checkOrganisationSlug",
+      "id": "organisation-application:checkOrganisationSlug"
+    },
+    {
+      "module": "app/actions/organisation-application",
+      "name": "submitOrganisationApplication",
+      "id": "organisation-application:submitOrganisationApplication"
+    },
+    {
+      "module": "app/actions/organisation-application",
+      "name": "resubmitOrganisationApplication",
+      "id": "organisation-application:resubmitOrganisationApplication"
     },
     {
       "module": "app/actions/password-reset",
@@ -266,6 +296,31 @@
       "module": "app/actions/super-admin-mfa",
       "name": "verifySuperAdminMfa",
       "id": "super-admin-mfa:verifySuperAdminMfa"
+    },
+    {
+      "module": "app/actions/super-admin-organisations",
+      "name": "reviewOrganisation",
+      "id": "super-admin-organisations:reviewOrganisation"
+    },
+    {
+      "module": "app/actions/super-admin-organisations",
+      "name": "setOrganisationLimits",
+      "id": "super-admin-organisations:setOrganisationLimits"
+    },
+    {
+      "module": "app/actions/super-admin-organisations",
+      "name": "createOrganisationForOwner",
+      "id": "super-admin-organisations:createOrganisationForOwner"
+    },
+    {
+      "module": "app/actions/super-admin-organisations",
+      "name": "resendOwnerInvite",
+      "id": "super-admin-organisations:resendOwnerInvite"
+    },
+    {
+      "module": "app/actions/super-admin-organisations",
+      "name": "setPlatformAdmin",
+      "id": "super-admin-organisations:setPlatformAdmin"
     },
     {
       "module": "app/actions/team",
