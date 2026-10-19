@@ -4,15 +4,17 @@ import { useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-/** Sample cards for the kinds of organisations the platform is built for. Not real members or customers. */
+/**
+ * Sample cards: the team, with their roles, across four sample organisations on one instance.
+ * Not real members or customers.
+ */
 const CARDS = [
-  { org: "SpaceWorks", kind: "Annual membership", name: "Shaan Shoukath", until: "31 Mar 2027", tone: "teal" },
-  { org: "Runners' club", kind: "Season pass", name: "Anika Rao", until: "30 Sep 2026", tone: "citron" },
-  { org: "Alumni association", kind: "Life member", name: "Joseph Mathew", until: "Lifetime", tone: "ink" },
-  { org: "Residents' association", kind: "Household · 2026–27", name: "Flat 4B", until: "31 Mar 2027", tone: "sky" },
-  { org: "Chess circle", kind: "Junior membership", name: "Diya Menon", until: "31 Dec 2026", tone: "yellow" },
-  { org: "Kayak club", kind: "Monthly", name: "Arjun Pillai", until: "14 Nov 2026", tone: "orange" },
-  { org: "Professional body", kind: "Fellow · 2026–27", name: "Dr. Leela Thomas", until: "31 Mar 2027", tone: "cream" },
+  { org: "SpaceWorks", kind: "Systems Engineer", name: "Shaan Shoukath", until: "31 Mar 2027", tone: "teal" },
+  { org: "Kunj-Company", kind: "Cloud Specialist", name: "Abhiram NJ", until: "31 Mar 2027", tone: "citron" },
+  { org: "Ideologists", kind: "Full Stack Developer", name: "Abdul Samad MJ", until: "30 Jun 2027", tone: "ink" },
+  { org: "Tinkerspace", kind: "Backend Engineer", name: "Midlaj C", until: "31 Dec 2026", tone: "sky" },
+  { org: "Kunj-Company", kind: "Marketing Specialist", name: "Ajzal P", until: "31 Mar 2027", tone: "yellow" },
+  { org: "Tinkerspace", kind: "App Developer", name: "Anin Arafath", until: "31 Dec 2026", tone: "orange" },
 ] as const;
 
 const TONES: Record<(typeof CARDS)[number]["tone"], string> = {
@@ -22,8 +24,7 @@ const TONES: Record<(typeof CARDS)[number]["tone"], string> = {
   sky: "bg-sw-sky text-sw-ink",
   yellow: "bg-sw-yellow text-sw-ink",
   orange: "bg-sw-orange text-sw-ink",
-  cream: "bg-sw-cream text-sw-ink border border-sw-ink/15",
-};
+  };
 
 function MiniCard({ card }: { card: (typeof CARDS)[number] }) {
   return (
@@ -34,9 +35,9 @@ function MiniCard({ card }: { card: (typeof CARDS)[number] }) {
       </div>
       <div>
         <p className="truncate text-label font-semibold">{card.name}</p>
-        <p className="truncate text-caption opacity-80">{card.kind}</p>
+        <p className="truncate text-caption opacity-80">Role · {card.kind}</p>
       </div>
-      <p className="text-[11px] tabular-nums opacity-75">{card.until === "Lifetime" ? "Lifetime" : `Valid until ${card.until}`}</p>
+      <p className="text-[11px] tabular-nums opacity-75">Valid until {card.until}</p>
     </div>
   );
 }
@@ -51,15 +52,15 @@ export function CardStrip() {
     <div className="relative">
       <div className="landing-strip-mask overflow-hidden py-2">
         <div className="landing-strip flex w-max gap-4" data-paused={paused}>
-          {CARDS.map((card) => <MiniCard key={card.name} card={card} />)}
+          {CARDS.map((card) => <MiniCard key={`${card.org}-${card.name}`} card={card} />)}
           {/* The second set makes the loop seamless; it repeats the first, so assistive tech skips it. */}
           <div aria-hidden className="flex gap-4">
-            {CARDS.map((card) => <MiniCard key={`${card.name}-again`} card={card} />)}
+            {CARDS.map((card) => <MiniCard key={`${card.org}-${card.name}-again`} card={card} />)}
           </div>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between gap-3 px-4 sm:px-6">
-        <p className="text-caption text-ink-muted">Sample cards for the kinds of organisations it is built for.</p>
+        <p className="text-caption text-ink-muted">Sample cards from four organisations on one instance: SpaceWorks, Kunj-Company, Ideologists and Tinkerspace.</p>
         <button
           type="button"
           onClick={() => setPaused((value) => !value)}

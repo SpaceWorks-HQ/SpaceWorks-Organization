@@ -6,7 +6,7 @@ import { CardStrip } from "@/components/marketing/CardStrip";
 import { CopyCommand } from "@/components/marketing/CopyCommand";
 import { MemberCardDeck } from "@/components/marketing/MemberCardDeck";
 import { SAMPLE } from "@/components/marketing/sample";
-import { ROLE_DESCRIPTIONS, ROLE_LABELS } from "@/lib/permissionRoles";
+import { ROLE_LABELS } from "@/lib/permissionRoles";
 import { cn } from "@/lib/cn";
 import "@/components/marketing/landing.css";
 
@@ -24,14 +24,14 @@ const YEAR: Array<{ when: string; title: string; body: string; proof: React.Reac
   },
   {
     when: "2 Apr",
-    title: "The secretary approves",
+    title: "Abhiram approves",
     body: "Applications wait in one queue with everything the form asked. Plans that need no vetting take members straight in.",
-    proof: <Proof tone="citron">Approved by the secretary</Proof>,
+    proof: <Proof tone="citron">Approved by Abhiram NJ, admin</Proof>,
   },
   {
     when: "2 Apr",
     title: "Pays ₹1,200 by UPI",
-    body: "Online through Razorpay or Stripe, or UPI and cash recorded by hand. Offline money counts only after a second treasurer confirms it.",
+    body: "Online through Razorpay or Stripe, or UPI and cash recorded by hand. Offline money counts only after a second treasurer, here Abdul Samad, confirms it.",
     proof: <Proof tone="panel"><span className="tabular-nums">₹1,200.00 · UPI · UTR 6128 4093 7712</span></Proof>,
   },
   {
@@ -79,6 +79,16 @@ const UNITS = [
   { name: "Karnataka", depth: 0, members: 54 },
   { name: "Bengaluru chapter", depth: 1, members: 54 },
 ];
+
+/** The SpaceWorks team as the sample committee: their organisation role, and the access it gives them. */
+const TEAM = [
+  { name: "Shaan Shoukath", role: "Systems Engineer", access: "OWNER" },
+  { name: "Abhiram NJ", role: "Cloud Specialist", access: "ADMIN" },
+  { name: "Abdul Samad MJ", role: "Full Stack Developer", access: "TREASURER" },
+  { name: "Midlaj C", role: "Backend Engineer", access: "ADMIN" },
+  { name: "Ajzal P", role: "Marketing Specialist", access: "VIEWER" },
+  { name: "Anin Arafath", role: "App Developer", access: "VIEWER" },
+] as const;
 
 /** Sample active members per month for the report preview. */
 const ACTIVE = [180, 204, 221, 229, 236, 240, 247, 251, 258, 263, 266, 268];
@@ -316,15 +326,19 @@ export default async function HomePage() {
             </figure>
 
             <figure className="flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
-              <figcaption className="text-label font-semibold text-ink">The committee</figcaption>
+              <figcaption className="text-label font-semibold text-ink">The SpaceWorks team</figcaption>
               <ul className="flex flex-col">
-                {(["OWNER", "ADMIN", "TREASURER", "VIEWER"] as const).map((role) => (
-                  <li key={role} className="flex flex-col gap-0.5 border-t border-line py-2.5 first:border-t-0 first:pt-0">
-                    <span className="text-label font-semibold text-ink">{ROLE_LABELS[role]}</span>
-                    <span className="text-caption text-ink-secondary">{ROLE_DESCRIPTIONS[role]}</span>
+                {TEAM.map((person) => (
+                  <li key={person.name} className="flex flex-col gap-0.5 border-t border-line py-2.5 first:border-t-0 first:pt-0">
+                    <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                      <span className="text-label font-semibold text-ink">{person.name}</span>
+                      <span className="text-caption text-ink-muted">{ROLE_LABELS[person.access]}</span>
+                    </span>
+                    <span className="text-caption text-ink-secondary">{person.role}</span>
                   </li>
                 ))}
               </ul>
+              <p className="mt-auto text-caption text-ink-muted">Sample team. Each role sets what that person can see and do.</p>
             </figure>
 
             <figure className="flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">

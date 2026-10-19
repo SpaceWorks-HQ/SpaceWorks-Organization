@@ -35,7 +35,13 @@ Open source (AGPL-3.0-or-later) and self-hostable, built for Indian organisation
 
 ## Evidence on Hand
 - No customers, testimonials, usage numbers or benchmarks exist. Never invent them.
-- Demonstration material uses sample data built around the owner: **Shaan Shoukath** as the sample member and **SpaceWorks** as the sample organisation (owner, 2026-10-19). Label it as a sample where a visitor could mistake it for real.
+- Demonstration material uses sample data built around the owner and the SpaceWorks team (owner, 2026-10-19), with **SpaceWorks** as the main sample organisation and **Kunj-Company**, **Ideologists** and **Tinkerspace** as further sample organisations on the same instance. Label it as a sample where a visitor could mistake it for real.
+  - Shaan Shoukath, Systems Engineer (the sample member the landing page follows)
+  - Abhiram NJ, Cloud Specialist
+  - Abdul Samad MJ, Full Stack Developer
+  - Midlaj C, Backend Engineer
+  - Ajzal P, Marketing Specialist
+  - Anin Arafath, App Developer
 
 ## Product Principles
 1. Calm over clever: an office-bearer with ten minutes should finish the task.

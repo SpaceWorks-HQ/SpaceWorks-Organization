@@ -35,36 +35,36 @@ async function user(email, name, extra = {}) {
 }
 
 const mfa = process.env.DEMO_MFA_SECRET ? { mfaSecretEncrypted: encryptMfaSecret(process.env.DEMO_MFA_SECRET), mfaEnabledAt: now } : {};
-const admin = await user("admin@demo.test", "Asha Platform", { isSuperAdmin: true, ...mfa });
-const owner = await user("owner@demo.test", "Rahul Menon");
-const treasurer = await user("treasurer@demo.test", "Fathima Nair");
-const applicant = await user("applicant@demo.test", "Joseph Varghese");
+const admin = await user("admin@demo.test", "Shaan Shoukath", { isSuperAdmin: true, ...mfa });
+const owner = await user("owner@demo.test", "Abhiram NJ");
+const treasurer = await user("treasurer@demo.test", "Abdul Samad MJ");
+const applicant = await user("applicant@demo.test", "Midlaj C");
 
 const base = { country: "IN", timezone: "Asia/Kolkata", currency: "INR", stateCode: "KL" };
 const organisations = [
   {
-    slug: "kochi-runners", name: "Kochi Runners Club", kind: "Sports club", status: "ACTIVE", city: "Kochi",
-    description: "Weekly group runs, coaching and race-day support for runners of every pace across Kochi.",
-    contactEmail: "hello@kochirunners.demo.test", team: [[owner, "OWNER"], [treasurer, "TREASURER"]],
+    slug: "spaceworks", name: "SpaceWorks", kind: "Community", status: "ACTIVE", city: "Kochi",
+    description: "Open-source tools and a community of makers who build them together, with chapters across Kerala.",
+    contactEmail: "hello@spaceworks.demo.test", team: [[owner, "OWNER"], [treasurer, "TREASURER"]],
     reviews: [["SUBMITTED", owner, null], ["APPROVED", admin, null]],
   },
   {
-    slug: "malabar-alumni", name: "Malabar Alumni Association", kind: "Alumni association", status: "PENDING_REVIEW", city: "Kozhikode",
-    description: "Alumni of Malabar colleges keeping in touch through annual meets, mentoring and scholarships.",
-    contactEmail: "office@malabaralumni.demo.test", team: [[applicant, "OWNER"]],
+    slug: "kunj-company", name: "Kunj-Company", kind: "Company club", status: "PENDING_REVIEW", city: "Kozhikode",
+    description: "A members' club for the Kunj-Company team and friends, with monthly meet-ups and learning sessions.",
+    contactEmail: "office@kunj-company.demo.test", team: [[applicant, "OWNER"]],
     reviews: [["SUBMITTED", applicant, null]],
   },
   {
-    slug: "thrissur-chess", name: "Thrissur Chess Circle", kind: "Club", status: "CHANGES_REQUESTED", city: "Thrissur",
-    description: "Rated tournaments and weekend coaching for young chess players in Thrissur district.",
-    contactEmail: "play@thrissurchess.demo.test", team: [[applicant, "OWNER"]],
+    slug: "ideologists", name: "Ideologists", kind: "Society", status: "CHANGES_REQUESTED", city: "Thrissur",
+    description: "A society for people who turn ideas into projects, with talks, mentoring and an annual showcase.",
+    contactEmail: "hello@ideologists.demo.test", team: [[applicant, "OWNER"]],
     reviews: [["SUBMITTED", applicant, null], ["CHANGES_REQUESTED", admin, "Please add your full address and a contact phone number."]],
   },
   {
-    slug: "coastal-kayakers", name: "Coastal Kayakers", kind: "Sports club", status: "SUSPENDED", city: "Alappuzha",
-    description: "Backwater kayaking trips and safety training for members around Alappuzha.",
-    contactEmail: "paddle@coastalkayakers.demo.test", team: [[owner, "OWNER"]],
-    reviews: [["SUBMITTED", owner, null], ["APPROVED", admin, null], ["SUSPENDED", admin, "Suspended while we confirm the club's insurance cover."]],
+    slug: "tinkerspace", name: "Tinkerspace", kind: "Makerspace", status: "SUSPENDED", city: "Alappuzha",
+    description: "A shared workshop with tools, workbenches and weekend build nights for members around Alappuzha.",
+    contactEmail: "hello@tinkerspace.demo.test", team: [[owner, "OWNER"]],
+    reviews: [["SUBMITTED", owner, null], ["APPROVED", admin, null], ["SUSPENDED", admin, "Suspended while we confirm the workshop's insurance cover."]],
   },
 ];
 

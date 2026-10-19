@@ -62,7 +62,7 @@ export function MemberCardDeck({ qrSvg }: { qrSvg: string }) {
                   <span className="rounded-full bg-sw-citron px-3 py-0.5 text-caption font-semibold text-sw-ink">Valid</span>
                 </div>
                 <div>
-                  <p className="text-caption opacity-80">Member · {SAMPLE.unit}</p>
+                  <p className="text-caption opacity-80">{SAMPLE.role} · {SAMPLE.unit}</p>
                   <p className="text-[26px] font-extrabold leading-tight tracking-[-0.01em]">{SAMPLE.name}</p>
                   <p className="text-caption opacity-80">{SAMPLE.plan}</p>
                 </div>

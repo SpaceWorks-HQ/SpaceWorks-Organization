@@ -3,6 +3,7 @@ export const SAMPLE = {
   name: "Shaan Shoukath",
   organisation: "SpaceWorks",
   unit: "Kochi chapter",
+  role: "Systems Engineer",
   plan: "Annual membership 2026–27",
   cardNumber: "SW-2026-0001",
   validFrom: "1 Apr 2026",

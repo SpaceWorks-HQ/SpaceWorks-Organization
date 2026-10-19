@@ -615,3 +615,18 @@ chapters, a club with branches. Units are optional; an organisation without any 
 The marketing home `/` is rebuilt as a proper product page: an animated member-card hero, feature cards with
 motion, how-it-works (apply, approval, run), payments and GST, units and reports, self-hosting, FAQ and a final
 call to action. All motion is CSS, runs on transform and opacity only, and stops under `prefers-reduced-motion`.
+
+### Multiple currencies (owner, 2026-10-19)
+Organisations outside India, or Indian ones with members abroad, price in their own currency.
+
+- **Money columns are integer minor units plus an ISO 4217 code.** `amountMinor` + `currency` everywhere a price or payment appears: plans, terms, payments, payment lines, refunds and tax documents. "Paise" in the sections above reads as "minor units".
+- **Supported currencies** live in `lib/money/currencies.ts` with their minor-unit exponent: INR, USD, EUR, GBP, AED, SGD, AUD, CAD, NZD, LKR, BDT, NPR, QAR, SAR, OMR, KWD, BHD, MYR, ZAR, JPY. The three-decimal Gulf currencies and zero-decimal JPY are handled by the exponent, never by assuming two decimals.
+- **The organisation sets a default currency.** Each plan carries its own currency, defaulting to the organisation's, so one organisation can offer, say, an INR plan and a USD overseas plan. A member's term, payment and documents carry the plan's currency at the time.
+- **Tax mode** per organisation (`OrgTaxSettings.mode`):
+  - `GST`: Indian GST exactly as in the Money section. Allowed only for INR plans; plans in other currencies are treated as exports of services (zero-rated, LUT) or carry no GST, chosen per organisation.
+  - `SIMPLE`: one named tax (for example "VAT"), a rate and inclusive or exclusive pricing, for any currency.
+  - `NONE`: receipts without tax.
+- **Gateways.** Stripe takes any supported currency. Razorpay takes INR, plus the international currencies the organisation's Razorpay account has enabled; the plan editor refuses a currency the chosen provider cannot take. Offline payments take any currency.
+- **Formatting** uses `Intl.NumberFormat`, with `en-IN` grouping for INR and `en-GB` otherwise; the organisation can override the locale.
+- **Reports never add different currencies together.** Every money figure is grouped by currency, with the organisation's default currency first. The platform reports show counts across currencies and money per currency.
+- **Document numbering** stays one gapless series per organisation per financial year, whatever the currency.
