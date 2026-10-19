@@ -1,0 +1,136 @@
+import "server-only";
+
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { formatMoney, isCurrencyCode } from "@/lib/money/currencies";
+import { formatCalendarDate, lastValidDay } from "@/lib/membership/periods";
+import { absoluteUrl, sendBrandedEmail } from "./message";
+
+export const MEMBERSHIP_NOTICES = [
+  "application-received",
+  "payment-requested",
+  "approved-pay-now",
+  "activated",
+  "renewal-confirmed",
+  "rejected",
+  "revoked",
+] as const;
+
+export type MembershipNotice = (typeof MEMBERSHIP_NOTICES)[number];
+
+type NoticePayload = { termId: string; organisationId: string; notice: MembershipNotice };
+type ReminderPayload = { termId: string; organisationId: string; key: string };
+
+function record(value: Prisma.JsonValue): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+const isId = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 64;
+
+export function asMembershipNoticePayload(value: Prisma.JsonValue): NoticePayload | null {
+  const p = record(value);
+  if (!p || !isId(p.termId) || !isId(p.organisationId) || !MEMBERSHIP_NOTICES.includes(p.notice as MembershipNotice)) return null;
+  return p as NoticePayload;
+}
+
+export function asReminderPayload(value: Prisma.JsonValue): ReminderPayload | null {
+  const p = record(value);
+  if (!p || !isId(p.termId) || !isId(p.organisationId) || typeof p.key !== "string" || !/^(before|after)-\d{1,3}$/.test(p.key)) return null;
+  return p as ReminderPayload;
+}
+
+async function loadTerm(termId: string, organisationId: string) {
+  return prisma.membershipTerm.findFirst({
+    where: { id: termId, organisationId },
+    include: {
+      member: { select: { name: true, email: true, anonymisedAt: true } },
+      plan: { select: { name: true } },
+      organisation: { select: { name: true, slug: true, timezone: true, locale: true, status: true } },
+    },
+  });
+}
+
+function money(minor: number, currency: string, locale: string | null) {
+  return isCurrencyCode(currency) ? formatMoney(minor, currency, locale ?? undefined) : `${currency} ${minor}`;
+}
+
+/** Tell a member what happened to their application or membership. "dropped" when there is no one to tell. */
+export async function deliverMembershipNotice(payload: NoticePayload, messageId: string): Promise<"sent" | "dropped"> {
+  const term = await loadTerm(payload.termId, payload.organisationId);
+  if (!term || term.member.anonymisedAt) return "dropped";
+  const org = term.organisation;
+  const home = absoluteUrl(`/o/${org.slug}`);
+  const account = absoluteUrl("/account");
+  const due = money(term.priceMinor + term.joiningFeeMinor, term.currency, org.locale);
+  const until = term.endsAt ? formatCalendarDate(lastValidDay(term.endsAt, org.timezone)) : null;
+  const first = term.member.name.split(/\s+/)[0] || term.member.name;
+  const content = {
+    "application-received": {
+      subject: `Your application to ${org.name}`,
+      heading: "Application received",
+      paragraphs: [`Hi ${first}, thanks for applying for ${term.plan.name} with ${org.name}. Their team will review it and we will email you the decision.`],
+      action: { label: `Visit ${org.name}`, url: home },
+    },
+    "payment-requested": {
+      subject: `Complete your ${org.name} membership`,
+      heading: "One step left: payment",
+      paragraphs: [`Hi ${first}, your ${term.plan.name} membership starts once ${due} is paid.`],
+      action: { label: "Pay now", url: absoluteUrl(`/account/pay/${term.id}`) },
+    },
+    "approved-pay-now": {
+      subject: `You're approved for ${org.name}`,
+      heading: "You're approved",
+      paragraphs: [`Hi ${first}, ${org.name} approved your application for ${term.plan.name}. Pay ${due} to start your membership.`],
+      action: { label: "Pay now", url: absoluteUrl(`/account/pay/${term.id}`) },
+    },
+    activated: {
+      subject: `Welcome to ${org.name}`,
+      heading: "Your membership has started",
+      paragraphs: [`Hi ${first}, your ${term.plan.name} membership with ${org.name} is active${until ? ` until ${until}` : ""}.`],
+      action: { label: "See your membership", url: account },
+    },
+    "renewal-confirmed": {
+      subject: `${org.name} renewal confirmed`,
+      heading: "Renewal confirmed",
+      paragraphs: [`Hi ${first}, your ${term.plan.name} renewal is confirmed${until ? `. It runs until ${until}` : ""}. Your card stays the same.`],
+      action: { label: "See your membership", url: account },
+    },
+    rejected: {
+      subject: `Your application to ${org.name}`,
+      heading: "Application not approved",
+      paragraphs: [`Hi ${first}, ${org.name} did not approve your application for ${term.plan.name}.`, ...(term.reason ? [`Their note: ${term.reason}`] : [])],
+      action: { label: `Visit ${org.name}`, url: home },
+    },
+    revoked: {
+      subject: `Your ${org.name} membership`,
+      heading: "Membership revoked",
+      paragraphs: [`Hi ${first}, ${org.name} has revoked your ${term.plan.name} membership.`, ...(term.reason ? [`Their note: ${term.reason}`] : [])],
+      action: { label: "See your account", url: account },
+    },
+  }[payload.notice];
+  await sendBrandedEmail({ to: term.member.email, messageId, ...content });
+  return "sent";
+}
+
+/** A renewal reminder before or after a term ends. Dropped once the member has renewed or the term changed. */
+export async function deliverRenewalReminder(payload: ReminderPayload, messageId: string): Promise<"sent" | "dropped"> {
+  const term = await loadTerm(payload.termId, payload.organisationId);
+  if (!term || term.member.anonymisedAt || !term.endsAt || !["ACTIVE", "GRACE", "LAPSED"].includes(term.status)) return "dropped";
+  const renewed = await prisma.membershipTerm.count({ where: { renewedFromId: term.id, status: { notIn: ["CANCELLED", "EXPIRED", "REJECTED"] } } });
+  if (renewed > 0) return "dropped";
+  const org = term.organisation;
+  const until = formatCalendarDate(lastValidDay(term.endsAt, org.timezone));
+  const after = payload.key.startsWith("after");
+  await sendBrandedEmail({
+    to: term.member.email,
+    messageId,
+    subject: after ? `Your ${org.name} membership has ended` : `Renew your ${org.name} membership`,
+    heading: after ? "Your membership has ended" : "Time to renew",
+    paragraphs: [
+      after
+        ? `Your ${term.plan.name} membership ended on ${until}. Renew now to keep your card valid.`
+        : `Your ${term.plan.name} membership is valid until ${until}. Renew now and the new year starts the day after.`,
+    ],
+    action: { label: "Renew now", url: absoluteUrl("/account") },
+  });
+  return "sent";
+}

@@ -7,6 +7,7 @@ import {
   recordOutboxSchedulerSuccess,
 } from "@/lib/operationalHeartbeat";
 import { purgeExpiredOperationalData } from "@/lib/retention";
+import { runMembershipSweep } from "@/lib/membership/sweep";
 
 const OUTBOX_WORKER_INTERVAL_MS = 60_000;
 
@@ -26,6 +27,8 @@ export async function runOutboxScheduler() {
   // A heartbeat-table issue must not stop otherwise healthy queue processing.
   await recordOutboxSchedulerStarted().catch(() => undefined);
   try {
+    // Membership changes first, so reminders and notices they queue go out in the same pass.
+    await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
     const result = await deliverOutboxBatch();
     const purged = await purgeExpiredOperationalData();
     await recordOutboxSchedulerSuccess(result).catch(() => undefined);

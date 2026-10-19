@@ -56,6 +56,7 @@ model User {
   teamInvitesUsed    TeamInvite[] @relation("TeamInviteUsedBy")
   auditEvents       AuditEvent[]
   organisationReviews OrganisationReview[]
+  members           Member[]
 }
 
 model Account {
@@ -109,6 +110,77 @@ enum OrganisationSource {
   SUPERADMIN
 }
 
+enum OrganisationVisibility {
+  UNLISTED
+  PUBLIC
+}
+
+enum PlanDurationType {
+  /// A fixed number of months from the start date.
+  ROLLING
+  /// Ends on the last day of the organisation's financial year.
+  ORG_YEAR
+  /// Ends on one fixed date for everyone.
+  FIXED_END
+  LIFETIME
+}
+
+enum RejoinFeeRule {
+  NEVER
+  ONCE
+  EACH_JOIN
+  AFTER_LAPSE
+}
+
+enum JoinMode {
+  OPEN
+  APPROVAL
+  INVITE_ONLY
+  CLOSED
+}
+
+enum PaymentTiming {
+  PAY_THEN_ACTIVATE
+  ACTIVATE_THEN_CHARGE
+}
+
+enum PlanFieldType {
+  TEXT
+  LONG_TEXT
+  SELECT
+  DATE
+  EMAIL
+  PHONE
+  NUMBER
+  CHECKBOX
+}
+
+enum MemberSource {
+  JOIN_FORM
+  MANUAL
+  IMPORT
+}
+
+enum TermStatus {
+  PENDING_APPROVAL
+  PENDING_PAYMENT
+  UPCOMING
+  ACTIVE
+  GRACE
+  ENDED
+  LAPSED
+  EXPIRED
+  CANCELLED
+  REJECTED
+  REVOKED
+}
+
+enum TermKind {
+  NEW
+  RENEWAL
+  REINSTATEMENT
+}
+
 enum OrganisationReviewAction {
   SUBMITTED
   RESUBMITTED
@@ -152,6 +224,12 @@ model Organisation {
   managerLimit Int?
   /// Maker-checker for offline payments: the confirmer must differ from the recorder.
   offlineConfirmationRequired Boolean @default(false)
+  /// PUBLIC organisations are listed at /organisations and take applications from anyone.
+  visibility  OrganisationVisibility @default(UNLISTED)
+  /// Names of the unit levels the organisation uses, top first, e.g. ["Region", "District", "Chapter"].
+  unitLevels  String[]           @default([])
+  /// Number formatting override, e.g. "en-IN"; null uses the currency's own locale.
+  locale      String?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
@@ -160,8 +238,15 @@ model Organisation {
   reviews       OrganisationReview[]
   assets        Asset[]
   auditEvents   AuditEvent[]
+  units         OrgUnit[]
+  memberRoles   MemberRole[]
+  plans         MembershipPlan[]
+  members       Member[]
+  terms         MembershipTerm[]
+  counters      OrgCounter[]
 
   @@index([status, createdAt])
+  @@index([visibility, status])
 }
 
 /// Append-only history of an organisation's application and lifecycle decisions.
@@ -211,10 +296,13 @@ model TeamMember {
   userId         String
   organisationId String
   role           TeamRole
+  /// Set to limit this person to one unit's subtree (members, payments and reports there only).
+  unitId         String?
   createdAt      DateTime @default(now())
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  unit         OrgUnit?     @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
 
   @@unique([userId, organisationId])
   @@index([organisationId])
@@ -307,4 +395,299 @@ model Asset {
   @@index([organisationId])
   @@index([createdAt])
   @@index([provider])
+}
+
+/// A part of an organisation: a region, district, chapter or branch. `path` is the ancestor chain of ids
+/// ("rootId/childId/thisId"), so a subtree is one prefix query. Archived, never deleted, once used.
+model OrgUnit {
+  id             String    @id @default(cuid())
+  organisationId String
+  parentId       String?
+  name           String
+  slug           String
+  /// 0 for top-level units; indexes Organisation.unitLevels.
+  level          Int       @default(0)
+  path           String
+  sortOrder      Int       @default(0)
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  parent       OrgUnit?     @relation("UnitTree", fields: [organisationId, parentId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  children     OrgUnit[]    @relation("UnitTree")
+  members      Member[]
+  roles        MemberRole[]
+  planUnits    PlanUnit[]
+  teamMembers  TeamMember[]
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, slug])
+  @@index([organisationId, path])
+}
+
+/// A role an organisation gives its members ("Secretary", "Systems Engineer"). Printed on member cards.
+/// Distinct from team access roles (TeamRole).
+model MemberRole {
+  id             String    @id @default(cuid())
+  organisationId String
+  name           String
+  description    String    @default("")
+  /// One of the brand chip tones: teal, citron, sky, yellow, orange, ink.
+  color          String    @default("teal")
+  sortOrder      Int       @default(0)
+  /// Optional: only offered for members of this unit's subtree.
+  unitId         String?
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  unit         OrgUnit?     @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  assignments  MemberRoleAssignment[]
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, name])
+}
+
+model MembershipPlan {
+  id                  String           @id @default(cuid())
+  organisationId      String
+  name                String
+  slug                String
+  description         String           @default("")
+  /// ISO 4217; every price below is in this currency's minor units.
+  currency            String           @default("INR")
+  durationType        PlanDurationType @default(ORG_YEAR)
+  durationMonths      Int?
+  fixedEndDate        DateTime?
+  priceNewMinor       Int              @default(0)
+  priceRenewalMinor   Int              @default(0)
+  joiningFeeMinor     Int              @default(0)
+  rejoinFeeRule       RejoinFeeRule    @default(NEVER)
+  rejoinAfterDays     Int?
+  graceDays           Int              @default(15)
+  renewalWindowDays   Int              @default(30)
+  reminderDaysBefore  Int[]            @default([30, 7, 0])
+  reminderDaysAfter   Int[]            @default([7])
+  /// A late renewal starts at the old end date (true) or on the day it is paid (false).
+  lateRenewalBackdate Boolean          @default(true)
+  joinMode            JoinMode         @default(APPROVAL)
+  paymentTiming       PaymentTiming    @default(PAY_THEN_ACTIVATE)
+  /// When false, only members of the units in PlanUnit may join.
+  allUnits            Boolean          @default(true)
+  sortOrder           Int              @default(0)
+  archivedAt          DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  fields       PlanField[]
+  units        PlanUnit[]
+  terms        MembershipTerm[]
+  invites      MemberInvite[]
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, slug])
+}
+
+model PlanUnit {
+  organisationId String
+  planId         String
+  unitId         String
+
+  plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
+  unit OrgUnit        @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([planId, unitId])
+}
+
+/// A question on a plan's join form. Answers live in Member.fieldValues under `key`.
+model PlanField {
+  id             String        @id @default(cuid())
+  organisationId String
+  planId         String
+  key            String
+  label          String
+  helpText       String        @default("")
+  type           PlanFieldType @default(TEXT)
+  required       Boolean       @default(false)
+  options        String[]      @default([])
+  /// Only managers see and fill it; never on the public form.
+  adminOnly      Boolean       @default(false)
+  sortOrder      Int           @default(0)
+
+  plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
+
+  @@unique([planId, key])
+}
+
+/// One person in one organisation. Their membership periods are MembershipTerm rows.
+model Member {
+  id             String       @id @default(cuid())
+  organisationId String
+  /// The account that owns this record, once the person signs in with the same verified email.
+  userId         String?
+  email          String
+  name           String
+  phone          String?
+  photoUrl       String?
+  /// Indian state/UT code; place of supply on tax documents.
+  stateCode      String?
+  gstin          String?
+  unitId         String?
+  /// Per-organisation running number, from OrgCounter "member".
+  memberNumber   Int
+  fieldValues    Json         @default("{}")
+  source         MemberSource @default(JOIN_FORM)
+  isMinor        Boolean      @default(false)
+  guardianName   String?
+  guardianEmail  String?
+  guardianPhone  String?
+  notes          String       @default("")
+  anonymisedAt   DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organisation Organisation           @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  unit         OrgUnit?               @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  terms        MembershipTerm[]
+  roles        MemberRoleAssignment[]
+  consents     ConsentRecord[]
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, email])
+  @@unique([organisationId, memberNumber])
+  @@index([userId])
+  @@index([organisationId, unitId])
+  @@index([organisationId, createdAt])
+}
+
+model MemberRoleAssignment {
+  organisationId String
+  memberId       String
+  roleId         String
+  /// The role printed on the member card. At most one per member.
+  isPrimary      Boolean  @default(false)
+  assignedAt     DateTime @default(now())
+
+  member Member     @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+  role   MemberRole @relation(fields: [organisationId, roleId], references: [organisationId, id], onDelete: Cascade)
+
+  @@id([memberId, roleId])
+  @@index([organisationId, roleId])
+}
+
+/// One membership period of one member on one plan. The status is a cache kept aligned by the sweep;
+/// lib/membership/lifecycle.ts deriveStatus is the source of truth for display.
+model MembershipTerm {
+  id              String     @id @default(cuid())
+  organisationId  String
+  memberId        String
+  planId          String
+  status          TermStatus
+  kind            TermKind   @default(NEW)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  graceUntil      DateTime?
+  paymentDueBy    DateTime?
+  /// Price frozen when the term was created, in the plan's currency at that time.
+  currency        String
+  priceMinor      Int
+  joiningFeeMinor Int        @default(0)
+  renewedFromId   String?
+  decidedById     String?
+  decidedAt       DateTime?
+  reason          String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  organisation Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  member       Member            @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+  plan         MembershipPlan    @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Restrict)
+  renewedFrom  MembershipTerm?   @relation("Renewal", fields: [renewedFromId], references: [id], onDelete: SetNull)
+  renewals     MembershipTerm[]  @relation("Renewal")
+  events       TermStatusEvent[]
+  reminders    ReminderLog[]
+
+  @@unique([organisationId, id])
+  @@index([organisationId, status, endsAt])
+  @@index([memberId, planId])
+}
+
+model TermStatusEvent {
+  id             String      @id @default(cuid())
+  organisationId String
+  termId         String
+  from           TermStatus?
+  to             TermStatus
+  /// Domain time of the change, e.g. the term's end date for an expiry the sweep records later.
+  effectiveAt    DateTime
+  recordedAt     DateTime    @default(now())
+  actorUserId    String?
+  cause          String
+
+  term MembershipTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+
+  @@index([termId, recordedAt])
+  @@index([organisationId, effectiveAt])
+}
+
+/// A reminder sent for a term. The unique key makes each reminder go out once, however often the sweep runs.
+model ReminderLog {
+  termId String
+  key    String
+  sentAt DateTime @default(now())
+
+  term MembershipTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+
+  @@id([termId, key])
+}
+
+model ConsentRecord {
+  id             String    @id @default(cuid())
+  organisationId String
+  memberId       String
+  purpose        String
+  noticeVersion  String
+  grantedAt      DateTime  @default(now())
+  withdrawnAt    DateTime?
+  byGuardian     Boolean   @default(false)
+
+  member Member @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+
+  @@index([memberId])
+}
+
+/// Gapless per-organisation counters ("member" numbers now; receipt series join in P7).
+model OrgCounter {
+  organisationId String
+  name           String
+  next           Int    @default(1)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, name])
+}
+
+/// An invitation to join an INVITE_ONLY plan (any plan, in fact). Optionally bound to one email address.
+model MemberInvite {
+  id             String    @id @default(cuid())
+  organisationId String
+  planId         String
+  token          String    @unique
+  /// When set, only this verified email can use the invite.
+  email          String?
+  /// Optional preselected unit for whoever joins with it.
+  unitId         String?
+  /// Uses allowed; 1 for a personal invite, more for a shared link.
+  maxUses        Int       @default(1)
+  uses           Int       @default(0)
+  createdById    String?
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+
+  plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
+
+  @@index([organisationId, planId])
 }
