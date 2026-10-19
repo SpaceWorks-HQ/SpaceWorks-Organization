@@ -588,3 +588,30 @@ Exact definitions go in `docs/REPORTS.md`:
   - Static files for pdf-lib/fontkit: Light and ExtraBold. Noto stays as the Indic/₹ fallback.
   - Readability check: body text set in Light must keep a 16px minimum for body copy, with 14px only for labels, and AA contrast in both themes. The impeccable audit verifies this.
 - **Payments: Razorpay, Stripe and offline**, all in the MVP.
+
+## Owner additions during the build (2026-10-19)
+
+### Organisation units (areas, branches, chapters)
+Many organisations run through sub-parts: a state body with district units, an alumni network with city
+chapters, a club with branches. Units are optional; an organisation without any works exactly as before.
+
+- **Model.** `OrgUnit { id, organisationId, parentId?, name, slug, level, path, sortOrder, archivedAt? }`.
+  - `path` is the materialised ancestor chain (`rootId/childId/…`), so a subtree is one `startsWith` query.
+  - `Organisation.unitLevels String[]` names the levels the organisation uses, e.g. `["Region", "District", "Chapter"]`, at most 4.
+  - Composite FK `(organisationId, parentId)` keeps a unit inside its organisation. Slugs are unique per organisation. Units are archived, never deleted, once they have members.
+- **Members** have one home unit (`Member.unitId?`). The join form asks for it when the organisation has units; `/o/[slug]/u/[unit]/join/[plan]` preselects it.
+- **Plans** are open to the whole organisation or limited to chosen units (`PlanUnit`). Unit-specific pricing is Later.
+- **Unit-scoped team access.** `TeamMember.unitId?`: a manager scoped to a unit sees and acts only within that unit's subtree. Every member and payment query adds the subtree filter, in one helper, next to the organisation scope. Organisation-wide roles keep `unitId` null. Only organisation-wide OWNER and ADMIN manage units and settings.
+- **Reports** (P9) filter by unit, and the daily rollup carries `unitId`, so a district sees its own numbers and the head office sees the roll-up.
+- **Phases.** Models, the unit tree editor (Settings → Units), member and plan scoping and unit-scoped team roles land in **P5**. Unit filters in reports land in **P9**.
+
+### Customisable public organisation page (`/o/[slug]`)
+- **Content.** `OrganisationPage { organisationId, tagline, coverAssetKey?, accentColor, sections Json, publishedAt?, draft Json? }`.
+- **Section types:** about (sanitised Markdown), membership plans (live from the plans), units directory, contact, FAQ, image gallery, links and socials, and a free text block. Each can be shown, hidden and reordered.
+- **Editor** at Settings → Public page, with a live preview, draft and publish, accent colour with a contrast check, and cover and gallery uploads through the existing storage pipeline.
+- **Phases.** A plain `/o/[slug]` (logo, about, plans, join buttons) lands in **P5** so joining works. The editor, sections and draft/publish land in **P8**.
+
+### Landing page revamp (done before P5)
+The marketing home `/` is rebuilt as a proper product page: an animated member-card hero, feature cards with
+motion, how-it-works (apply, approval, run), payments and GST, units and reports, self-hosting, FAQ and a final
+call to action. All motion is CSS, runs on transform and opacity only, and stops under `prefers-reduced-motion`.

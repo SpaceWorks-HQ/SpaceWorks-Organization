@@ -331,7 +331,7 @@
 }
 
 .sw-mode-icon {
-  transition: transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 320ms ease-out;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease-out;
 }
 
 /* BrandLoader (components/brand/BrandLoader.tsx): the three dots hop one after the other;

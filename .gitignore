@@ -98,7 +98,9 @@ prisma/.env
 /screenshots/
 
 # Local design-hook state (Impeccable).
-.impeccable/
+.impeccable/*
+# Design briefs are durable decisions; screenshots, decision pages and caches are not.
+!.impeccable/surfaces/
 
 # Generated rendering workspace (templates/configuration remain committed).
 /frontend/app/
@@ -109,3 +111,4 @@ prisma/.env
 /frontend/postcss.config.mjs
 /frontend/node_modules/
 /frontend/next-env.d.ts
+

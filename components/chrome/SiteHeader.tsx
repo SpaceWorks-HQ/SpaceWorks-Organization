@@ -87,7 +87,7 @@ export function SiteHeader() {
                   <Link href="/login">Sign in</Link>
                 </Button>
                 <Button asChild variant="primary" size="md">
-                  <Link href="/start">Start your organisation</Link>
+                  <Link href="/start">Apply for your organisation</Link>
                 </Button>
               </>
             )}
@@ -133,7 +133,7 @@ export function SiteHeader() {
                   ) : (
                     <>
                       <Button asChild variant="primary" fullWidth>
-                        <Link href="/start" onClick={() => setMenuOpen(false)}>Start your organisation</Link>
+                        <Link href="/start" onClick={() => setMenuOpen(false)}>Apply for your organisation</Link>
                       </Button>
                       <Button asChild variant="secondary" fullWidth>
                         <Link href="/login" onClick={() => setMenuOpen(false)}>Sign in</Link>

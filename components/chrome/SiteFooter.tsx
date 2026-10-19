@@ -7,10 +7,9 @@ import { SpaceWorksProductLogo, SpaceWorksLogo } from "@/components/brand/SpaceW
 import { GITHUB_URL, LICENSE_URL } from "@/lib/openSource";
 
 const publicLinks = [
-  { label: "Discover", href: "/discover" },
-  { label: "Features", href: "/features" },
+  { label: "How it works", href: "/#how-it-works" },
   { label: "Self-host", href: "/#self-host" },
-  { label: "About", href: "/about" },
+  { label: "Apply", href: "/start" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
 ];

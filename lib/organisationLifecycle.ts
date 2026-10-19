@@ -116,7 +116,7 @@ export const REVIEW_ACTION_LABELS: Record<OrganisationReviewAction, string> = {
 export const STATUS_EXPLANATIONS: Record<OrganisationStatus, { title: string; body: string }> = {
   PENDING_REVIEW: {
     title: "Your application is being reviewed",
-    body: "A platform admin will look at it, usually within a few working days. We'll email the owners when there is a decision.",
+    body: "A platform admin will look at it. We'll email the owners when there is a decision.",
   },
   CHANGES_REQUESTED: {
     title: "A few changes are needed",

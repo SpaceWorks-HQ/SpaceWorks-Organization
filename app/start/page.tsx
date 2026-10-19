@@ -13,10 +13,9 @@ export default async function StartPage() {
   return (
     <div className="flex w-full max-w-[640px] flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <p className="text-overline text-ink-muted">New organisation</p>
         <h1 className="text-h1 text-ink">Run your memberships here</h1>
         <p className="text-body-ui text-ink-secondary">
-          Tell us about your organisation. A platform admin reviews each application, usually within a few working days. Once approved,
+          Tell us about your organisation. A platform admin reviews each application and emails you the decision. Once approved,
           you can create membership plans, take payments and issue member cards.
         </p>
       </header>

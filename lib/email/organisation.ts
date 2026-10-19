@@ -48,7 +48,7 @@ export async function deliverOrganisationNotice(payload: NoticePayload, messageI
     received: {
       subject: `We received the application for ${org.name}`,
       heading: "Application received",
-      paragraphs: [`Thanks for applying to run ${org.name} on Space Works Organization. A platform admin will review it, usually within a few working days. We will email you when there is a decision.`],
+      paragraphs: [`Thanks for applying to run ${org.name} on Space Works Organization. A platform admin will review it and we will email you when there is a decision.`],
       action: { label: "View your application", url: application },
     },
     approved: {

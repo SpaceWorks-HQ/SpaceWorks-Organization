@@ -58,3 +58,23 @@ run the tests.
   - Reduced motion is respected.
 - **Copy.** Sentence case, en-GB, and buttons named after their action. No "Oops", and no exclamation marks
   on errors.
+
+## Landing page (`/`)
+
+The marketing home follows one sample member, Shaan Shoukath of SpaceWorks, through a membership year,
+April to March. It shares its vocabulary with the sister Space Works site:
+
+- **Grounds.** Warm Cream sections with the faint isometric box pattern (authored SVG, masked to the edges),
+  a full-bleed Deep Ink band for money and a Maker Teal band for self-hosting.
+- **Type.** Two-line Gilroy ExtraBold headlines ending in full stops. The page's one Unbounded phrase is
+  "One card." in the year section.
+- **Action.** Workshop Orange (`highlight` button) is used only for "Apply for your organisation".
+- **Objects.** Member card, receipt slip, reminder note, proof chips and terminal are flat brand objects.
+  Every one is labelled as a sample; the page makes no customer or usage claims.
+- **Motion** (all in `components/marketing/landing.css`, all still under reduced motion):
+  - The hero fills the first screen; its headline lines slide up and the deck is dealt once.
+  - The card flips to its QR side on demand.
+  - A strip of sample cards slides past under the hero and pauses on hover, focus or its button.
+  - The year ruler fills as the section scrolls.
+  - The receipt prints once and the terminal caret blinks.
+- **Design brief:** `.impeccable/surfaces/app-page-tsx.md`.
