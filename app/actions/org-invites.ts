@@ -53,7 +53,7 @@ export async function createOrgInvite(input: unknown): Promise<
     return { ok: false, error: "You do not have permission to invite people to the team." };
   }
   if (!canManageTeamMember(membership.role, role)) {
-    return { ok: false, error: "Admins can invite treasurers and viewers only." };
+    return { ok: false, error: "Managers can invite treasurers and viewers only." };
   }
 
   // Single-use link. Default expiry: 7 days.

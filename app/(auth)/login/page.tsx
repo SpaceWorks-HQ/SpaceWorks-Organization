@@ -72,11 +72,11 @@ export default async function LoginPage() {
           <div className="relative flex flex-col gap-4 py-6">
             <span className="absolute -right-16 -top-10 size-44 rounded-full bg-sw-citron" />
             <span className="absolute -bottom-2 right-20 size-20 rounded-[16px] bg-sw-sky" />
-            <SampleCard name="Meera Nair" plan="Annual membership · Kochi Makers" number="KM-2026-0142" until="31 Mar 2027" className="relative -rotate-2" />
-            <SampleRow title="Adithya renewed for 2026-27" meta="₹1,200 · UPI · Receipt KM/26-27/00087" className="relative ml-12 max-w-[340px] rotate-1" />
+            <SampleCard name="Shaan Shoukath" plan="Systems Engineer · SpaceWorks" number="SW-2026-0001" until="31 Mar 2027" className="relative -rotate-2" />
+            <SampleRow title="Abhiram NJ renewed for 2026-27" meta="₹1,200 · UPI · Receipt SW/26-27/0002" className="relative ml-12 max-w-[340px] rotate-1" />
             <span className="relative ml-4 inline-flex items-center gap-2 self-start rounded-full bg-sw-citron px-4 py-2 text-label text-sw-ink">
               <Check className="size-4" />
-              Fathima approved
+              Midlaj C approved
             </span>
           </div>
           <p className="relative flex items-end justify-between gap-6">

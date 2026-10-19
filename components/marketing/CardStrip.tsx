@@ -51,12 +51,14 @@ export function CardStrip() {
   return (
     <div className="relative">
       <div className="landing-strip-mask overflow-hidden py-2">
-        <div className="landing-strip flex w-max gap-4" data-paused={paused}>
-          {CARDS.map((card) => <MiniCard key={`${card.org}-${card.name}`} card={card} />)}
-          {/* The second set makes the loop seamless; it repeats the first, so assistive tech skips it. */}
-          <div aria-hidden className="flex gap-4">
-            {CARDS.map((card) => <MiniCard key={`${card.org}-${card.name}-again`} card={card} />)}
-          </div>
+        <div className="landing-strip flex w-max" data-paused={paused}>
+          {/* Four identical sets, each with its trailing gap, so the loop is seamless on any screen width.
+              Only the first set is read by assistive tech. */}
+          {[0, 1, 2, 3].map((copy) => (
+            <div key={copy} aria-hidden={copy > 0 || undefined} className="flex gap-4 pr-4">
+              {CARDS.map((card) => <MiniCard key={`${copy}-${card.org}-${card.name}`} card={card} />)}
+            </div>
+          ))}
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between gap-3 px-4 sm:px-6">

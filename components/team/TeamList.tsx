@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const FILTERS: Array<{ value: TeamFilter; label: string }> = [
   { value: "everyone", label: "Everyone" },
-  { value: "admins", label: "Admins" },
+  { value: "admins", label: "Owners and managers" },
   { value: "others", label: "Treasurers and viewers" },
 ];
 

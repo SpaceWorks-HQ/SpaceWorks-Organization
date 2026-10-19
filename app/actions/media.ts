@@ -44,7 +44,7 @@ export async function uploadOrganisationLogo(
   if (!organisationAllows(org.status, "org.settings")) return { ok: false, error: ORGANISATION_LOCKED };
   const membership = await getMembership(session.user.id, org.id);
   if (!membership || !can(membership.role, "org.settings"))
-    return { ok: false, error: "Only organisation owners and admins can upload logos." };
+    return { ok: false, error: "Only organisation owners and managers can upload logos." };
   const derivative = await imageFile(formData);
   if ("error" in derivative) return { ok: false, error: derivative.error };
   try {

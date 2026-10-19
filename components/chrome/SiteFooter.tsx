@@ -17,10 +17,19 @@ const publicLinks = [
 const linkClasses = "text-body-ui text-ink-secondary underline-offset-4 transition-colors hover:text-ink hover:underline";
 const creditLinkClasses = "underline underline-offset-4 hover:text-ink";
 
+/** Who runs this instance, e.g. "Shaan Shoukath, Systems Engineer". Inlined at build time; empty hides it. */
+const HOSTED_BY = process.env.NEXT_PUBLIC_HOSTED_BY?.trim() ?? "";
+
 /** "Powered by Space Works" plus the AGPL source link (the licence asks every install to offer its source). */
 function SourceCredit() {
   return (
     <>
+      {HOSTED_BY ? (
+        <>
+          <span>Hosted by {HOSTED_BY}</span>
+          <span aria-hidden>·</span>
+        </>
+      ) : null}
       <span>Powered by Space Works</span>
       <span aria-hidden>·</span>
       <span>

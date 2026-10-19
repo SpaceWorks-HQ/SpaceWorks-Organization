@@ -50,7 +50,7 @@ export async function updateTeamRole(
 
   const actor = await getMembership(session.user.id, org.id);
   if (!actor || !canManageTeam(actor)) {
-    return { ok: false, error: "Only owners and admins can change team roles." };
+    return { ok: false, error: "Only owners and managers can change team roles." };
   }
   if (!(await hasRecentAuthentication())) {
     return { ok: false, error: "For security, sign in again before changing team roles." };

@@ -123,7 +123,7 @@ export async function resubmitOrganisationApplication(input: unknown): Promise<A
   if (!organisation) return { ok: false, error: "Organisation not found." };
   const membership = await getMembership(userId, organisation.id);
   if (!membership) return { ok: false, error: "Organisation not found." };
-  if (!can(membership.role, "org.settings")) return { ok: false, error: "Only owners and admins can update the application." };
+  if (!can(membership.role, "org.settings")) return { ok: false, error: "Only owners and managers can update the application." };
 
   const outcome = await prisma.$transaction(async (tx) => {
     // Lock the row so a platform admin's decision and this resubmission can't cross.

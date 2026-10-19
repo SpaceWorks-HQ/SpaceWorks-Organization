@@ -55,7 +55,7 @@
 
 /* ---- Sample-card strip: slides left forever, half its width per loop ---- */
 .landing-strip {
-  animation: landing-slide 60s linear infinite;
+  animation: landing-slide 45s linear infinite;
 }
 .landing-strip[data-paused="true"],
 .landing-strip-mask:hover .landing-strip,
@@ -63,7 +63,8 @@
   animation-play-state: paused;
 }
 @keyframes landing-slide {
-  to { transform: translateX(calc(-50% - 8px)); }
+  /* One set of four: the track is four identical sets, so a quarter is exactly one period. */
+  to { transform: translateX(-25%); }
 }
 .landing-strip-mask {
   mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);

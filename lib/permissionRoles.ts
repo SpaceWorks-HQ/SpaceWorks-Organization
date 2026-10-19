@@ -53,7 +53,7 @@ export function isOrgAdmin(role: TeamRole): boolean {
   return role === "OWNER" || role === "ADMIN";
 }
 
-/** Owners manage everyone; admins manage treasurers and viewers. Nobody manages a more senior role. */
+/** Owners manage everyone; managers (ADMIN) manage treasurers and viewers. Nobody manages a more senior role. */
 export function canManageTeamMember(actor: TeamRole, target: TeamRole): boolean {
   if (actor === "OWNER") return true;
   return actor === "ADMIN" && roleRank[target] < roleRank.ADMIN;
@@ -67,7 +67,7 @@ export function canDeleteOrg(m: TeamMember | null): boolean {
   return m != null && can(m.role, "org.delete");
 }
 
-export const ROLE_LABELS: Record<TeamRole, string> = { OWNER: "Owner", ADMIN: "Admin", TREASURER: "Treasurer", VIEWER: "Viewer" };
+export const ROLE_LABELS: Record<TeamRole, string> = { OWNER: "Owner", ADMIN: "Manager", TREASURER: "Treasurer", VIEWER: "Viewer" };
 
 export const ROLE_DESCRIPTIONS: Record<TeamRole, string> = {
   OWNER: "Everything, including the team and deleting the organisation.",

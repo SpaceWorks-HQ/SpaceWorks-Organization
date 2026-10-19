@@ -60,7 +60,7 @@ export function OrgInviteLinkPanel(props: {
         <MoodTile mood="cheering" size={52} className="sw-face shrink-0" />
         <div className="min-w-0">
           <h2 id="invite-title" className="text-h4 text-ink">Invite people</h2>
-          <p className="text-body-ui text-ink-secondary">Each link adds one person as a member. Make them an admin after they join.</p>
+          <p className="text-body-ui text-ink-secondary">Each link adds one person to the team with the role you choose. You can change it after they join.</p>
         </div>
       </div>
 

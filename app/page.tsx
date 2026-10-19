@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { ArrowUpRight, Check } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { CardStrip } from "@/components/marketing/CardStrip";
-import { CopyCommand } from "@/components/marketing/CopyCommand";
+import { DeployTabs } from "@/components/marketing/DeployTabs";
 import { MemberCardDeck } from "@/components/marketing/MemberCardDeck";
 import { SAMPLE } from "@/components/marketing/sample";
 import { ROLE_LABELS } from "@/lib/permissionRoles";
@@ -11,7 +11,6 @@ import { cn } from "@/lib/cn";
 import "@/components/marketing/landing.css";
 
 const GITHUB = "https://github.com/SpaceWorks-HQ/SpaceWorks-Organization";
-const INSTALL = "curl -fsSL https://raw.githubusercontent.com/SpaceWorks-HQ/SpaceWorks-Organization/main/install.sh | bash";
 const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 
 /** One sample membership year, April to March, in the order it happens. */
@@ -26,7 +25,7 @@ const YEAR: Array<{ when: string; title: string; body: string; proof: React.Reac
     when: "2 Apr",
     title: "Abhiram approves",
     body: "Applications wait in one queue with everything the form asked. Plans that need no vetting take members straight in.",
-    proof: <Proof tone="citron">Approved by Abhiram NJ, admin</Proof>,
+    proof: <Proof tone="citron">Approved by Abhiram NJ, manager</Proof>,
   },
   {
     when: "2 Apr",
@@ -362,44 +361,19 @@ export default async function HomePage() {
 
       {/* Self-hosting. */}
       <section aria-labelledby="self-host" className="scroll-mt-20 bg-sw-teal text-sw-cream">
-        <div className="mx-auto grid w-full max-w-[1160px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:py-28">
-          <div className="flex flex-col gap-8">
+        <div className="mx-auto flex w-full max-w-[1160px] flex-col gap-12 px-4 py-20 sm:px-6 lg:py-28">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeading id="self-host" inverse title={<>Your server.<br />Your members.</>}>
-              The whole platform is open source. Run it for one organisation, or for every organisation in your federation.
+              The whole platform is open source. Run it for one organisation, or for every organisation in your federation, the way that suits you.
             </SectionHeading>
-            <dl className="grid gap-5 sm:grid-cols-2">
-              <div className="flex flex-col gap-1">
-                <dt className="text-label font-semibold">On a VPS</dt>
-                <dd className="text-body-ui text-sw-cream/80">One installer sets up the database, cache, file storage and HTTPS, and keeps backups.</dd>
-              </div>
-              <div className="flex flex-col gap-1">
-                <dt className="text-label font-semibold">In the cloud</dt>
-                <dd className="text-body-ui text-sw-cream/80">Point it at managed Postgres, Redis, S3-compatible storage and an email service.</dd>
-              </div>
-            </dl>
-            <a href={GITHUB} className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-control text-label font-semibold underline-offset-4 hover:underline">
+            <a href={GITHUB} className="sr-fade inline-flex min-h-11 w-fit shrink-0 items-center gap-1.5 rounded-control text-label font-semibold underline-offset-4 hover:underline">
               View on GitHub
               <ArrowUpRight aria-hidden className="size-4" />
             </a>
           </div>
-
-          <figure className="sr-right overflow-hidden rounded-[20px] bg-sw-ink text-sw-cream shadow-[0_30px_70px_-30px_rgb(0_0_0/0.6)]">
-            <div className="flex items-center justify-between gap-3 border-b border-sw-cream/10 px-5 py-3">
-              <figcaption className="text-caption text-sw-cream/70">Terminal preview</figcaption>
-              <CopyCommand command={INSTALL} />
-            </div>
-            <pre className="overflow-x-auto px-5 py-5 font-mono text-[13px] leading-relaxed text-sw-cream/90">
-              <code>
-                <span className="text-sw-citron">$</span>{" curl -fsSL \\\n  https://raw.githubusercontent.com/\\\nSpaceWorks-HQ/SpaceWorks-Organization/\\\nmain/install.sh | bash\n\n"}
-                <span className="text-sw-cream/60">{"Deployment summary\n"}</span>
-                {"  Mode:            bundled (VPS)\n  Database:        PostgreSQL 16\n  Storage:         Silo (S3)\n  HTTPS:           automatic\n  Payments:        Razorpay\n  Backups:         nightly, encrypted\n\n"}
-                <span className="landing-caret inline-block h-4 w-2 translate-y-0.5 bg-sw-citron" />
-              </code>
-            </pre>
-            <p className="border-t border-sw-cream/10 px-5 py-3 text-caption text-sw-cream/70">
-              On a Linux server, as a user with sudo. The installer asks every question first and changes nothing until you confirm.
-            </p>
-          </figure>
+          <div className="sr-right">
+            <DeployTabs />
+          </div>
         </div>
       </section>
 

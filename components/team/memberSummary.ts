@@ -23,11 +23,11 @@ function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-/** "1 owner · 2 admins · 1 treasurer · 3 viewers", skipping roles nobody holds. */
+/** "1 owner · 2 managers · 1 treasurer · 3 viewers", skipping roles nobody holds. */
 export function roleBreakdown(counts: RoleCounts) {
   const parts = [
     counts.OWNER ? plural(counts.OWNER, "owner", "owners") : null,
-    counts.ADMIN ? plural(counts.ADMIN, "admin", "admins") : null,
+    counts.ADMIN ? plural(counts.ADMIN, "manager", "managers") : null,
     counts.TREASURER ? plural(counts.TREASURER, "treasurer", "treasurers") : null,
     counts.VIEWER ? plural(counts.VIEWER, "viewer", "viewers") : null,
   ].filter(Boolean);

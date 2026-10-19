@@ -73,7 +73,7 @@ export default async function OrgApplicationPage({ params }: { params: Promise<{
             <>
               <CardHeader
                 title="What you told us"
-                description={organisation.status === "CHANGES_REQUESTED" && !isManager ? "An owner or admin can update the application." : undefined}
+                description={organisation.status === "CHANGES_REQUESTED" && !isManager ? "An owner or manager can update the application." : undefined}
               />
               <DetailList
                 items={[

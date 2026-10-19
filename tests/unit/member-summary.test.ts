@@ -15,7 +15,7 @@ const counts = (OWNER: number, ADMIN: number, TREASURER: number, VIEWER: number)
 
 describe("team summary helpers", () => {
   it("describes the role mix, skipping empty roles", () => {
-    expect(roleBreakdown(counts(1, 2, 1, 3))).toBe("1 owner · 2 admins · 1 treasurer · 3 viewers");
+    expect(roleBreakdown(counts(1, 2, 1, 3))).toBe("1 owner · 2 managers · 1 treasurer · 3 viewers");
     expect(roleBreakdown(counts(1, 0, 0, 1))).toBe("1 owner · 1 viewer");
     expect(roleBreakdown(counts(0, 0, 0, 0))).toBe("No one yet");
   });

@@ -3,7 +3,7 @@ import "server-only";
 import { OrganisationStatus, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { isIndianStateCode } from "@/lib/indianStates";
-import { isBootstrapSuperAdminEmail } from "@/lib/permissions";
+import { isBootstrapSuperAdminEmail } from "@/lib/superAdminEmail";
 import { organisationSlugSchema } from "@/lib/validators";
 import { enqueueOutbox, type OutboxClient } from "@/lib/outbox";
 import type { OrganisationNotice } from "@/lib/organisationLifecycle";

@@ -66,7 +66,7 @@ export async function updateOrganisation(
     !membership ||
     (membership.role !== "OWNER" && membership.role !== "ADMIN")
   ) {
-    return { ok: false, error: "Only organisation admins can edit settings." };
+    return { ok: false, error: "Only organisation owners and managers can edit settings." };
   }
   if (
     logoUrl &&
