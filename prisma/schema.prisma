@@ -1,0 +1,13 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Runtime queries use DATABASE_URL, which may be a transaction pooler
+  // (for example Supabase Supavisor :6543 with ?pgbouncer=true). Migrations need a
+  // direct or session-mode connection, so the Prisma CLI uses DIRECT_URL.
+  // scripts/prisma.mjs defaults DIRECT_URL to DATABASE_URL when it is unset.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}

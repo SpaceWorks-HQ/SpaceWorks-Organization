@@ -1,17 +1,54 @@
 {
   "name": "spaceworks-organization",
+  "version": "0.1.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
-    "dev:backend": "npm run dev --prefix backend",
-    "dev:frontend": "npm run dev --prefix frontend",
-    "install:all": "npm install --prefix backend && npm install --prefix frontend",
-    "typecheck": "npm run typecheck --prefix frontend && npm run typecheck --prefix backend",
-    "build": "npm run build --prefix frontend && npm run build --prefix backend",
-    "test": "npm run test --prefix frontend && npm run test --prefix backend"
+    "dev": "prisma generate && next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "test:coverage": "vitest run --config vitest.coverage.config.mts --coverage",
+    "test:e2e": "playwright test",
+    "postinstall": "prisma generate",
+    "db:migrate": "node --env-file-if-exists=.env scripts/prisma.mjs migrate dev",
+    "db:deploy": "node --env-file-if-exists=.env scripts/prisma.mjs migrate deploy",
+    "db:status": "node --env-file-if-exists=.env scripts/prisma.mjs migrate status"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitest/coverage-v8": "4.1.12",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.2",
+    "prisma": "6.19.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true,
+    "unrs-resolver@1.12.2": true,
+    "fsevents@2.3.2": true,
+    "fsevents@2.3.3": true
   }
 }

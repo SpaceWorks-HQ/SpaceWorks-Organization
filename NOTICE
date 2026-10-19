@@ -11,5 +11,11 @@ Source code: https://github.com/SpaceWorks-HQ/SpaceWorks-Organization
 SpaceWorks-Organization continues Aarannu, a community digital ID platform by
 Shaan Shoukath.
 
+Parts of the platform layer and the ID-card engine are derived from
+SpaceWorks-Events (https://github.com/SpaceWorks-HQ/SpaceWorks-Events, AGPL-3.0-or-later),
+forked at commit 03186e0. SpaceWorks-Events grew from Yuyu
+(https://github.com/twilighty-abhi/yuyu) by Abhiram N J, which also inspired
+Space Works UX.
+
 The Space Works name, logo and visual identity come from the Space Works
 design system (https://github.com/SpaceWorks-HQ/SpaceWorks-Design).

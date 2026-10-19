@@ -1,4 +1,0 @@
-{
-  "watch": ["vite.config.ts", ".env", "src/lib/"],
-  "ext": "ts,tsx,js,jsx,json,css"
-}
