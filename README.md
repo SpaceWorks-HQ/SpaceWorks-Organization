@@ -1,6 +1,6 @@
-# Aarannu — Community Digital ID Platform
+# SpaceWorks-Organization
 
-A production-grade web application for generating, managing, and distributing digital identity cards within a community or organisation. Supports multiple card templates, custom fields, watermarks, QR codes, Google Sheets import, bulk PDF/ZIP delivery, and configurable rate limits.
+Self-hosted community digital ID platform by Space Works. Generate, manage, and distribute digital identity cards within a community or organisation. Supports multiple card templates, custom fields, watermarks, QR codes, Google Sheets import, bulk PDF/ZIP delivery, and configurable rate limits.
 
 ---
 
@@ -27,18 +27,18 @@ A production-grade web application for generating, managing, and distributing di
 ## Project Structure
 
 ```
-community-id/
-├── frontend/              # React 19 + Vite 7 + Tailwind CSS v4
+SpaceWorks-Organization/
+├── frontend/              # React 19 + Vite 8 + TypeScript + Tailwind CSS v4
 │   ├── src/
-│   │   ├── components/    # IDCard, CorporateCard, EventCard, StudentCard, BulkGenerator, ProtectedRoute
+│   │   ├── components/    # IDCard, CorporateCard, EventCard, StudentCard, BulkGenerator, ProtectedRoute, QRScanner
 │   │   ├── pages/         # Login, Signup, Dashboard, Templates, Generate, TokenDashboard, TokenPurchase
 │   │   ├── lib/           # supabaseClient, proxyImage
 │   │   └── utils/         # downloadHelpers (PDF/ZIP/JPEG/PNG conversion)
 │   ├── public/
-│   ├── developers_debug/  # 8 architecture docs
+│   ├── developers_debug/  # architecture docs
 │   ├── .env.example
 │   └── package.json
-├── backend/               # Express 5 + Supabase Admin SDK + Image Proxy
+├── backend/               # Express 5 + TypeScript + Supabase Admin SDK + Image Proxy
 │   ├── src/
 │   │   ├── config/        # supabaseClient (service-role + anon)
 │   │   ├── routes/        # auth, id, admin, proxy (Google Drive images)
@@ -46,10 +46,12 @@ community-id/
 │   │   ├── services/      # supabaseService, storageService, tokenService
 │   │   ├── middleware/     # verifyToken, checkApproval, checkTokens, rateLimiter, errorHandler
 │   │   ├── utils/         # validators, expiryHelper
-│   │   └── server.js      # Entry point + auto-cleanup scheduler
-│   ├── developers_debug/  # 8 architecture docs
+│   │   └── server.ts      # Entry point + auto-cleanup scheduler
+│   ├── developers_debug/  # architecture docs
 │   ├── .env.example
 │   └── package.json
+├── LICENSE                # GNU AGPL v3.0 or later
+├── NOTICE                 # Attribution / copyright notices
 ├── SUPABASE_SETUP.md      # Complete Supabase setup guide (DB, RLS, Storage, Auth)
 └── README.md              # This file
 ```
@@ -60,8 +62,8 @@ community-id/
 
 ```bash
 # 1 — Clone
-git clone <repo-url> community-id
-cd community-id
+git clone https://github.com/SpaceWorks-HQ/SpaceWorks-Organization.git
+cd SpaceWorks-Organization
 
 # 2 — Backend setup
 cd backend
@@ -117,18 +119,21 @@ cd ../frontend && npm run dev     # http://localhost:5173
 
 ## Tech Stack
 
-| Layer          | Technology                               |
-| -------------- | ---------------------------------------- |
-| Frontend       | React 19, Vite 7, Tailwind CSS v4        |
-| Backend API    | Express 5, Node.js, Supabase Admin SDK   |
-| Database       | Supabase Postgres + RLS                  |
-| Storage        | Supabase Storage (private, signed URLs)  |
-| Card Rendering | html2canvas (2× scale capture)           |
-| PDF Generation | jsPDF (2-page front+back per card)       |
-| ZIP Bundling   | JSZip + file-saver (bulk delivery)       |
-| QR Codes       | qrcode.react (canvas-based)              |
-| Image Proxy    | Express route (Google Drive CORS bypass) |
-| Routing        | react-router-dom v7                      |
+| Layer          | Technology                                                         |
+| -------------- | ------------------------------------------------------------------ |
+| Language       | TypeScript 6 (frontend + backend)                                  |
+| Frontend       | React 19, Vite 8, Tailwind CSS v4, TanStack Query 5                |
+| Backend API    | Express 5, Node.js (tsx / `tsc` → `dist`), Supabase Admin SDK      |
+| Database       | Supabase Postgres + RLS                                            |
+| Storage        | Supabase Storage (private, signed URLs)                            |
+| Card Rendering | html2canvas (2× scale capture)                                     |
+| PDF Generation | jsPDF / pdfkit (2-page front+back per card)                        |
+| ZIP Bundling   | JSZip + file-saver (bulk delivery)                                 |
+| QR Codes       | qrcode.react (embed); BarcodeDetector + zxing-wasm (scan)          |
+| Testing        | Vitest + Testing Library (frontend); Jest + ts-jest (backend)      |
+| Image Proxy    | Express route (Google Drive CORS bypass)                           |
+| Routing        | react-router-dom v7                                                |
+| License        | AGPL-3.0-or-later                                                  |
 
 ---
 
@@ -141,7 +146,7 @@ cd ../frontend && npm run dev     # http://localhost:5173
 | API batch size         | 50           | `BULK_BATCH_LIMIT`      | Backend  |
 | API rate limit         | 100/15m      | Hardcoded               | Backend  |
 | Auth rate limit        | 20/15m       | Hardcoded               | Backend  |
-| ID card expiry         | Configurable | `expiryHelper.js`       | Backend  |
+| ID card expiry         | Configurable | `expiryHelper.ts`       | Backend  |
 | Signed URL TTL         | 1 hour       | Hardcoded               | Both     |
 | Image proxy size cap   | 10 MB        | Hardcoded               | Backend  |
 
@@ -195,4 +200,4 @@ This avoids all CORS issues since the blob is created client-side.
 
 ## License
 
-MIT
+GNU Affero General Public License v3.0 or later — see [LICENSE](LICENSE) and [NOTICE](NOTICE).

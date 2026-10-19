@@ -1,7 +1,4 @@
 {
-  "watch": ["vite.config.js", ".env", "src/lib/"],
-  "ext": "js,json",
-  "ignore": ["node_modules/", "dist/", "public/"],
-  "exec": "vite",
-  "delay": 1000
+  "watch": ["vite.config.ts", ".env", "src/lib/"],
+  "ext": "ts,tsx,js,jsx,json,css"
 }

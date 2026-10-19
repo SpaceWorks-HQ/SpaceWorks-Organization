@@ -25,7 +25,7 @@ Complete setup guide for the Supabase backend services (Database, Auth, Storage,
 
 1. Go to [supabase.com](https://supabase.com) and sign in.
 2. Click **New Project**.
-3. Choose your organization, set a project name (e.g. `community-id`), pick a strong database password, and select a region close to your users.
+3. Choose your organization, set a project name (e.g. `spaceworks-organization`), pick a strong database password, and select a region close to your users.
 4. Wait for the project to be provisioned (~2 minutes).
 
 ---

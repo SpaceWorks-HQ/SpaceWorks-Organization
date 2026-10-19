@@ -1,6 +1,6 @@
-# Aarannu Community ID Platform — Backend API
+# SpaceWorks-Organization — Backend API
 
-Production-grade Express 5 server for the Aarannu Community Digital ID Platform.  
+Production-grade Express 5 + TypeScript server for SpaceWorks-Organization.  
 Connects to Supabase (Auth, Postgres, Storage) and enforces all business rules server-side.  
 Includes a Google Drive image proxy, automated cleanup scheduler, and configurable rate limits.
 

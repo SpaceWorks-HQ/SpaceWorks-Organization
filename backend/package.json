@@ -1,20 +1,24 @@
 {
-  "name": "community-id-backend",
+  "name": "spaceworks-organization-backend",
   "version": "1.0.0",
-  "description": "Production backend API for Community Digital ID Platform",
-  "main": "src/server.js",
+  "description": "Production backend API for SpaceWorks-Organization",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "jest --verbose --forceExit"
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --verbose --forceExit",
+    "prestart": "npm run build"
   },
   "keywords": [
-    "community-id",
+    "spaceworks-organization",
+    "digital-id",
     "supabase",
     "express"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Space Works",
+  "license": "AGPL-3.0-or-later",
   "type": "commonjs",
   "engines": {
     "node": ">=18.0.0"
@@ -32,7 +36,15 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.5.2",
+    "@types/supertest": "^6.0.3",
     "jest": "^29.7.0",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.4",
+    "tsx": "^4.20.5",
+    "typescript": "~6.0.3"
   }
 }

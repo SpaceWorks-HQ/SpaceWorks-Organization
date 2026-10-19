@@ -1,6 +1,6 @@
 # Backend - Developers Debug
 
-Internal backend documentation for the Aarannu Community ID Platform.
+Internal backend documentation for the SpaceWorks-Organization Community ID Platform.
 
 These notes explain not just what the backend does, but why particular responsibilities are kept server-side even in flows that appear heavily frontend-driven.
 

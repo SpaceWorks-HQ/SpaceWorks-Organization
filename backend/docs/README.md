@@ -1,4 +1,4 @@
-# Aarannu Backend — Learning Course
+# SpaceWorks-Organization Backend — Learning Course
 
 **Who this is for:** Someone who wants to go from knowing nothing about backend development to being able to read, modify, and own this codebase confidently — without blindly copying code and hoping it works.
 

@@ -1,6 +1,6 @@
-# Aarannu — Frontend
+# SpaceWorks-Organization — Frontend
 
-React 19 + Vite 7 + Tailwind CSS v4 SPA for the Aarannu Community Digital ID Platform.
+React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA for SpaceWorks-Organization (AGPL-3.0-or-later).
 
 ---
 
@@ -11,6 +11,9 @@ cd frontend
 npm install
 cp .env.example .env
 npm run dev          # http://localhost:5173
+npm run typecheck    # tsc --noEmit
+npm test             # Vitest
+npm run build        # tsc --noEmit && vite build
 ```
 
 ### Environment Variables
@@ -29,13 +32,13 @@ npm run dev          # http://localhost:5173
 
 | Route              | Component          | Description                                                            |
 | ------------------ | ------------------ | ---------------------------------------------------------------------- |
-| `/login`           | Login.jsx          | Email/password + Email OTP authentication                              |
-| `/signup`          | Signup.jsx         | Registration with member profile fields                                |
-| `/templates`       | Templates.jsx      | Choose template, set org name/logo, watermark config                   |
-| `/generate`        | Generate.jsx       | Data entry, Sheets import, preview, PDF/JPEG download, bulk generation |
-| `/dashboard`       | Dashboard.jsx      | View active IDs, signed-URL downloads, expiry countdown                |
-| `/tokens`          | TokenDashboard.jsx | Token balance, 30-day usage sparkline, transaction history             |
-| `/tokens/purchase` | TokenPurchase.jsx  | Browse token packages, purchase tokens                                 |
+| `/login`           | Login.tsx          | Email/password + Email OTP authentication                              |
+| `/signup`          | Signup.tsx         | Registration with member profile fields                                |
+| `/templates`       | Templates.tsx      | Choose template, set org name/logo, watermark config                   |
+| `/generate`        | Generate.tsx       | Data entry, Sheets import, preview, PDF/JPEG download, bulk generation |
+| `/dashboard`       | Dashboard.tsx      | View active IDs, signed-URL downloads, expiry countdown                |
+| `/tokens`          | TokenDashboard.tsx | Token balance, 30-day usage sparkline, transaction history             |
+| `/tokens/purchase` | TokenPurchase.tsx  | Browse token packages, purchase tokens                                 |
 
 ---
 
@@ -43,12 +46,12 @@ npm run dev          # http://localhost:5173
 
 | Component            | Purpose                                                  |
 | -------------------- | -------------------------------------------------------- |
-| `IDCard.jsx`         | Custom/default template (geometric gradient design)      |
-| `CorporateCard.jsx`  | Corporate Standard template (red + blue gradient)        |
-| `EventCard.jsx`      | Event Access template (dark royal theme)                 |
-| `StudentCard.jsx`    | Student ID template (modern academic)                    |
-| `BulkGenerator.jsx`  | Batch generation: upload PNGs + build ZIP of 2-page PDFs |
-| `ProtectedRoute.jsx` | Auth guard HOC — redirects to /login if unauthenticated  |
+| `IDCard.tsx`         | Custom/default template (geometric gradient design)      |
+| `CorporateCard.tsx`  | Corporate Standard template (red + blue gradient)        |
+| `EventCard.tsx`      | Event Access template (dark royal theme)                 |
+| `StudentCard.tsx`    | Student ID template (modern academic)                    |
+| `BulkGenerator.tsx`  | Batch generation: upload PNGs + build ZIP of 2-page PDFs |
+| `ProtectedRoute.tsx` | Auth guard HOC — redirects to /login if unauthenticated  |
 
 All card components use `forwardRef` and accept identical props: `data`, `showBack`, `orgName`, `logoUrl`, `customFields`, `watermark`.
 

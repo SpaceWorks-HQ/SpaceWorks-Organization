@@ -1,6 +1,6 @@
 # Developers Debug - Internal Documentation
 
-This folder contains internal frontend-facing documentation for the Aarannu Community ID Platform.
+This folder contains internal frontend-facing documentation for the SpaceWorks-Organization Community ID Platform.
 
 It is written for:
 
@@ -55,7 +55,7 @@ That sequence gives the clearest view of how signup, approval, generation, and d
 
 | Concept | Best document |
 | --- | --- |
-| Self-serve Aarannu signup | [16_APPROVAL_AND_CLIENT_DELIVERY.md](./16_APPROVAL_AND_CLIENT_DELIVERY.md) |
+| Self-serve SpaceWorks-Organization signup | [16_APPROVAL_AND_CLIENT_DELIVERY.md](./16_APPROVAL_AND_CLIENT_DELIVERY.md) |
 | Org-admin approval flow | [11_CUSTOM_FORM_SYSTEM.md](./11_CUSTOM_FORM_SYSTEM.md) |
 | Protected route approval gating | [16_APPROVAL_AND_CLIENT_DELIVERY.md](./16_APPROVAL_AND_CLIENT_DELIVERY.md) |
 | Bulk generation job runner | [12_BULK_GENERATION.md](./12_BULK_GENERATION.md) |
