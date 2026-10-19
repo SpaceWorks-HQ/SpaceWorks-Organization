@@ -74,9 +74,11 @@ describe("super-admin instance mutations", () => {
     expect(call.update).not.toHaveProperty("smtpPassword");
     expect(call.update).not.toHaveProperty("googleClientSecret");
     expect(call.create.smtpPasswordEncrypted).toBe("encrypted:smtp-plaintext");
-    expect(call.create.googleClientSecretEncrypted).toBe("encrypted:google-plaintext");
+    // Sign-in provider fields belong to their own form now; this action ignores them.
+    expect(call.create).not.toHaveProperty("googleClientSecretEncrypted");
+    expect(call.create).not.toHaveProperty("googleClientId");
     expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
-      metadata: { smtpConfigured: true, googleSsoConfigured: true, backupConfigured: false },
+      metadata: { smtpConfigured: true, backupConfigured: false },
     }));
   });
 

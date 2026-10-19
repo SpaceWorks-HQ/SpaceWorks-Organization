@@ -1,11 +1,9 @@
 import { connection } from "next/server";
-import { getGoogleSsoSettings, isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
+import { isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
+import { enabledOAuthProviders } from "@/lib/oauthProviders";
 
 export async function loadLoginView() {
   await connection();
-  const [accountCreationEnabled, googleSsoConfigured] = await Promise.all([
-    isNewUserRegistrationEnabled(),
-    getGoogleSsoSettings().then(Boolean),
-  ]);
-  return { googleSsoConfigured, accountCreationEnabled };
+  const [accountCreationEnabled, providers] = await Promise.all([isNewUserRegistrationEnabled(), enabledOAuthProviders()]);
+  return { providers, accountCreationEnabled };
 }

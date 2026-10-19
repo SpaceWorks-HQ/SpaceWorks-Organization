@@ -13,7 +13,12 @@ vi.mock("@/lib/db", () => ({ prisma: { user: { findUnique: mocks.find }, account
 vi.mock("bcryptjs", () => ({ default: { compare: mocks.compare } }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: mocks.limit }));
 vi.mock("@/lib/mfa", () => ({ consumeMfaCode: mocks.consume, consumeRecoveryCode: mocks.recovery, decryptMfaSecret: () => "synthetic-seed" }));
-vi.mock("@/lib/instanceSettings", () => ({ getGoogleSsoSettings: async () => null, isNewUserRegistrationEnabled: mocks.registrationEnabled }));
+vi.mock("@/lib/instanceSettings", () => ({ isNewUserRegistrationEnabled: mocks.registrationEnabled }));
+vi.mock("@/lib/oauthProviders", () => ({
+  getOAuthSettings: async () => ({ google: null, github: null, apple: null }),
+  // Mirrors the real Google rule: only an explicit verified claim counts.
+  providerVerifiedEmail: async (_provider: string, profile: { email_verified?: unknown } | null) => profile?.email_verified === true,
+}));
 import "@/lib/auth";
 let config: NextAuthConfig;
 beforeEach(async () => {

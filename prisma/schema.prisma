@@ -371,6 +371,13 @@ model InstanceSetting {
   smtpAllowUnauthenticated Boolean @default(false)
   googleClientId        String?
   googleClientSecretEncrypted String?
+  githubClientId        String?
+  githubClientSecretEncrypted String?
+  /// Apple "Services ID", team id and key id; the .p8 private key is encrypted at rest.
+  appleClientId         String?
+  appleTeamId           String?
+  appleKeyId            String?
+  applePrivateKeyEncrypted String?
   backupProvider        String?
   backupLastSuccessAt   DateTime?
   backupRetentionDays   Int?

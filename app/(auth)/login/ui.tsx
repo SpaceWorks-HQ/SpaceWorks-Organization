@@ -5,40 +5,17 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { SocialSignIn, type SocialProvider } from "@/components/auth/SocialSignIn";
+import { loginErrorMessage, MfaStep } from "@/components/auth/MfaStep";
 import { Callout } from "@/components/ui/display";
 import { Field, Input, PasswordInput } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { safeAuthRedirect } from "@/lib/authRedirect";
 import { resendEmailVerification, signUpWithPassword } from "@/app/actions/auth";
 
-function GoogleMark(props: { size?: number }) {
-  const size = props.size ?? 18;
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden className="block">
-      <path
-        fill="#EA4335"
-        d="M24 9.5c3.54 0 6.48 1.22 8.9 3.4l6.6-6.6C35.52 2.8 30.12 0 24 0 14.64 0 6.56 5.38 2.6 13.2l7.74 6.02C12.2 13.1 17.62 9.5 24 9.5z"
-      />
-      <path
-        fill="#4285F4"
-        d="M47.5 24.5c0-1.62-.14-3.18-.4-4.7H24v9.02h13.2c-.58 3-2.28 5.54-4.84 7.26l7.44 5.78C44.2 37.9 47.5 31.8 47.5 24.5z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M10.34 28.52A14.5 14.5 0 0 1 9.5 24c0-1.58.26-3.1.84-4.52L2.6 13.2A23.94 23.94 0 0 0 0 24c0 3.88.94 7.54 2.6 10.8l7.74-6.28z"
-      />
-      <path
-        fill="#34A853"
-        d="M24 48c6.12 0 11.52-2.02 15.8-5.52l-7.44-5.78c-2.06 1.4-4.7 2.22-8.36 2.22-6.38 0-11.8-3.6-13.66-9.42L2.6 34.8C6.56 42.62 14.64 48 24 48z"
-      />
-      <path fill="none" d="M0 0h48v48H0z" />
-    </svg>
-  );
-}
-
 type Mode = "signin" | "signup";
 
-export function LoginForm({ accountCreationEnabled, googleSsoConfigured }: { accountCreationEnabled: boolean; googleSsoConfigured: boolean }) {
+export function LoginForm({ accountCreationEnabled, providers }: { accountCreationEnabled: boolean; providers: SocialProvider[] }) {
   const router = useRouter();
   const sp = useSearchParams();
   const callbackUrl = useMemo(() => {
@@ -56,12 +33,7 @@ export function LoginForm({ accountCreationEnabled, googleSsoConfigured }: { acc
   const [message, setMessage] = useState<string | null>(() =>
     sp.get("verified") === "1" ? "Email verified. You can now sign in." : null,
   );
-  const [error, setError] = useState<string | null>(() => {
-    const errorCode = sp.get("error");
-    if (errorCode === "google_account_required") return "Create an account with your email and password before continuing with Google.";
-    if (errorCode === "account_creation_disabled") return "New account creation is currently unavailable. Ask an administrator for access or sign in with an existing account.";
-    return errorCode ? "Sign-in could not be completed. Try again, or use your password and verify your email first." : null;
-  });
+  const [error, setError] = useState<string | null>(() => loginErrorMessage(sp.get("error")));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState<string | null>(null);
   const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
@@ -191,34 +163,19 @@ export function LoginForm({ accountCreationEnabled, googleSsoConfigured }: { acc
 
   if (mfaRequired) {
     return (
-      <form className="flex flex-col gap-5" onSubmit={handleSignIn}>
-        <div className="flex flex-col gap-1.5">
-          <h2 className="text-h2 text-ink">Verify it&apos;s you</h2>
-          <p className="text-body-ui text-ink-secondary">Enter the code from your authenticator app for {email}.</p>
-        </div>
-
-        {error ? <Callout tone="danger" role="alert">{error}</Callout> : null}
-
-        <Field label="Authenticator or recovery code" required helperText="Use a six-digit authenticator code or a recovery code.">
-          <Input autoFocus value={totp} onChange={(e) => setTotp(e.target.value)} autoComplete="one-time-code" />
-        </Field>
-
-        <Button type="submit" variant="primary" size="lg" fullWidth disabled={!!loading}>
-          {loading === "credentials" ? "Verifying…" : "Verify and sign in"}
-        </Button>
-
-        <Button
-          variant="quiet"
-          className="self-center"
-          disabled={!!loading}
-          onClick={() => {
-            resetMfaChallenge();
-            resetStatus();
-          }}
-        >
-          Use a different account
-        </Button>
-      </form>
+      <MfaStep
+        email={email}
+        code={totp}
+        onCodeChange={setTotp}
+        error={error}
+        verifying={loading === "credentials"}
+        disabled={!!loading}
+        onSubmit={handleSignIn}
+        onUseDifferentAccount={() => {
+          resetMfaChallenge();
+          resetStatus();
+        }}
+      />
     );
   }
 
@@ -246,33 +203,19 @@ export function LoginForm({ accountCreationEnabled, googleSsoConfigured }: { acc
           </Button>
         ) : null}
 
-        {googleSsoConfigured ? (
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
-            disabled={!!loading}
-            onClick={() => {
-              resetStatus();
-              setLoading("google");
-              void signIn("google", { callbackUrl }).catch(() => {
-                setLoading(null);
-                setError("Google sign-in is temporarily unavailable. Please try again.");
-              });
-            }}
-          >
-            <GoogleMark />
-            Continue with Google
-          </Button>
-        ) : (
-          <Callout tone="info">Google sign-in is not configured for this instance.</Callout>
-        )}
-
-        <div className="flex items-center gap-3 text-sm text-ink-muted">
-          <span aria-hidden className="h-px flex-1 bg-line" />
-          or with email
-          <span aria-hidden className="h-px flex-1 bg-line" />
-        </div>
+        <SocialSignIn
+          providers={providers}
+          callbackUrl={callbackUrl}
+          disabled={!!loading}
+          onStart={(provider) => {
+            resetStatus();
+            setLoading(provider);
+          }}
+          onError={(text) => {
+            setLoading(null);
+            setError(text);
+          }}
+        />
 
         <form className="flex flex-col gap-4" onSubmit={isSignUp ? handleSignUp : handleSignIn}>
           {isSignUp ? (

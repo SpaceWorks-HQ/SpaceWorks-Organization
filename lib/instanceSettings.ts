@@ -23,19 +23,6 @@ export async function isOrganisationApplicationsEnabled(): Promise<boolean> {
   return settings?.allowOrganisationApplications ?? true;
 }
 
-export async function getGoogleSsoSettings() {
-  const settings = await prisma.instanceSetting.findUnique({
-    where: { id: INSTANCE_SETTINGS_ID },
-    select: { googleClientId: true, googleClientSecretEncrypted: true },
-  });
-  const clientId = settings?.googleClientId ?? process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID;
-  const encryptedSecret = settings?.googleClientSecretEncrypted;
-  const clientSecret = encryptedSecret
-    ? decryptInstanceConfigSecret(encryptedSecret)
-    : process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
-  return clientId && clientSecret ? { clientId, clientSecret } : null;
-}
-
 export async function getEmailSettings() {
   const settings = await prisma.instanceSetting.findUnique({
     where: { id: INSTANCE_SETTINGS_ID },

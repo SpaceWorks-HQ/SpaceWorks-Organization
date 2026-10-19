@@ -8,25 +8,23 @@ import { Field, Input, PasswordInput } from "@/components/ui/field";
 import { saveInstanceServiceSettings } from "@/app/actions/instance-settings";
 import { backupInputToIso } from "@/lib/backupTime";
 
-type Values = { emailFrom: string; smtpService: string; smtpHost: string; smtpPort: string; smtpSecure: boolean; smtpUser: string; smtpAllowUnauthenticated: boolean; googleClientId: string; backupProvider: string; backupLastSuccessAt: string; backupRetentionDays: string; hasSmtpPassword: boolean; hasGoogleClientSecret: boolean };
+type Values = { emailFrom: string; smtpService: string; smtpHost: string; smtpPort: string; smtpSecure: boolean; smtpUser: string; smtpAllowUnauthenticated: boolean; backupProvider: string; backupLastSuccessAt: string; backupRetentionDays: string; hasSmtpPassword: boolean };
 type TextKey = { [K in keyof Values]: Values[K] extends string ? K : never }[keyof Values];
 
 export function InstanceServiceSettingsForm({ initial }: { initial: Values }) {
   const [values, setValues] = useState(initial);
   const [smtpPassword, setSmtpPassword] = useState("");
-  const [googleClientSecret, setGoogleClientSecret] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const set = (key: keyof Values, value: string | boolean) => setValues((current) => ({ ...current, [key]: value }));
   function submit() {
     startTransition(async () => {
       setStatus(null);
-      const result = await saveInstanceServiceSettings({ ...values, smtpPort: values.smtpPort || undefined, backupRetentionDays: values.backupRetentionDays || undefined, backupLastSuccessAt: backupInputToIso(values.backupLastSuccessAt), smtpPassword: smtpPassword || undefined, googleClientSecret: googleClientSecret || undefined });
+      const result = await saveInstanceServiceSettings({ ...values, smtpPort: values.smtpPort || undefined, backupRetentionDays: values.backupRetentionDays || undefined, backupLastSuccessAt: backupInputToIso(values.backupLastSuccessAt), smtpPassword: smtpPassword || undefined });
       if (result.ok) {
         // Saved secrets are write-only: clear the inputs and show that a value is kept.
-        setValues((current) => ({ ...current, hasSmtpPassword: current.hasSmtpPassword || Boolean(smtpPassword), hasGoogleClientSecret: current.hasGoogleClientSecret || Boolean(googleClientSecret) }));
+        setValues((current) => ({ ...current, hasSmtpPassword: current.hasSmtpPassword || Boolean(smtpPassword) }));
         setSmtpPassword("");
-        setGoogleClientSecret("");
       }
       setStatus(result.ok ? "Settings saved." : result.error ?? "Could not save settings.");
     });
@@ -61,14 +59,6 @@ export function InstanceServiceSettingsForm({ initial }: { initial: Values }) {
             </Field>
             <CheckboxField label="Use implicit TLS" checked={values.smtpSecure} onCheckedChange={(checked) => set("smtpSecure", checked === true)} />
             <CheckboxField label="Private unauthenticated relay" checked={values.smtpAllowUnauthenticated} onCheckedChange={(checked) => set("smtpAllowUnauthenticated", checked === true)} />
-          </div>
-        </SettingsRow>
-        <SettingsRow title="Google SSO" description="Register the callback URL shown in the deployment documentation with Google.">
-          <div className="flex flex-col gap-4">
-            {field("googleClientId", "OAuth client ID")}
-            <Field label={values.hasGoogleClientSecret ? "OAuth client secret (leave blank to keep current)" : "OAuth client secret"}>
-              <PasswordInput value={googleClientSecret} onChange={(event) => setGoogleClientSecret(event.target.value)} autoComplete="new-password" />
-            </Field>
           </div>
         </SettingsRow>
         <SettingsRow title="Backup configuration" description="This records backup posture only; backup creation and restore access remain with the database provider.">

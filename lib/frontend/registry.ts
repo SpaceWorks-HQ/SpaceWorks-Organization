@@ -46,27 +46,45 @@ import { recordBackupRestoreVerification as endpoint42 } from "@/app/actions/ins
 import { acceptOrganisationInvite as endpoint43 } from "@/app/actions/invite-acceptance";
 import { uploadOrganisationLogo as endpoint44 } from "@/app/actions/media";
 import { uploadAccountProfileImage as endpoint45 } from "@/app/actions/media";
-import { createOrgInvite as endpoint46 } from "@/app/actions/org-invites";
-import { revokeOrgInvite as endpoint47 } from "@/app/actions/org-invites";
-import { updateOrganisation as endpoint48 } from "@/app/actions/org";
-import { checkOrganisationSlug as endpoint49 } from "@/app/actions/organisation-application";
-import { submitOrganisationApplication as endpoint50 } from "@/app/actions/organisation-application";
-import { resubmitOrganisationApplication as endpoint51 } from "@/app/actions/organisation-application";
-import { requestPasswordReset as endpoint52 } from "@/app/actions/password-reset";
-import { confirmPasswordReset as endpoint53 } from "@/app/actions/password-reset";
-import { beginMfaEnrollment as endpoint54 } from "@/app/actions/security";
-import { confirmMfaEnrollment as endpoint55 } from "@/app/actions/security";
-import { disableMfa as endpoint56 } from "@/app/actions/security";
-import { revokeAllSessions as endpoint57 } from "@/app/actions/security";
-import { verifySuperAdminMfa as endpoint58 } from "@/app/actions/super-admin-mfa";
-import { reviewOrganisation as endpoint59 } from "@/app/actions/super-admin-organisations";
-import { setOrganisationLimits as endpoint60 } from "@/app/actions/super-admin-organisations";
-import { createOrganisationForOwner as endpoint61 } from "@/app/actions/super-admin-organisations";
-import { resendOwnerInvite as endpoint62 } from "@/app/actions/super-admin-organisations";
-import { setPlatformAdmin as endpoint63 } from "@/app/actions/super-admin-organisations";
-import { updateTeamRole as endpoint64 } from "@/app/actions/team";
-import { removeTeamMember as endpoint65 } from "@/app/actions/team";
-import { deleteOrganisation as endpoint66 } from "@/app/actions/team";
+import { addMember as endpoint46 } from "@/app/actions/members";
+import { updateMember as endpoint47 } from "@/app/actions/members";
+import { decideMemberships as endpoint48 } from "@/app/actions/members";
+import { renewMember as endpoint49 } from "@/app/actions/members";
+import { extendMembership as endpoint50 } from "@/app/actions/members";
+import { assignMemberRoles as endpoint51 } from "@/app/actions/members";
+import { createOrgInvite as endpoint52 } from "@/app/actions/org-invites";
+import { revokeOrgInvite as endpoint53 } from "@/app/actions/org-invites";
+import { updateOrganisation as endpoint54 } from "@/app/actions/org";
+import { checkOrganisationSlug as endpoint55 } from "@/app/actions/organisation-application";
+import { submitOrganisationApplication as endpoint56 } from "@/app/actions/organisation-application";
+import { resubmitOrganisationApplication as endpoint57 } from "@/app/actions/organisation-application";
+import { requestPasswordReset as endpoint58 } from "@/app/actions/password-reset";
+import { confirmPasswordReset as endpoint59 } from "@/app/actions/password-reset";
+import { createPlan as endpoint60 } from "@/app/actions/plans";
+import { updatePlan as endpoint61 } from "@/app/actions/plans";
+import { setPlanArchived as endpoint62 } from "@/app/actions/plans";
+import { savePlanFields as endpoint63 } from "@/app/actions/plans";
+import { beginMfaEnrollment as endpoint64 } from "@/app/actions/security";
+import { confirmMfaEnrollment as endpoint65 } from "@/app/actions/security";
+import { disableMfa as endpoint66 } from "@/app/actions/security";
+import { revokeAllSessions as endpoint67 } from "@/app/actions/security";
+import { saveSignInProviders as endpoint68 } from "@/app/actions/sign-in-providers";
+import { setUnitLevels as endpoint69 } from "@/app/actions/structure";
+import { createUnit as endpoint70 } from "@/app/actions/structure";
+import { renameUnit as endpoint71 } from "@/app/actions/structure";
+import { setUnitArchived as endpoint72 } from "@/app/actions/structure";
+import { createMemberRole as endpoint73 } from "@/app/actions/structure";
+import { updateMemberRole as endpoint74 } from "@/app/actions/structure";
+import { updateOrganisationPreferences as endpoint75 } from "@/app/actions/structure";
+import { verifySuperAdminMfa as endpoint76 } from "@/app/actions/super-admin-mfa";
+import { reviewOrganisation as endpoint77 } from "@/app/actions/super-admin-organisations";
+import { setOrganisationLimits as endpoint78 } from "@/app/actions/super-admin-organisations";
+import { createOrganisationForOwner as endpoint79 } from "@/app/actions/super-admin-organisations";
+import { resendOwnerInvite as endpoint80 } from "@/app/actions/super-admin-organisations";
+import { setPlatformAdmin as endpoint81 } from "@/app/actions/super-admin-organisations";
+import { updateTeamRole as endpoint82 } from "@/app/actions/team";
+import { removeTeamMember as endpoint83 } from "@/app/actions/team";
+import { deleteOrganisation as endpoint84 } from "@/app/actions/team";
 
 export const viewReaders = Object.freeze({
   "app__account__layout:loadAccountShell": endpoint0,
@@ -117,25 +135,43 @@ export const backendActions = Object.freeze({
   "invite-acceptance:acceptOrganisationInvite": endpoint43,
   "media:uploadOrganisationLogo": endpoint44,
   "media:uploadAccountProfileImage": endpoint45,
-  "org-invites:createOrgInvite": endpoint46,
-  "org-invites:revokeOrgInvite": endpoint47,
-  "org:updateOrganisation": endpoint48,
-  "organisation-application:checkOrganisationSlug": endpoint49,
-  "organisation-application:submitOrganisationApplication": endpoint50,
-  "organisation-application:resubmitOrganisationApplication": endpoint51,
-  "password-reset:requestPasswordReset": endpoint52,
-  "password-reset:confirmPasswordReset": endpoint53,
-  "security:beginMfaEnrollment": endpoint54,
-  "security:confirmMfaEnrollment": endpoint55,
-  "security:disableMfa": endpoint56,
-  "security:revokeAllSessions": endpoint57,
-  "super-admin-mfa:verifySuperAdminMfa": endpoint58,
-  "super-admin-organisations:reviewOrganisation": endpoint59,
-  "super-admin-organisations:setOrganisationLimits": endpoint60,
-  "super-admin-organisations:createOrganisationForOwner": endpoint61,
-  "super-admin-organisations:resendOwnerInvite": endpoint62,
-  "super-admin-organisations:setPlatformAdmin": endpoint63,
-  "team:updateTeamRole": endpoint64,
-  "team:removeTeamMember": endpoint65,
-  "team:deleteOrganisation": endpoint66,
+  "members:addMember": endpoint46,
+  "members:updateMember": endpoint47,
+  "members:decideMemberships": endpoint48,
+  "members:renewMember": endpoint49,
+  "members:extendMembership": endpoint50,
+  "members:assignMemberRoles": endpoint51,
+  "org-invites:createOrgInvite": endpoint52,
+  "org-invites:revokeOrgInvite": endpoint53,
+  "org:updateOrganisation": endpoint54,
+  "organisation-application:checkOrganisationSlug": endpoint55,
+  "organisation-application:submitOrganisationApplication": endpoint56,
+  "organisation-application:resubmitOrganisationApplication": endpoint57,
+  "password-reset:requestPasswordReset": endpoint58,
+  "password-reset:confirmPasswordReset": endpoint59,
+  "plans:createPlan": endpoint60,
+  "plans:updatePlan": endpoint61,
+  "plans:setPlanArchived": endpoint62,
+  "plans:savePlanFields": endpoint63,
+  "security:beginMfaEnrollment": endpoint64,
+  "security:confirmMfaEnrollment": endpoint65,
+  "security:disableMfa": endpoint66,
+  "security:revokeAllSessions": endpoint67,
+  "sign-in-providers:saveSignInProviders": endpoint68,
+  "structure:setUnitLevels": endpoint69,
+  "structure:createUnit": endpoint70,
+  "structure:renameUnit": endpoint71,
+  "structure:setUnitArchived": endpoint72,
+  "structure:createMemberRole": endpoint73,
+  "structure:updateMemberRole": endpoint74,
+  "structure:updateOrganisationPreferences": endpoint75,
+  "super-admin-mfa:verifySuperAdminMfa": endpoint76,
+  "super-admin-organisations:reviewOrganisation": endpoint77,
+  "super-admin-organisations:setOrganisationLimits": endpoint78,
+  "super-admin-organisations:createOrganisationForOwner": endpoint79,
+  "super-admin-organisations:resendOwnerInvite": endpoint80,
+  "super-admin-organisations:setPlatformAdmin": endpoint81,
+  "team:updateTeamRole": endpoint82,
+  "team:removeTeamMember": endpoint83,
+  "team:deleteOrganisation": endpoint84,
 });

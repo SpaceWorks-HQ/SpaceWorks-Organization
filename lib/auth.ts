@@ -3,15 +3,16 @@ import "server-only";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import { authAdapter } from "@/lib/authAdapter";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
+import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { hasVerifiedGoogleEmail } from "@/lib/googleAuth";
 import { consumeRecoveryCode, decryptMfaSecret, consumeMfaCode } from "@/lib/mfa";
 import { isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
-import { getGoogleSsoSettings } from "@/lib/instanceSettings";
+import { getOAuthSettings, providerVerifiedEmail } from "@/lib/oauthProviders";
 
 const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
@@ -33,7 +34,7 @@ class EmailVerificationRequiredError extends CredentialsSignin {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
-  const google = await getGoogleSsoSettings();
+  const oauth = await getOAuthSettings();
   return {
   adapter: authAdapter,
   // Credentials requires JWT sessions; OAuth accounts are still persisted
@@ -55,17 +56,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
     error: "/login",
   },
   providers: [
-    ...(google
-      ? [
-          Google({
-            clientId: google.clientId,
-            clientSecret: google.clientSecret,
-            // Existing password users can use the same verified Google email.
-            // This is deliberately scoped to Google, never arbitrary providers.
-            allowDangerousEmailAccountLinking: true,
-          }),
-        ]
-      : []),
+    // Existing accounts link by email. That is safe only because callbacks.signIn refuses any identity
+    // whose provider has not verified the email.
+    ...(oauth.google ? [Google({ ...oauth.google, allowDangerousEmailAccountLinking: true })] : []),
+    ...(oauth.github ? [GitHub({ ...oauth.github, allowDangerousEmailAccountLinking: true })] : []),
+    ...(oauth.apple ? [Apple({ ...oauth.apple, allowDangerousEmailAccountLinking: true })] : []),
     Credentials({
       id: "credentials",
       name: "Email and password",
@@ -118,16 +113,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider !== "google") return true;
-      if (!hasVerifiedGoogleEmail(profile)) return false;
+      if (!account || account.provider === "credentials") return true;
       const email = user.email?.trim().toLowerCase();
       if (!email) return false;
+      if (!(await providerVerifiedEmail(account.provider, profile, account.access_token, email))) return "/login?error=unverified_email";
       user.email = email;
       const existing = await prisma.user.findUnique({
         where: { email }, select: { passwordHash: true, emailVerified: true },
       });
       // A pre-registered, unverified password must never survive linking to
-      // the real inbox owner's Google identity.
+      // the real inbox owner's provider identity.
       if (existing?.passwordHash && !existing.emailVerified) return false;
 
       const existingAccount = await prisma.account.findUnique({
@@ -136,7 +131,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
       });
       if (existingAccount || existing) return true;
 
-      // A verified Google identity may create an account only while the
+      // A verified provider identity may create an account only while the
       // instance-wide account-creation policy permits it. Returning true lets
       // Auth.js create the adapter user after this callback.
       if (!(await isNewUserRegistrationEnabled())) {
@@ -181,7 +176,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   },
   events: {
     async signIn({ user, account }) {
-      if (account?.provider === "google") {
+      if (account && account.provider !== "credentials") {
         // Auth.js creates or links the adapter user after callbacks.signIn.
         await prisma.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
       }

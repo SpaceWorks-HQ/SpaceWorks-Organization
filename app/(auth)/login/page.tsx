@@ -42,7 +42,7 @@ function SampleRow({ title, meta, className }: { title: string; meta: string; cl
 }
 
 export default async function LoginPage() {
-  const { googleSsoConfigured, accountCreationEnabled } = await loadLoginView();
+  const { providers, accountCreationEnabled } = await loadLoginView();
   return (
     <div className="grid min-h-dvh bg-canvas md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="flex flex-col px-4 py-5 sm:px-8 sm:py-6">
@@ -54,12 +54,12 @@ export default async function LoginPage() {
             <div className="flex flex-col gap-2">
               <h1 className="text-display-l text-ink">Welcome back.</h1>
               <p className="text-body-ui text-ink-secondary">
-                {googleSsoConfigured ? "Sign in with Google or your email and password." : "Sign in with your email and password."}
+                {providers.length ? "Sign in with your email and password, or a linked account." : "Sign in with your email and password."}
                 {accountCreationEnabled ? " New here? Create an account in seconds." : null}
               </p>
             </div>
             <Suspense fallback={<p className="text-body-ui text-ink-muted">Loading sign in…</p>}>
-              <LoginForm accountCreationEnabled={accountCreationEnabled} googleSsoConfigured={googleSsoConfigured} />
+              <LoginForm accountCreationEnabled={accountCreationEnabled} providers={providers} />
             </Suspense>
           </div>
         </main>
