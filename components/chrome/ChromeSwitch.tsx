@@ -6,7 +6,7 @@ import { SiteHeader, BrandHomeLink } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 
 /** Space Works Organization public pages: site header + footer, centred content. */
-const SITE_PREFIXES = ["/privacy", "/terms", "/join/"];
+const SITE_PREFIXES = ["/privacy", "/terms", "/join/", "/organisations"];
 /** Pages that render their own complete chrome (app shell, kiosk, embed, split sign-in). */
 const OWN_CHROME_PREFIXES = ["/dashboard", "/account", "/super-admin", "/login", "/o/"];
 /** Auth flows: minimal header with the logo only. */

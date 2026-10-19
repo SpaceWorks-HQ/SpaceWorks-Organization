@@ -12,8 +12,9 @@ import { cn } from "@/lib/cn";
 export const metadata: Metadata = { title: "Overview", robots: { index: false, follow: false } };
 
 export default async function OrgOverviewPage({ params }: { params: Promise<{ orgSlug: string }> }) {
-  const { organisation, role, teamCount, openInvites, steps } = await loadOrgOverviewView({ params });
+  const { organisation, role, teamCount, openInvites, members, steps } = await loadOrgOverviewView({ params });
   const remaining = steps.filter((step) => !step.done).length;
+  const base = `/dashboard/${organisation.slug}`;
   return (
     <div className="flex flex-col gap-6">
       <OrgPageHeader organisation={organisation} title="Overview" description={`You're ${role === "ADMIN" || role === "OWNER" ? "an" : "a"} ${ROLE_LABELS[role].toLowerCase()} here.`} />
@@ -28,8 +29,16 @@ export default async function OrgOverviewPage({ params }: { params: Promise<{ or
         </Callout>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatTile className="rounded-xl" label="Team" value={teamCount.toLocaleString("en-IN")} hint={openInvites ? `${openInvites} open invite${openInvites === 1 ? "" : "s"}` : "No open invites"} href={`/dashboard/${organisation.slug}/team`} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        {members ? (
+          <>
+            <StatTile className="rounded-xl" label="Active members" value={members.active.toLocaleString("en-IN")} hint="Including those in grace" href={`${base}/members?status=active`} />
+            <StatTile className="rounded-xl" label="Waiting for approval" value={members.approval.toLocaleString("en-IN")} hint={members.approval ? "Review applications" : "Nothing to review"} href={`${base}/members?status=approval`} />
+            <StatTile className="rounded-xl" label="Payment pending" value={members.payment.toLocaleString("en-IN")} hint="Approved, not yet paid" href={`${base}/members?status=payment`} />
+            <StatTile className="rounded-xl" label="Renewals due" value={members.renewals.toLocaleString("en-IN")} hint="Ending in the next 30 days" href={`${base}/members?status=expiring`} />
+          </>
+        ) : null}
+        <StatTile className="rounded-xl" label="Team" value={teamCount.toLocaleString("en-IN")} hint={openInvites ? `${openInvites} open invite${openInvites === 1 ? "" : "s"}` : "No open invites"} href={`${base}/team`} />
       </div>
 
       {steps.length > 0 ? (

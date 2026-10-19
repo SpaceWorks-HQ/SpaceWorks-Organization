@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 
 export default async function OrgMembersPage({ params, searchParams }: Props) {
-  const { organisation, profile, adminView, memberCount, roleCounts, recentCount, recentHint, openInviteCount, rows, membership, memberPages, memberPage, baseUrl, invites, now } = await loadOrgMembersView({ params, searchParams });
+  const { organisation, profile, adminView, memberCount, roleCounts, recentCount, recentHint, openInviteCount, rows, membership, memberPages, memberPage, baseUrl, invites, units, now } = await loadOrgMembersView({ params, searchParams });
   return (
     <div className="flex flex-col gap-7 pb-4">
       <OrgPageHeader
@@ -46,7 +46,7 @@ export default async function OrgMembersPage({ params, searchParams }: Props) {
           {rows.length === 0 ? (
             <EmptyState mood="sleepy">No members found.</EmptyState>
           ) : (
-            <TeamList organisationSlug={organisation.slug} actorRole={membership.role} rows={rows} showEmail={adminView} />
+            <TeamList organisationSlug={organisation.slug} actorRole={membership.role} rows={rows} showEmail={adminView} units={units} />
           )}
           {memberPages > 1 ? (
             <nav aria-label="Member pages" className="flex flex-wrap items-center justify-end gap-2">

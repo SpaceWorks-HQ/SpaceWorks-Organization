@@ -5,6 +5,7 @@ import { EditOrgForm } from "@/components/org/EditOrgForm";
 import { CopyOrganisationUrl } from "@/components/org/CopyOrganisationUrl";
 import { DeleteOrganisationButton } from "@/components/dashboard/DeleteOrganisationButton";
 import { OrgPageHeader } from "@/components/dashboard/org/OrgPageHeader";
+import { SettingsTabs } from "@/components/settings/SettingsTabs";
 import { cn } from "@/lib/cn";
 
 import type { Metadata } from "next";
@@ -27,6 +28,7 @@ export default async function OrgSettingsPage({ params }: Props) {
         title="Settings"
         description={`How ${org.name} appears on its public page and join forms.`}
       />
+      <SettingsTabs slug={org.slug} />
 
       <div className="flex min-w-0 flex-col gap-6">
         <EditOrgForm

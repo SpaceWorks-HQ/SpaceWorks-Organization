@@ -41,14 +41,54 @@
       "id": "app__dashboard__orgSlug__layout:loadOrgSlugShell"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__members__memberId__page",
+      "name": "loadMemberView",
+      "id": "app__dashboard__orgSlug__members__memberId__page:loadMemberView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__members__new__page",
+      "name": "loadAddMembersView",
+      "id": "app__dashboard__orgSlug__members__new__page:loadAddMembersView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__members__page",
+      "name": "loadOrgMembersDirectory",
+      "id": "app__dashboard__orgSlug__members__page:loadOrgMembersDirectory"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__page",
       "name": "loadOrgOverviewView",
       "id": "app__dashboard__orgSlug__page:loadOrgOverviewView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__plans__page",
+      "name": "loadOrgPlansView",
+      "id": "app__dashboard__orgSlug__plans__page:loadOrgPlansView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__plans__planId__page",
+      "name": "loadNewPlanView",
+      "id": "app__dashboard__orgSlug__plans__planId__page:loadNewPlanView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__plans__planId__page",
+      "name": "loadPlanView",
+      "id": "app__dashboard__orgSlug__plans__planId__page:loadPlanView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__money__page",
+      "name": "loadOrgMoneySettingsView",
+      "id": "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__settings__page",
       "name": "loadOrgSettingsView",
       "id": "app__dashboard__orgSlug__settings__page:loadOrgSettingsView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__structure__page",
+      "name": "loadOrgStructureView",
+      "id": "app__dashboard__orgSlug__settings__structure__page:loadOrgStructureView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__team__page",
@@ -64,6 +104,31 @@
       "module": "lib/views/app__join__org__token__page",
       "name": "loadJoinOrganisationView",
       "id": "app__join__org__token__page:loadJoinOrganisationView"
+    },
+    {
+      "module": "lib/views/app__o__orgSlug__join__planSlug__page",
+      "name": "loadJoinView",
+      "id": "app__o__orgSlug__join__planSlug__page:loadJoinView"
+    },
+    {
+      "module": "lib/views/app__o__orgSlug__layout",
+      "name": "loadPublicOrgLayout",
+      "id": "app__o__orgSlug__layout:loadPublicOrgLayout"
+    },
+    {
+      "module": "lib/views/app__o__orgSlug__page",
+      "name": "loadPublicOrgPage",
+      "id": "app__o__orgSlug__page:loadPublicOrgPage"
+    },
+    {
+      "module": "lib/views/app__organisations__page",
+      "name": "loadOrganisationsDirectory",
+      "id": "app__organisations__page:loadOrganisationsDirectory"
+    },
+    {
+      "module": "lib/views/app__sitemap",
+      "name": "loadSitemapOrganisations",
+      "id": "app__sitemap:loadSitemapOrganisations"
     },
     {
       "module": "lib/views/app__start__page",

@@ -2,6 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 
+vi.mock("@/lib/views/app__sitemap", () => ({
+  loadSitemapOrganisations: vi.fn(async () => [{ slug: "kunj-company", updatedAt: new Date("2026-10-01T00:00:00Z") }]),
+}));
+
 describe("robots and sitemap", () => {
   afterEach(() => vi.unstubAllEnvs());
 
@@ -18,8 +22,9 @@ describe("robots and sitemap", () => {
     expect(robots().sitemap).toBeUndefined();
   });
 
-  it("lists the public legal pages", () => {
+  it("lists the public pages and listed organisations", async () => {
     vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://members.test");
-    expect(sitemap().map((entry) => entry.url)).toEqual(expect.arrayContaining(["https://members.test/privacy", "https://members.test/terms"]));
+    const urls = (await sitemap()).map((entry) => entry.url);
+    expect(urls).toEqual(expect.arrayContaining(["https://members.test/privacy", "https://members.test/terms", "https://members.test/organisations", "https://members.test/o/kunj-company"]));
   });
 });

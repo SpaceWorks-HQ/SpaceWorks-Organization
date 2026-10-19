@@ -8,6 +8,7 @@ import { GITHUB_URL, LICENSE_URL } from "@/lib/openSource";
 
 const publicLinks = [
   { label: "How it works", href: "/#how-it-works" },
+  { label: "Organisations", href: "/organisations" },
   { label: "Self-host", href: "/#self-host" },
   { label: "Apply", href: "/start" },
   { label: "Privacy", href: "/privacy" },

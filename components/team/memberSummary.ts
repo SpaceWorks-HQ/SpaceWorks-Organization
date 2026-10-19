@@ -7,6 +7,7 @@ export type TeamMemberRow = {
   name: string | null;
   email?: string | null;
   role: TeamRole;
+  unitId?: string | null;
   joinedLabel: string;
   isYou: boolean;
 };

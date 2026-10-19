@@ -11,6 +11,7 @@ import { indianStateName } from "@/lib/indianStates";
 import { OrganisationDecisionPanel } from "@/components/super-admin/OrganisationDecisionPanel";
 import { OrganisationLimitsForm } from "@/components/super-admin/OrganisationLimitsForm";
 import { OwnerInviteResend } from "@/components/super-admin/OwnerInviteResend";
+import { OrganisationVisibilityToggle } from "@/components/super-admin/OrganisationVisibilityToggle";
 import { ROLE_LABELS } from "@/lib/permissionRoles";
 import { Chip, OrgLogo, StatTile } from "@/components/ui/display";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -45,6 +46,7 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
           <OrganisationStatusChip status={org.status} size="md" />
           <Chip tone="outline" className="tabular-nums">{`/o/${org.slug}`}</Chip>
           <Chip tone="outline">{`${org._count.teamMembers} on the team`}</Chip>
+          {org.visibility === "PUBLIC" ? <Chip tone="outline">Listed publicly</Chip> : null}
         </div>
         {org.status === "ACTIVE" ? (
           <LinkRow links={[{ href: `/o/${org.slug}`, label: "Public page" }, { href: `/dashboard/${org.slug}`, label: "Organisation dashboard" }]} />
@@ -77,7 +79,10 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
           <StatTile className="rounded-xl" label="Team" value={org._count.teamMembers.toLocaleString("en-IN")} />
           <StatTile className="rounded-xl" label="Stored files" value={assetStats._count._all.toLocaleString("en-IN")} hint={formatBytes(assetStats._sum.byteSize == null ? 0 : Number(assetStats._sum.byteSize))} />
         </div>
-        <OrganisationLimitsForm organisationId={org.id} memberLimit={org.memberLimit} managerLimit={org.managerLimit} />
+        <div className="flex flex-col gap-6">
+          <OrganisationVisibilityToggle organisationId={org.id} visibility={org.visibility} active={org.status === "ACTIVE"} />
+          <OrganisationLimitsForm organisationId={org.id} memberLimit={org.memberLimit} managerLimit={org.managerLimit} />
+        </div>
       </div>
 
       <AdminPanel title="Team">

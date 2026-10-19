@@ -13,6 +13,7 @@ import { ColorModeToggle } from "./ColorModeToggle";
 
 const primaryLinks = [
   { href: "/#how-it-works", label: "How it works", guestOnly: false },
+  { href: "/organisations", label: "Organisations", guestOnly: false },
   { href: "/#self-host", label: "Self-host", guestOnly: false },
 ];
 
@@ -52,14 +53,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-line bg-canvas">
       <nav aria-label="Main navigation" className="mx-auto flex h-[76px] max-w-[1160px] items-center gap-2 px-4 sm:gap-8 sm:px-6 xl:px-0">
         <BrandHomeLink />
-        <ul className="hidden items-center gap-1 lg:flex">
+        <ul className="hidden items-center gap-1 xl:flex">
           {links.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-11 items-center rounded-control px-4 text-label text-ink-secondary transition-colors hover:bg-surface hover:text-ink",
+                  "inline-flex min-h-11 items-center whitespace-nowrap rounded-control px-4 text-label text-ink-secondary transition-colors hover:bg-surface hover:text-ink",
                   isActive(link.href) && "bg-surface font-semibold text-ink",
                 )}
               >
@@ -94,13 +95,13 @@ export function SiteHeader() {
           </div>
           <DialogPrimitive.Root open={menuOpen} onOpenChange={setMenuOpen}>
             <DialogPrimitive.Trigger asChild>
-              <IconButton label="Open navigation menu" className="lg:hidden">
+              <IconButton label="Open navigation menu" className="xl:hidden">
                 <MenuIcon />
               </IconButton>
             </DialogPrimitive.Trigger>
             <DialogPrimitive.Portal>
-              <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[rgb(var(--sw-color-ink)/0.48)] lg:hidden" />
-              <DialogPrimitive.Content className="fixed inset-x-0 top-0 z-50 rounded-b-xl border-b border-line bg-canvas p-4 shadow-float focus:outline-none lg:hidden">
+              <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[rgb(var(--sw-color-ink)/0.48)] xl:hidden" />
+              <DialogPrimitive.Content className="fixed inset-x-0 top-0 z-50 rounded-b-xl border-b border-line bg-canvas p-4 shadow-float focus:outline-none xl:hidden">
                 <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
                 <DialogPrimitive.Description className="sr-only">Site navigation links</DialogPrimitive.Description>
                 <div className="mb-3 flex items-center justify-between">
