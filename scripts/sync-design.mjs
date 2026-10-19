@@ -7,7 +7,7 @@
 //   app/styles/tokens.css        tokens/tokens.css re-emitted as --sw-* variables (no @font-face, no
 //                                --color-* names, so Tailwind's own --color-* theme can map onto them)
 //   public/brand/fonts/          the free Gilroy Light/ExtraBold, Unbounded, and their licences
-//   public/brand/logo/           every logo master (SVG)
+//   public/brand/logo/           every logo master (SVG) and the horizontal lockup PNG for email
 //   public/brand/icons/          favicon and app icons
 //   brand/SOURCE.json            the design commit the kit was copied from
 import { execFileSync } from "node:child_process";
@@ -60,7 +60,8 @@ for (const license of FONT_LICENSES) copyFileSync(join(design, "fonts", "LICENSE
 
 const logoOut = join(root, "public", "brand", "logo");
 reset(logoOut);
-for (const file of readdirSync(join(design, "logo")).filter((f) => f.endsWith(".svg"))) {
+// SVG masters for the web; the horizontal lockup PNG (4x) for email clients, which cannot show SVG.
+for (const file of readdirSync(join(design, "logo")).filter((f) => f.endsWith(".svg") || f === "lockup-horizontal.png")) {
   copyFileSync(join(design, "logo", file), join(logoOut, file));
 }
 

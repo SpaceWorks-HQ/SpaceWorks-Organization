@@ -11,3 +11,300 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+// ─── Platform ────────────────────────────────────────────────────────────────
+
+/// Organisation staff roles. OWNER and ADMIN run everything; TREASURER runs money; VIEWER reads.
+enum TeamRole {
+  OWNER
+  ADMIN
+  TREASURER
+  VIEWER
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime?
+  image              String?
+  /// User-selected profile image. Provider images remain in `image` as a fallback.
+  profileImageUrl    String?
+  /// Bcrypt hash for email + password credential logins. Null for OAuth-only users.
+  passwordHash       String?
+  /// Incremented to invalidate all issued JWT sessions after account recovery.
+  sessionVersion     Int       @default(0)
+  /// AES-GCM encrypted TOTP seed. Never expose or log this value.
+  mfaSecretEncrypted String?
+  mfaEnabledAt       DateTime?
+  recoveryCodeHashes String[]  @default([])
+  /// Platform operators. SUPER_ADMIN_EMAIL bootstraps the first one.
+  isSuperAdmin       Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+
+  accounts          Account[]
+  sessions          Session[]
+  teamMembers       TeamMember[]
+  teamInvitesCreated TeamInvite[] @relation("TeamInviteCreatedBy")
+  teamInvitesUsed    TeamInvite[] @relation("TeamInviteUsedBy")
+  auditEvents       AuditEvent[]
+  organisationReviews OrganisationReview[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Tenants ─────────────────────────────────────────────────────────────────
+
+enum OrganisationStatus {
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum OrganisationSource {
+  SELF_SIGNUP
+  SUPERADMIN
+}
+
+enum OrganisationReviewAction {
+  SUBMITTED
+  RESUBMITTED
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  SUSPENDED
+  REACTIVATED
+  ARCHIVED
+  CREATED
+}
+
+/// A tenant. Only ACTIVE organisations can run memberships; see organisationAllows in lib/permissions.ts.
+model Organisation {
+  id          String             @id @default(cuid())
+  name        String
+  slug        String             @unique
+  description String             @default("")
+  logoUrl     String?
+  /// Organisation accent for its public pages (validated #RRGGBB).
+  accentColor String?
+  status      OrganisationStatus @default(PENDING_REVIEW)
+  source      OrganisationSource @default(SELF_SIGNUP)
+  /// Free-text kind, e.g. "Club", "Association", "Student society".
+  kind        String             @default("")
+  contactEmail String?
+  contactPhone String?
+  addressLine String?
+  city        String?
+  /// Indian state/UT code (two letters, e.g. "KL"); also the GST supplier state.
+  stateCode   String?
+  postalCode  String?
+  country     String             @default("IN")
+  website     String?
+  /// Month (1–12) the organisation's financial and membership year starts. India: April.
+  financialYearStartMonth Int    @default(4)
+  timezone    String             @default("Asia/Kolkata")
+  currency    String             @default("INR")
+  /// Set by the platform super-admin; null means the instance default.
+  memberLimit  Int?
+  managerLimit Int?
+  /// Maker-checker for offline payments: the confirmer must differ from the recorder.
+  offlineConfirmationRequired Boolean @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  teamMembers   TeamMember[]
+  teamInvites   TeamInvite[]
+  reviews       OrganisationReview[]
+  assets        Asset[]
+  auditEvents   AuditEvent[]
+
+  @@index([status, createdAt])
+}
+
+/// Append-only history of an organisation's application and lifecycle decisions.
+model OrganisationReview {
+  id             String                   @id @default(cuid())
+  organisationId String
+  action         OrganisationReviewAction
+  actorUserId    String?
+  /// Required for REJECTED and CHANGES_REQUESTED; shown to the applicant.
+  reason         String?
+  /// The application as submitted (name, contact, address, purpose…) at SUBMITTED/RESUBMITTED.
+  applicationSnapshot Json?
+  createdAt      DateTime                 @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  actor        User?        @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, createdAt])
+  @@index([action, createdAt])
+}
+
+model TeamInvite {
+  id              String   @id @default(cuid())
+  organisationId  String
+  token           String   @unique
+  role            TeamRole @default(VIEWER)
+  createdByUserId String?
+  /// Set when the platform super-admin creates an organisation for someone: only this email may accept.
+  email           String?
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+  usedAt          DateTime?
+  usedByUserId    String?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation("TeamInviteCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  usedBy       User?        @relation("TeamInviteUsedBy", fields: [usedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId])
+  @@index([organisationId, createdAt])
+  @@index([usedAt])
+}
+
+/// A person on an organisation's team (managers and staff). Members of the organisation are `Member`.
+model TeamMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organisationId String
+  role           TeamRole
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+}
+
+// ─── Operations ──────────────────────────────────────────────────────────────
+
+model AuditEvent {
+  id               String   @id @default(cuid())
+  action           String
+  actorUserId      String?
+  organisationId   String?
+  targetType       String?
+  targetId         String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  actor          User?         @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  organisation   Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+}
+
+model OutboxMessage {
+  id          String       @id @default(cuid())
+  kind        String
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  attempts    Int          @default(0)
+  availableAt DateTime     @default(now())
+  lockedAt    DateTime?
+  sentAt      DateTime?
+  lastError   String?
+  createdAt   DateTime     @default(now())
+
+  @@index([status, availableAt])
+  @@index([createdAt])
+}
+
+/// One-row operational state for scheduled work, separate from the human audit trail.
+model OperationalHeartbeat {
+  key             String    @id
+  lastStartedAt   DateTime?
+  lastSucceededAt DateTime?
+  lastSent        Int       @default(0)
+  lastFailed      Int       @default(0)
+  lastError       String?
+  updatedAt       DateTime  @updatedAt
+}
+
+/// Instance-wide, super-admin-managed controls. The singleton row is created on first change.
+model InstanceSetting {
+  id                    String   @id
+  allowNewUserSignups   Boolean  @default(true)
+  /// Self-service organisation applications (/start). Super-admins can always create organisations.
+  allowOrganisationApplications Boolean @default(true)
+  emailFrom             String?
+  smtpService           String?
+  smtpHost              String?
+  smtpPort              Int?
+  smtpSecure            Boolean  @default(false)
+  smtpUser              String?
+  smtpPasswordEncrypted String?
+  smtpAllowUnauthenticated Boolean @default(false)
+  googleClientId        String?
+  googleClientSecretEncrypted String?
+  backupProvider        String?
+  backupLastSuccessAt   DateTime?
+  backupRetentionDays   Int?
+  updatedAt             DateTime @updatedAt
+}
+
+/// Stored files (Silo/S3/R2) for per-organisation storage accounting, or the database fallback.
+model Asset {
+  id             String   @id @default(cuid())
+  organisationId String?
+  /// Provider-specific object key (or path).
+  key            String   @unique
+  publicUrl      String?
+  contentType    String?
+  byteSize       BigInt?
+  provider       String   @default("unknown")
+  fileData       Bytes?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+  @@index([createdAt])
+  @@index([provider])
+}

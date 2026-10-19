@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { ChromeSwitch } from "@/components/chrome/ChromeSwitch";
 import { COLOR_MODE_COOKIE, resolveColorMode } from "@/lib/colorMode";
 
 export const metadata: Metadata = {
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     default: "Space Works Organization",
     template: "%s · Space Works Organization",
   },
-  description: "Run your organisation's memberships: plans, members, renewals, payments and ID cards.",
+  description: "Run your organisation's teamMembers: plans, members, renewals, payments and ID cards.",
   applicationName: "Space Works Organization",
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   icons: {
@@ -41,8 +42,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en-GB" className={mode === "dark" ? "dark" : undefined} style={{ colorScheme: mode }} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
-        <a href="#main-content" className="skip-link">Skip to content</a>
-        <Providers initialColorMode={mode}>{children}</Providers>
+        <Providers initialColorMode={mode}>
+          <ChromeSwitch>{children}</ChromeSwitch>
+        </Providers>
       </body>
     </html>
   );

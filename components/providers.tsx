@@ -1,5 +1,7 @@
 "use client";
 
+import { SessionProvider } from "next-auth/react";
+import type { Session } from "next-auth";
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { ToastProvider } from "@/components/feedback/ToastProvider";
@@ -100,7 +102,7 @@ export function useAppColorMode() {
  * Light unless the person picks dark. The choice lives in the swo.theme cookie, which the root layout
  * reads to render the right class on <html>; there is no operating-system fallback.
  */
-export function Providers({ children, initialColorMode }: { children: React.ReactNode; initialColorMode: ColorMode }) {
+export function Providers({ children, initialColorMode, session }: { children: React.ReactNode; initialColorMode: ColorMode; session?: Session | null }) {
   const mode = useSyncExternalStore<ColorMode>(subscribe, readMode, () => initialColorMode);
 
   const colorMode = useMemo(() => {
@@ -123,10 +125,12 @@ export function Providers({ children, initialColorMode }: { children: React.Reac
   }, [mode]);
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <TooltipProvider delayDuration={300}>
-        <ToastProvider>{children}</ToastProvider>
-      </TooltipProvider>
-    </ColorModeContext.Provider>
+    <SessionProvider session={session}>
+      <ColorModeContext.Provider value={colorMode}>
+        <TooltipProvider delayDuration={300}>
+          <ToastProvider>{children}</ToastProvider>
+        </TooltipProvider>
+      </ColorModeContext.Provider>
+    </SessionProvider>
   );
 }
