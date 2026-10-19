@@ -223,6 +223,21 @@
       "id": "invite-acceptance:acceptOrganisationInvite"
     },
     {
+      "module": "app/actions/join",
+      "name": "submitJoin",
+      "id": "join:submitJoin"
+    },
+    {
+      "module": "app/actions/join",
+      "name": "createMemberInvite",
+      "id": "join:createMemberInvite"
+    },
+    {
+      "module": "app/actions/join",
+      "name": "revokeMemberInvite",
+      "id": "join:revokeMemberInvite"
+    },
+    {
       "module": "app/actions/media",
       "name": "uploadOrganisationLogo",
       "id": "media:uploadOrganisationLogo"
@@ -231,6 +246,16 @@
       "module": "app/actions/media",
       "name": "uploadAccountProfileImage",
       "id": "media:uploadAccountProfileImage"
+    },
+    {
+      "module": "app/actions/member-import",
+      "name": "previewMemberImport",
+      "id": "member-import:previewMemberImport"
+    },
+    {
+      "module": "app/actions/member-import",
+      "name": "commitMemberImport",
+      "id": "member-import:commitMemberImport"
     },
     {
       "module": "app/actions/members",
@@ -413,6 +438,11 @@
       "id": "super-admin-organisations:setPlatformAdmin"
     },
     {
+      "module": "app/actions/super-admin-organisations",
+      "name": "setOrganisationVisibility",
+      "id": "super-admin-organisations:setOrganisationVisibility"
+    },
+    {
       "module": "app/actions/team",
       "name": "updateTeamRole",
       "id": "team:updateTeamRole"
@@ -426,6 +456,11 @@
       "module": "app/actions/team",
       "name": "deleteOrganisation",
       "id": "team:deleteOrganisation"
+    },
+    {
+      "module": "app/actions/team",
+      "name": "setTeamMemberUnit",
+      "id": "team:setTeamMemberUnit"
     }
   ]
 }

@@ -134,3 +134,32 @@ export async function deliverRenewalReminder(payload: ReminderPayload, messageId
   });
   return "sent";
 }
+
+type InvitePayload = { inviteId: string; organisationId: string };
+
+export function asMemberInvitePayload(value: Prisma.JsonValue): InvitePayload | null {
+  const p = record(value);
+  if (!p || !isId(p.inviteId) || !isId(p.organisationId)) return null;
+  return p as InvitePayload;
+}
+
+/** Email a personal join invite. Dropped once it is revoked, used or expired. */
+export async function deliverMemberInvite(payload: InvitePayload, messageId: string): Promise<"sent" | "dropped"> {
+  const invite = await prisma.memberInvite.findFirst({
+    where: { id: payload.inviteId, organisationId: payload.organisationId },
+    include: { plan: { select: { name: true, slug: true, organisation: { select: { name: true, slug: true, status: true } } } } },
+  });
+  if (!invite?.email || invite.revokedAt || invite.uses >= invite.maxUses || (invite.expiresAt && invite.expiresAt <= new Date())) return "dropped";
+  const org = invite.plan.organisation;
+  if (org.status !== "ACTIVE") return "dropped";
+  await sendBrandedEmail({
+    to: invite.email,
+    messageId,
+    subject: `You're invited to join ${org.name}`,
+    heading: `Join ${org.name}`,
+    paragraphs: [`${org.name} has invited you to become a member on their ${invite.plan.name} plan. Sign in or create an account with ${invite.email} to accept.`],
+    action: { label: "Accept the invitation", url: absoluteUrl(`/o/${org.slug}/join/${invite.plan.slug}?invite=${invite.token}`) },
+    footnote: invite.expiresAt ? `This invitation works until ${formatCalendarDate({ year: invite.expiresAt.getUTCFullYear(), month: invite.expiresAt.getUTCMonth() + 1, day: invite.expiresAt.getUTCDate() })}.` : undefined,
+  });
+  return "sent";
+}

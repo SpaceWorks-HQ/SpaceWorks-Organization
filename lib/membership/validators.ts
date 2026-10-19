@@ -3,6 +3,9 @@ import { isIndianStateCode } from "@/lib/indianStates";
 import { isCurrencyCode, parseAmount, type CurrencyCode } from "@/lib/money/currencies";
 import { isReservedPlanSlug } from "@/lib/slug";
 
+/** The privacy notice version members agree to when they join. Bump it when the notice changes. */
+export const MEMBERSHIP_NOTICE_VERSION = "2026-10";
+
 const slug = z
   .string()
   .trim()

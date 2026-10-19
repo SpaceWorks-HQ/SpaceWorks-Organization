@@ -192,3 +192,22 @@ export async function setPlatformAdmin(input: unknown): Promise<ActionResult> {
   revalidatePath("/super-admin/security");
   return { ok: true };
 }
+
+const visibilitySchema = z.object({ organisationId: z.string().trim().min(1).max(64), visibility: z.enum(["UNLISTED", "PUBLIC"]) });
+
+/** List an organisation in the public directory (anyone can find it and apply) or take it off. */
+export async function setOrganisationVisibility(input: unknown): Promise<ActionResult> {
+  const session = await superAdmin();
+  if (!session) return TOO_MANY;
+  const parsed = visibilitySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid request." };
+  const org = await prisma.organisation.findUnique({ where: { id: parsed.data.organisationId }, select: { status: true, slug: true } });
+  if (!org) return { ok: false, error: "Organisation not found." };
+  if (parsed.data.visibility === "PUBLIC" && org.status !== "ACTIVE") return { ok: false, error: "Only an active organisation can be listed publicly." };
+  await prisma.organisation.update({ where: { id: parsed.data.organisationId }, data: { visibility: parsed.data.visibility } });
+  await recordAuditEvent({ action: "ORGANISATION_VISIBILITY_CHANGED", actorUserId: session.user.id, organisationId: parsed.data.organisationId, targetType: "Organisation", targetId: parsed.data.organisationId, metadata: { visibility: parsed.data.visibility } });
+  revalidatePath(`/super-admin/orgs/${parsed.data.organisationId}`);
+  revalidatePath("/organisations");
+  revalidatePath(`/o/${org.slug}`);
+  return { ok: true };
+}
