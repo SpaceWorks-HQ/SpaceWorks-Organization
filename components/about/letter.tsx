@@ -2,7 +2,7 @@ import { SpaceWorksLogo } from "@/components/brand/SpaceWorksLogo";
 
 /** The team's note on the About page (components/about/BuildingNote.tsx). */
 export const LETTER = {
-  overline: "A note from the team",
+  overline: "A note from Space Works",
   title: "Members first. Paperwork last.",
   intro: [
     "Space Works started as a room with workbenches and a kettle. The people who kept it going were volunteers: a secretary with a spreadsheet, a treasurer with a folder of UPI screenshots, and a committee that met once a month to work out who had paid.",
@@ -21,15 +21,8 @@ export const LETTER = {
     "If you look after members, for a living or for love, we hope it gives you your evenings back.",
   ],
   closing: ["Fewer spreadsheets.", "More members.", "See you at the next general meeting."],
-  signature: "The Space Works team",
-  team: [
-    { name: "Shaan Shoukath", role: "Systems Engineer" },
-    { name: "Abhiram NJ", role: "Cloud Specialist" },
-    { name: "Abdul Samad MJ", role: "Full Stack Developer" },
-    { name: "Midlaj C", role: "Backend Engineer" },
-    { name: "Ajzal P", role: "Marketing Specialist" },
-    { name: "Anin Arafath", role: "App Developer" },
-  ],
+  signature: "Shaan Shoukath",
+  team: [{ name: "Shaan Shoukath", role: "Systems Engineer, Space Works" }],
 } as const;
 
 /* Materials: paper stays paper in both colour modes. */

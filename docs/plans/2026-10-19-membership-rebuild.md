@@ -35,7 +35,7 @@ SpaceWorks Organization is a self-hostable (AGPL), multi-tenant platform for **m
 - **Brand:** SpaceWorks-Design is the source of truth.
   - Use `tokens/tokens.css`, Gilroy with one Unbounded phrase, and the `.dark` class.
   - No System theme.
-- **UX:** Space Works UX (SpaceWorks-Design `docs/ux-spec.md`, inspired by Yuyu).
+- **UX:** Space Works UX (SpaceWorks-Design `docs/ux-spec.md`).
 - **Data:** no data migration from the old Supabase app, because it has no users.
 - **First step:** commit the uncommitted JS->TS migration on `feat/typescript-agpl-stack` as a checkpoint.
 
@@ -69,7 +69,7 @@ SpaceWorks Organization is a self-hostable (AGPL), multi-tenant platform for **m
 ## Approach: fresh scaffold, then copy modules in
 - Copy files from `git show origin/dev:<path>`.
 - Add Events as the git remote `events-upstream`.
-- Record the source SHA and the Events and Yuyu attribution in the existing `NOTICE`, which gets updated rather than replaced.
+- Record the source SHA and the Events attribution in the existing `NOTICE`, which gets updated rather than replaced.
 - Rename `swe`/`SWE_`/`swevents` to `swo`/`SWO_`/`sworg`.
 - **No split-frontend layer.** Every ported page's loader is rewritten as a plain server-side data function in `lib/data/*`. `trackedRevalidation` becomes `revalidatePath`/`revalidateTag`.
 - **Pin dependency versions explicitly** in `package.json` (latest stable Next 16.x and React 19.x). Do not rely on the Events `chore/update-deps` branch, which exists only locally.
@@ -566,7 +566,7 @@ Exact definitions go in `docs/REPORTS.md`:
 
 ## Risks
 - **Size:** multi-week. Phased, with QA and a commit for each phase.
-- **Licences:** Gilroy (Q5), and Yuyu (no licence; we use only patterns and AGPL Events code, with attribution).
+- **Licences:** Gilroy (Q5), and AGPL Events code, with attribution.
 - **GST:** legally unsettled for clubs, so it is configurable and documented.
 - **Payments:** the platform is never merchant of record.
 - **Payment secrets:** stored in the DB, AES-GCM encrypted with a rotation doc.

@@ -19,7 +19,7 @@ const MOOD_TILES: Record<Mood, { icon: LucideIcon; fill: string }> = {
 };
 
 /**
- * A decorative mood tile: the Space Works stand-in for Yuyu's dot faces in
+ * A decorative mood tile: Space Works' dot faces in
  * empty states, greetings and activity rows. `size` is the tile edge in px.
  * The icon gives a quick wiggle when the tile, or a surrounding `.group`
  * card, is hovered (mouse only; still under reduced motion).

@@ -4,7 +4,7 @@ Space Works Organization follows the **Space Works brand** and **Space Works UX*
 [SpaceWorks-Design](https://github.com/SpaceWorks-HQ/SpaceWorks-Design):
 
 - **Brand:** `tokens/tokens.css` and `docs/ui-brand-spec.md` set colour, type, logo and voice.
-- **UX:** `docs/ux-spec.md` sets patterns P1–P30, layouts L1–L10 and the quality bar. Space Works UX was inspired by Yuyu.
+- **UX:** `docs/ux-spec.md` sets patterns P1–P30, layouts L1–L10 and the quality bar.
 
 ## Where things live
 

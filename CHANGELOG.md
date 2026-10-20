@@ -4,7 +4,27 @@ Releases are published from `main` and titled **`Space Works Organization <versi
 file selects the series; each build is tagged `v<series>-main.<run>.<sha>`, which is what a deployment pins
 to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
-## Unreleased
+## 0.5.0 (2026-10-20)
+
+The first release of the rebuilt platform.
+
+- **Organisations as tenants.** Apply-and-review or platform-created organisations, several managers each,
+  units (regions, districts, chapters) with unit-scoped managers, organisation-defined member roles, public
+  listing and a customisable public page.
+- **Memberships.** Plans with fixed, rolling, financial-year and lifetime terms; open, approval, invite-only
+  and free joining; renewals with grace and reminders; CSV and Google Sheets import; member directory and export.
+- **Payments.** Razorpay and Stripe on each organisation's own account, offline payments with maker-checker,
+  members' "I've paid" UTR claims, refunds, and GST tax invoices, bills of supply, receipts and credit notes
+  with gapless numbering; multiple currencies.
+- **Member cards.** Designed per organisation or plan, issued on activation, PDF and PNG, with a live
+  `/verify` page; bulk exports.
+- **Member portal.** One wallet across organisations, pay, renew and leave, receipts, cards, profile,
+  consent, data export and erasure requests.
+- **Reports.** Membership, renewals, applications, money, tax (GSTR-1 tables and JSON, GSTR-3B), subscription
+  income by financial year, platform reports, a daily rollup and a monthly summary email.
+- **Sign-in.** Email and password, Google, GitHub and Apple; two-step verification for platform admins.
+- **Patch**, the Space Works mascot, and a few easter eggs.
+
 
 - **Deployment parity with SpaceWorks (P10).** One-line `curl … install.sh | bash` installer with `--repo`,
   `setup.sh`/`setup.ps1`, `scripts/update.sh` (pre-update `pg_dump`, `--version`, `--rollback`, automatic

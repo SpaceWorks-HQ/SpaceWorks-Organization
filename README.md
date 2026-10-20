@@ -17,8 +17,7 @@
   <a href="#cloud-mode">Cloud hosting</a> ·
   <a href="#website-on-netlify">Website on Netlify</a> ·
   <a href="#development">Develop locally</a> ·
-  <a href="#documentation">Documentation</a> ·
-  <a href="#credits">Credits</a>
+  <a href="#documentation">Documentation</a>
 </p>
 
 **Space Works Organization is free, open-source membership software from Space Works for clubs,
@@ -253,7 +252,7 @@ bash "$SWO_DIR/scripts/update.sh" --force --version <that release>
 ```bash
 bash scripts/update.sh --force
 # Or deploy an exact published main release:
-bash scripts/update.sh --force --version 0.1.0-main.42.a1b2c3d4e5f6
+bash scripts/update.sh --force --version 0.5.0-main.42.a1b2c3d4e5f6
 # Return to the release that ran before the last update:
 bash scripts/update.sh --rollback
 ```
@@ -328,23 +327,6 @@ npm run dev                 # http://localhost:3000
 
 `npm run lint`, `npm run typecheck`, `npm run test:unit` and `bash scripts/compose-smoke.sh` (the bundled stack
 end to end) are what CI runs. See [CLAUDE.md](CLAUDE.md) for conventions.
-
-## Credits
-
-- **Brand.** The Space Works identity (logo, colours, voice) comes from the
-  [Space Works design system](https://github.com/SpaceWorks-HQ/SpaceWorks-Design).
-- **Patch**, the Space Works painted wolf, is artwork from the design system's
-  [`mascot/`](https://github.com/SpaceWorks-HQ/SpaceWorks-Design/tree/main/mascot), used exactly as drawn. Patch
-  walks the 404 page, keeps empty lists company, trots while pages load and sneezes when an organisation or a
-  member is approved: painted wolves vote by sneezing.
-- **Member IDs** grew out of Aarannu, a community digital ID project by Shaan Shoukath, and the ID cards and
-  platform code come from [Space Works Events](https://github.com/SpaceWorks-HQ/SpaceWorks-Events), itself built
-  on [Yuyu](https://github.com/twilighty-abhi/yuyu) by Abhiram N J. The easter eggs are Yuyu's, in Space Works
-  colours.
-- **The team:** Shaan Shoukath (Systems Engineer), Abhiram NJ (Cloud Specialist), Abdul Samad MJ (Full Stack
-  Developer), Midlaj C (Backend Engineer), Ajzal P (Marketing Specialist) and Anin Arafath (App Developer).
-- **Fonts.** Gilroy by Radomir Tinkov (free release), and [Unbounded](https://github.com/googlefonts/unbounded)
-  by the Unbounded Project Authors under the SIL Open Font License 1.1.
 
 ## Licence
 
