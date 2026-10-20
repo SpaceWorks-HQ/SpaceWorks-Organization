@@ -255,6 +255,8 @@ model Organisation {
   cardExports   CardExportJob[]
   page          OrganisationPage?
   erasureRequests ErasureRequest[]
+  dailyStats    OrgDailyStats[]
+  statsDirtyDays OrgStatsDirtyDay[]
 
   @@index([status, createdAt])
   @@index([visibility, status])
@@ -437,6 +439,7 @@ model OrgUnit {
   roles        MemberRole[]
   planUnits    PlanUnit[]
   teamMembers  TeamMember[]
+  dailyStats   OrgDailyStats[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, slug])
@@ -504,6 +507,7 @@ model MembershipPlan {
   invites      MemberInvite[]
   cardDesigns  CardDesign[]
   cards        MemberCard[]
+  dailyStats   OrgDailyStats[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, slug])
@@ -635,6 +639,7 @@ model MembershipTerm {
 
   @@unique([organisationId, id])
   @@index([organisationId, status, endsAt])
+  @@index([organisationId, createdAt])
   @@index([memberId, planId])
 }
 
@@ -1108,4 +1113,47 @@ model ErasureRequest {
   @@unique([organisationId, id])
   @@index([organisationId, status, createdAt])
   @@index([memberId])
+}
+
+// ─── Reports ─────────────────────────────────────────────────────────────────
+
+/// Daily membership numbers per organisation, unit and plan, written by the sweep (lib/reports/rollup.ts)
+/// and defined in docs/REPORTS.md. `day` is the organisation's local calendar day. `planId` null is the
+/// all-plans row (distinct members); `unitId` null is members without a unit. Every day is recomputable
+/// from source rows: the rollup deletes and rewrites a whole (organisation, day).
+model OrgDailyStats {
+  id             String   @id @default(cuid())
+  organisationId String
+  day            DateTime @db.Date
+  unitId         String?
+  planId         String?
+  /// Stocks at the end of the day.
+  active         Int      @default(0)
+  grace          Int      @default(0)
+  /// Flows during the day.
+  joined         Int      @default(0)
+  reactivated    Int      @default(0)
+  due            Int      @default(0)
+  renewed        Int      @default(0)
+  lapsed         Int      @default(0)
+  applications   Int      @default(0)
+  computedAt     DateTime @default(now())
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  unit         OrgUnit?        @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Cascade, onUpdate: Restrict)
+  plan         MembershipPlan? @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([organisationId, day])
+  @@index([day])
+}
+
+/// Days whose rollup must be rebuilt (a backdated change touched them). The next sweep rebuilds and clears them.
+model OrgStatsDirtyDay {
+  organisationId String
+  day            DateTime @db.Date
+  markedAt       DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, day])
 }

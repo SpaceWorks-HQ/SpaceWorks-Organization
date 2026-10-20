@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireSuperAdminMfa } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
+import { recordThrottledAuditEvent } from "@/lib/audit";
 import { auditRowSelect } from "@/components/super-admin/AuditTable";
 
 type Props = {
@@ -9,7 +10,7 @@ type Props = {
 
 export async function loadSuperAdminOrgDetailView({ params }: Props) {
   // Layout checks don't re-run on client navigation, so every page checks too.
-  await requireSuperAdminMfa();
+  const session = await requireSuperAdminMfa();
   const { orgId } = await params;
 
   const org = await prisma.organisation.findUnique({
@@ -22,6 +23,8 @@ export async function loadSuperAdminOrgDetailView({ params }: Props) {
     },
   });
   if (!org) notFound();
+  // A8: a platform admin opening an organisation's data is audited (once per half hour per organisation).
+  await recordThrottledAuditEvent({ action: "SUPER_ADMIN_ORG_VIEWED", actorUserId: session.user.id, organisationId: org.id, targetType: "Organisation", targetId: org.id, windowMs: 30 * 60_000 }).catch(() => undefined);
 
   const [reviews, members, invites, assetStats, auditEvents] = await Promise.all([
     prisma.organisationReview.findMany({

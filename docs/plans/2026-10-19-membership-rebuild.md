@@ -639,3 +639,24 @@ Organisations outside India, or Indian ones with members abroad, price in their 
 - **Public organisations.** `Organisation.visibility {UNLISTED, PUBLIC}`, set by a platform admin (and requestable by the owner). Public organisations appear in a directory at `/organisations` with search by name, kind and city, and their join page takes applications from anyone. Unlisted ones are reachable only by link. Lands in **P5** (directory and join), with the page editor in **P8**.
 - **Google Sheets import.** Alongside CSV upload, members can be imported from a Google Sheet: paste a share link of a sheet shared as "anyone with the link can view", the server fetches its CSV export (only from `docs.google.com`, size-capped, with SSRF guards), and the same column-mapping and preview flow as CSV runs. Re-importing the same sheet updates matching members by email. Lands in **P5**.
 - **Deployment parity (P10).** No hosting before P10. Then the setup mirrors SpaceWorks exactly: images on GHCR (packages), versioned releases, a README with the one-line `curl … install.sh | bash`, the installer, the update and rollback scripts, and the VPS and cloud modes. The Netlify split stays documented in `docs/DEPLOYMENT_NETLIFY.md`.
+
+### Reports catalogue (owner, 2026-10-20)
+The owner asked for reports "on everything member and finance". P9 widens the B-list after research into membership software (Novi, Wild Apricot, MemberPress, MemberClicks), Indian society and association records, and the GSTR-1 and GSTR-3B layouts. `docs/REPORTS.md` holds every definition and its sources.
+- **Members.**
+  - Growth bridge (start + joined + came back − left − revoked = end).
+  - Renewal rate, first-year renewal rate, churn and retention.
+  - Join-month cohort retention.
+  - Plan mix, unit league table (per subtree, inside the viewer's scope), member roles, join source, state, tenure and record gaps.
+  - Join funnel with drop-off, and time to approve (median and p90).
+  - 13-week expiry calendar, win-back list and register.
+- **Finance**, as pure functions over a fixed data contract (`lib/reports/finance/types.ts`), with loaders in one file (`lib/reports/finance/source.ts`) that P7 wires.
+  - Collected net of refunds by refund date, split by plan, unit, fee, provider and method.
+  - Average per paying member, collection rate and failed payment rate.
+  - Waivers and refunds.
+  - Outstanding with ageing (0–30, 31–60, 61–90, over 90 days past due).
+  - Offline queue and maker-checker stats.
+  - Renewal forecast (30, 60 and 90 days) and forecast vs actual.
+  - Documents register with the gapless check per series and FY.
+  - GSTR-1 tables 4A, 5, 7, 8, 9B, 12 (split B2B/B2C) and 13; GSTR-3B 3.1 and 3.2; monthly liability; SIMPLE-tax summary.
+  - A4 volume per currency, and C3 member payments.
+- **Rules.** Money is always per currency, with the organisation's default first. Every tile drills down to members, and every export is streamed and audited.

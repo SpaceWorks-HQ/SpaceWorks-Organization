@@ -95,6 +95,7 @@ npx vitest run tests/unit/health.test.ts
 - **User content on public pages** is rendered from parsed trees as React text (`lib/publicPage/markdown.ts`),
   never as HTML strings. Links must pass `isSafeLink`; page images must be this organisation's
   `page-images` uploads. The page document schema lives in `lib/publicPage/sections.ts`.
+- **Reports:** definitions live in `docs/REPORTS.md`; the engine in `lib/reports/*` is pure over rows and unit-tested. Finance reports read only `lib/reports/finance/source.ts`. Never add money across currencies.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Operations:**
   - Two images from one `Dockerfile`: `spaceworks-organization-backend` (`runner`; every backend role through

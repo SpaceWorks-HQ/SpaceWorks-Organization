@@ -5,6 +5,8 @@ import { deriveStatus } from "@/lib/membership/lifecycle";
 import { memberWhere, teamScope } from "@/lib/membership/scope";
 
 import { MEMBER_FILTERS, type MemberFilter } from "@/lib/membership/describe";
+import { drillMemberIds, type DrillQuery } from "@/lib/reports/drill";
+import { reportScope, scopedMemberWhere } from "@/lib/reports/source";
 
 const PAGE_SIZE = 50;
 const DAY_MS = 86_400_000;
@@ -21,7 +23,10 @@ function filterWhere(filter: MemberFilter, now: Date): Prisma.MemberWhereInput {
   }
 }
 
-type Search = { status?: string; q?: string; plan?: string; unit?: string; role?: string; page?: string };
+type Search = { status?: string; q?: string; plan?: string; unit?: string; role?: string; page?: string } & DrillQuery;
+
+const DRILL_PARAMS = ["drill", "period", "from", "to", "dunit", "dstate", "dsource", "dtenure"] as const;
+
 
 /** The member directory: counts per filter, one page of members, and their standing on each plan. */
 export async function loadOrgMembersDirectory({ params, searchParams }: { params: Promise<{ orgSlug: string }>; searchParams: Promise<Search> }) {
@@ -33,6 +38,11 @@ export async function loadOrgMembersDirectory({ params, searchParams }: { params
   const filter = (MEMBER_FILTERS as readonly string[]).includes(search.status ?? "") ? (search.status as MemberFilter) : "all";
   const q = (search.q ?? "").trim().slice(0, 100);
   const page = Math.max(1, Math.min(1000, Number.parseInt(search.page ?? "1", 10) || 1));
+  // A report tile's drill-down: the members behind that number, inside this viewer's scope.
+  const calendar = await prisma.organisation.findUniqueOrThrow({ where: { id: organisation.id }, select: { timezone: true, financialYearStartMonth: true } });
+  const drill = search.drill ? await drillMemberIds(scope, search, calendar, now) : null;
+  // A report's unit filter is a subtree (and never wider than the viewer's own scope).
+  const subtree = !drill && search.dunit ? (await reportScope(scope, { unit: search.dunit })).unitPath : null;
 
   const base: Prisma.MemberWhereInput = {
     ...memberWhere(scope),
@@ -41,6 +51,8 @@ export async function loadOrgMembersDirectory({ params, searchParams }: { params
     ...(search.plan ? { terms: { some: { planId: search.plan } } } : {}),
     ...(search.unit ? { unitId: search.unit } : {}),
     ...(search.role ? { roles: { some: { roleId: search.role } } } : {}),
+    ...(drill ? { id: { in: drill.memberIds } } : {}),
+    ...(subtree ? { AND: [scopedMemberWhere({ organisationId: organisation.id, unitPath: subtree })] } : {}),
   };
   const where: Prisma.MemberWhereInput = { AND: [base, filterWhere(filter, now)] };
 
@@ -103,5 +115,6 @@ export async function loadOrgMembersDirectory({ params, searchParams }: { params
     canExport: can(membership.role, "members.export"),
     canManageCards: can(membership.role, "cards.manage"),
     scopedUnit: scope.unitId !== null,
+    drill: drill || subtree ? { label: drill?.label ?? "Unit and everything under it", params: Object.fromEntries(DRILL_PARAMS.flatMap((key) => (search[key] ? [[key, String(search[key])]] : []))) as Record<string, string> } : null,
   };
 }

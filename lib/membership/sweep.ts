@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma, type TermStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { enqueueOutbox } from "@/lib/outbox";
+import { runStatsRollup } from "@/lib/reports/rollup";
 import { statusAt } from "./lifecycle";
 
 const BATCH = 500;
@@ -101,9 +102,13 @@ export async function queueRenewalReminders(now = new Date()) {
   return { queued };
 }
 
-/** One full membership pass, run by the background worker. */
+/** One full membership pass, run by the background worker. The report rollup runs last, on settled statuses. */
 export async function runMembershipSweep(now = new Date()) {
   const statuses = await sweepTermStatuses(now);
   const reminders = await queueRenewalReminders(now);
-  return { ...statuses, ...reminders };
+  const rollup = await runStatsRollup(now).catch(() => {
+    console.error("[membership sweep] report rollup failed");
+    return { rollupDays: 0 };
+  });
+  return { ...statuses, ...reminders, ...rollup };
 }
