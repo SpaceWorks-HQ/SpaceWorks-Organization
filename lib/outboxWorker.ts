@@ -8,6 +8,7 @@ import {
 } from "@/lib/operationalHeartbeat";
 import { purgeExpiredOperationalData } from "@/lib/retention";
 import { runMembershipSweep } from "@/lib/membership/sweep";
+import { runCardExportJobs } from "@/lib/cards/exportJobs";
 
 const OUTBOX_WORKER_INTERVAL_MS = 60_000;
 
@@ -30,6 +31,8 @@ export async function runOutboxScheduler() {
     // Membership changes first, so reminders and notices they queue go out in the same pass.
     await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
     const result = await deliverOutboxBatch();
+    // Bulk card exports (background PDF/ZIP builds) after mail, so a long render never delays email.
+    await runCardExportJobs().catch(() => console.error("[card exports] run failed"));
     const purged = await purgeExpiredOperationalData();
     await recordOutboxSchedulerSuccess(result).catch(() => undefined);
     return { ...result, purged };

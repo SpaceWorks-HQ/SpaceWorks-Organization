@@ -244,6 +244,9 @@ model Organisation {
   members       Member[]
   terms         MembershipTerm[]
   counters      OrgCounter[]
+  cardDesigns   CardDesign[]
+  memberCards   MemberCard[]
+  cardExports   CardExportJob[]
 
   @@index([status, createdAt])
   @@index([visibility, status])
@@ -491,6 +494,8 @@ model MembershipPlan {
   units        PlanUnit[]
   terms        MembershipTerm[]
   invites      MemberInvite[]
+  cardDesigns  CardDesign[]
+  cards        MemberCard[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, slug])
@@ -560,6 +565,7 @@ model Member {
   terms        MembershipTerm[]
   roles        MemberRoleAssignment[]
   consents     ConsentRecord[]
+  cards        MemberCard[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, email])
@@ -697,4 +703,90 @@ model MemberInvite {
   plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
 
   @@index([organisationId, planId])
+}
+
+// ─── Member cards ────────────────────────────────────────────────────────────
+
+/// A member card design: the organisation default (planId null) or one plan's own. `design` holds the
+/// front and back (lib/cards/design/presets.ts normalises it on every read).
+model CardDesign {
+  id             String   @id @default(cuid())
+  organisationId String
+  planId         String?
+  design         Json
+  /// Prefix of printed card numbers, e.g. "SWO" in SWO-0042. Read from the organisation default only.
+  numberPrefix   String
+  /// Watermark image (a managed upload) for designs that use one.
+  watermarkUrl   String?
+  updatedById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  plan         MembershipPlan? @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, planId])
+}
+
+/// A member's card for one plan. The verify token sits in the QR and is unguessable; renewals keep the
+/// card and its QR, because /verify reads the membership live. Reissuing revokes the old card and issues
+/// a new token, so an old QR stops verifying.
+model MemberCard {
+  id             String    @id @default(cuid())
+  organisationId String
+  memberId       String
+  planId         String
+  cardNumber     String
+  /// 32 random bytes, base64url. Treat as a bearer value: never log it.
+  verifyToken    String    @unique
+  issuedAt       DateTime  @default(now())
+  issuedById     String?
+  revokedAt      DateTime?
+  revokedById    String?
+  /// REISSUED (replaced by a newer card), REVOKED (by a manager) or MEMBERSHIP_ENDED.
+  revokedReason  String?
+  lastEmailedAt  DateTime?
+
+  organisation Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  member       Member         @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+  plan         MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Restrict)
+
+  @@unique([organisationId, id])
+  @@index([memberId, planId])
+  @@index([organisationId, issuedAt])
+}
+
+enum CardExportStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+/// A bulk card export (one PDF, or a ZIP of PDFs) built in the background and stored privately.
+model CardExportJob {
+  id             String           @id @default(cuid())
+  organisationId String
+  requestedById  String?
+  /// "sheet" (A4 sheets with crop marks), "cards" (one card per page) or "zip" (one PDF per member).
+  format         String
+  /// The member filter chosen on the members page, plus the requester's unit scope.
+  filter         Json
+  status         CardExportStatus @default(PENDING)
+  attempts       Int              @default(0)
+  cardCount      Int?
+  storageKey     String?
+  byteSize       Int?
+  error          String?
+  lockedAt       DateTime?
+  createdAt      DateTime         @default(now())
+  finishedAt     DateTime?
+  /// The file is deleted after this; the row stays as a record of the export.
+  expiresAt      DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([organisationId, createdAt])
 }

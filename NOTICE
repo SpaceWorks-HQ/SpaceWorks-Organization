@@ -19,3 +19,8 @@ Space Works UX.
 
 The Space Works name, logo and visual identity come from the Space Works
 design system (https://github.com/SpaceWorks-HQ/SpaceWorks-Design).
+
+Member cards fall back to Noto Sans, Noto Sans Malayalam and Noto Sans Devanagari
+(public/fonts/noto, from the Fontsource 5.3.0 packages) for characters the brand
+font lacks. Copyright 2022 The Noto Project Authors, licensed under the SIL Open
+Font License 1.1 (public/fonts/noto/OFL.txt).

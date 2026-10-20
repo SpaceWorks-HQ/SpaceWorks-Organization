@@ -65,6 +65,11 @@ npx vitest run tests/unit/health.test.ts
   - Amounts are integer paise.
   - Receipt numbers are gapless per organisation per financial year (April–March, in the organisation's timezone).
   - Paid rows are never edited or deleted; reverse them with credit notes.
+- **Member cards** (`lib/cards/*`):
+  - One live card per member and plan. The verify token (in the QR) is 32 random bytes; reissuing revokes the old card. Renewals keep the card, because `/verify` reads `deriveStatus` live.
+  - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.
+  - Card text is shaped with fontkit (Gilroy, then Noto for extended Latin, ₹, Malayalam and Devanagari) and drawn as outlines in both the PDF and the PNG. Never draw card text with pdf-lib's `drawText`.
+  - Bulk exports are `CardExportJob` rows run by the scheduler pass and stored privately through `lib/storage/private.ts`.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Copy:** sentence case, en-GB, buttons named after their action, and no "Oops" or exclamation marks on errors.
 - **Line endings:** LF everywhere (see `.gitattributes`). Never commit `.env*` files except the `*.example` ones.

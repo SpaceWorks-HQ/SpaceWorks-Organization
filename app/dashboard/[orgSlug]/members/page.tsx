@@ -7,6 +7,7 @@ import { formatCalendarDate, lastValidDay } from "@/lib/membership/periods";
 import { OrgPageHeader } from "@/components/dashboard/org/OrgPageHeader";
 import { MemberFilters } from "@/components/members/MemberFilters";
 import { MembersTable } from "@/components/members/MembersTable";
+import { CardExportButton } from "@/components/cards/CardExportButton";
 import { buttonClasses } from "@/components/ui/button";
 import { Callout, EmptyState } from "@/components/ui/display";
 import { cn } from "@/lib/cn";
@@ -51,6 +52,13 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
                 <Download aria-hidden className="size-4" />
                 Export
               </a>
+            ) : null}
+            {view.canManageCards ? (
+              <CardExportButton
+                slug={org.slug}
+                filter={{ status: filter, planId: view.selected.plan || null, unitId: view.selected.unit || null, roleId: view.selected.role || null, q: view.q }}
+                description={filter === "all" && !view.q && !view.selected.plan && !view.selected.unit && !view.selected.role ? "every member with a card" : "the members this filter shows"}
+              />
             ) : null}
             {view.canManage ? (
               <>
