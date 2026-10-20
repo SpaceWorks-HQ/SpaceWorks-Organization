@@ -19,7 +19,7 @@ beforeEach(() => {
   delete process.env.ALLOW_INSECURE_PRODUCTION_TESTS;
   // Optional settings a CI job or developer shell may export (e.g. a plaintext
   // DIRECT_URL for the test database) must not leak into the fixture.
-  for (const name of ["DIRECT_URL", "TRUSTED_PROXY_HOPS", "S3_ENDPOINT", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_FORCE_PATH_STYLE"]) delete process.env[name];
+  for (const name of ["ALLOW_PLAIN_HTTP", "DIRECT_URL", "TRUSTED_PROXY_HOPS", "S3_ENDPOINT", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_FORCE_PATH_STYLE"]) delete process.env[name];
 });
 
 afterEach(() => {
@@ -36,6 +36,10 @@ describe("production environment validation", () => {
     process.env.AUTH_URL = "http://members.example.test";
     process.env.NEXT_PUBLIC_BASE_URL = "http://members.example.test";
     expect(validateRuntimeEnvironment).toThrow(/same HTTPS origin/);
+    process.env.ALLOW_PLAIN_HTTP = "1";
+    expect(validateRuntimeEnvironment).not.toThrow();
+    process.env.REDIS_URL = "redis://redis.example.test";
+    expect(validateRuntimeEnvironment).toThrow(/REDIS_URL must use TLS/);
   });
   it("rejects missing secrets and half-configured object credentials", () => {
     delete process.env.CRON_SECRET;

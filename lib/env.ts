@@ -71,6 +71,10 @@ export const envSchema = z.object({
   BACKUP_LAST_SUCCESS_AT: z.preprocess((value) => value === "" ? undefined : value, z.string().datetime().optional()),
   BACKUP_RETENTION_DAYS: z.coerce.number().int().positive().max(3650).optional(),
   OUTBOX_RETENTION_DAYS: z.coerce.number().int().positive().max(365).optional(),
+  // external: a scheduler container or cron calls POST /api/internal/outbox instead of the in-process worker.
+  SCHEDULER_MODE: z.enum(["in-process", "external"]).optional(),
+  // 1 allows an http:// public origin, for a LAN or trial install behind plain HTTP. Never on the internet.
+  ALLOW_PLAIN_HTTP: z.enum(["0", "1"]).optional(),
 });
 
 // Optional display-only configuration for server-rendered operations pages.
@@ -98,7 +102,8 @@ export function validateRuntimeEnvironment() {
   const baseUrl = new URL(process.env.NEXT_PUBLIC_BASE_URL!);
   const authUrl = new URL(process.env.AUTH_URL!);
   const insecureCiTest = process.env.CI === "true" && process.env.ALLOW_INSECURE_PRODUCTION_TESTS === "1";
-  if ((!insecureCiTest && (baseUrl.protocol !== "https:" || authUrl.protocol !== "https:")) || baseUrl.origin !== authUrl.origin) {
+  const httpAllowed = insecureCiTest || process.env.ALLOW_PLAIN_HTTP === "1";
+  if ((!httpAllowed && (baseUrl.protocol !== "https:" || authUrl.protocol !== "https:")) || baseUrl.origin !== authUrl.origin) {
     throw new Error("AUTH_URL and NEXT_PUBLIC_BASE_URL must be the same HTTPS origin in production.");
   }
   for (const key of ["DATABASE_URL", "DIRECT_URL"] as const) {

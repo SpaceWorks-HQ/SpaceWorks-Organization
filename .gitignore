@@ -112,3 +112,8 @@ prisma/.env
 /frontend/node_modules/
 /frontend/next-env.d.ts
 
+
+# Self-hosted install state (scripts/spaceworks-compose.sh, setup.sh, update.sh)
+/tls/
+/.spaceworks-*
+/docker-compose.override.yml
