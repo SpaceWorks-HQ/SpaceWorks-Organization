@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { Patch } from "@/components/brand/Patch";
 
 /** Maker Teal, Workshop Orange and an ink dot (cream in dark mode), hopping left to right in turn. */
 const DOTS = [
@@ -30,11 +31,18 @@ export function BrandLoader({ size = 48, label = "Loading", className }: { size?
   );
 }
 
-/** Route-level loading state: the brand loader fixed in the centre of the viewport. */
+/**
+ * Route-level loading state, fixed in the centre of the viewport: Patch trots in place while the brand
+ * dots hop beneath like footsteps. Both rest under reduced motion.
+ */
 export function BrandPageLoader({ label }: { label?: string }) {
   return (
-    <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center">
-      <BrandLoader size={56} label={label} />
+    <div className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center">
+      {/* Patch's dark outline needs a light surface in dark mode (SpaceWorks-Design: Warm Cream works). */}
+      <span className="rounded-full dark:bg-sw-cream">
+        <Patch pose="walk" size={112} />
+      </span>
+      <BrandLoader size={36} label={label} />
     </div>
   );
 }

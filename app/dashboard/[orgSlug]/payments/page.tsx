@@ -81,7 +81,7 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
       ) : null}
 
       {payments.length === 0 ? (
-        <EmptyState mood="sleepy" title={counts.all === 0 ? "No payments yet" : "Nothing matches"}>
+        <EmptyState {...(counts.all === 0 ? { patch: true } : { mood: "sleepy" as const })} title={counts.all === 0 ? "No payments yet" : "Nothing matches"}>
           {counts.all === 0 ? "Payments appear here when members pay online, or when you record one on a member's page." : "Try another filter or search."}
         </EmptyState>
       ) : (

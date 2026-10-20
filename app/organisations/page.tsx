@@ -27,7 +27,7 @@ export default async function OrganisationsDirectoryPage({ searchParams }: { sea
       </form>
 
       {organisations.length === 0 ? (
-        <EmptyState mood="sleepy" title={q ? "Nothing matches" : "No public organisations yet"}>
+        <EmptyState {...(q ? { mood: "sleepy" as const } : { patch: true })} title={q ? "Nothing matches" : "No public organisations yet"}>
           {q ? "Try a shorter search." : "Organisations appear here once the platform lists them."}
         </EmptyState>
       ) : (
