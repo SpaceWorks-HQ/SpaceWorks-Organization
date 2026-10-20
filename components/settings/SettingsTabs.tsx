@@ -11,6 +11,7 @@ export function SettingsTabs({ slug }: { slug: string }) {
     { href: base, label: "Profile" },
     { href: `${base}/structure`, label: "Units and roles" },
     { href: `${base}/money`, label: "Money and year" },
+    { href: `${base}/payments`, label: "Payments and tax" },
   ];
   return <NavTabs label="Settings sections" items={items.map((item) => ({ ...item, active: item.href === base ? pathname === base : pathname.startsWith(item.href) }))} />;
 }

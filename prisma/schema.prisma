@@ -244,6 +244,12 @@ model Organisation {
   members       Member[]
   terms         MembershipTerm[]
   counters      OrgCounter[]
+  paymentSettings OrgPaymentSettings?
+  taxSettings     OrgTaxSettings?
+  payments        Payment[]
+  refunds         Refund[]
+  taxDocuments    TaxDocument[]
+  documentCounters DocumentCounter[]
 
   @@index([status, createdAt])
   @@index([visibility, status])
@@ -560,6 +566,7 @@ model Member {
   terms        MembershipTerm[]
   roles        MemberRoleAssignment[]
   consents     ConsentRecord[]
+  payments     Payment[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, email])
@@ -615,6 +622,7 @@ model MembershipTerm {
   renewals     MembershipTerm[]  @relation("Renewal")
   events       TermStatusEvent[]
   reminders    ReminderLog[]
+  payments     Payment[]
 
   @@unique([organisationId, id])
   @@index([organisationId, status, endsAt])
@@ -697,4 +705,258 @@ model MemberInvite {
   plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
 
   @@index([organisationId, planId])
+}
+
+// ── Payments and tax documents (P7) ─────────────────────────────────────────
+
+enum GatewayProvider {
+  NONE
+  RAZORPAY
+  STRIPE
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  OFFLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  AWAITING_CONFIRMATION
+  PAID
+  WAIVED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentLineKind {
+  TERM_FEE
+  JOINING_FEE
+  REJOIN_FEE
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum TaxMode {
+  GST
+  SIMPLE
+  NONE
+}
+
+enum GstScheme {
+  REGULAR
+  COMPOSITION
+}
+
+/// How a GST-registered organisation treats plans priced in other currencies.
+enum ForeignCurrencyTax {
+  EXPORT_LUT
+  NO_TAX
+}
+
+enum TaxDocumentKind {
+  RECEIPT
+  TAX_INVOICE
+  BILL_OF_SUPPLY
+  CREDIT_NOTE
+}
+
+/// The organisation's payment gateway. Secrets are AES-GCM encrypted with PAYMENT_SECRETS_KEY.
+model OrgPaymentSettings {
+  organisationId         String          @id
+  provider               GatewayProvider @default(NONE)
+  /// Razorpay key id (public). Stripe needs only the secret key.
+  keyId                  String?
+  secretEncrypted        String?
+  webhookSecretEncrypted String?
+  /// Unguessable code in the webhook URL that identifies the organisation.
+  webhookPublicCode      String          @unique
+  testMode               Boolean         @default(true)
+  verifiedAt             DateTime?
+  upiVpa                 String?
+  upiPayeeName           String?
+  offlineInstructions    String          @default("")
+  updatedAt              DateTime        @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+model OrgTaxSettings {
+  organisationId     String             @id
+  mode               TaxMode            @default(NONE)
+  scheme             GstScheme          @default(REGULAR)
+  gstin              String?
+  legalName          String?
+  address            String?
+  /// Supplier state code; also the place-of-supply fallback.
+  stateCode          String?
+  sacCode            String             @default("999599")
+  rateBps            Int                @default(1800)
+  inclusive          Boolean            @default(true)
+  exempt             Boolean            @default(false)
+  foreignCurrencyTax ForeignCurrencyTax @default(NO_TAX)
+  lutNumber          String?
+  /// Name printed for SIMPLE mode, e.g. "VAT".
+  simpleTaxName      String             @default("Tax")
+  /// 0–4 uppercase letters or digits before every document number.
+  receiptPrefix      String             @default("")
+  updatedAt          DateTime           @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id               String          @id @default(cuid())
+  organisationId   String
+  memberId         String
+  termId           String?
+  status           PaymentStatus   @default(PENDING)
+  provider         PaymentProvider
+  /// upi, card, netbanking, wallet, cash, bank_transfer, cheque…
+  method           String?
+  currency         String
+  amountMinor      Int
+  /// Razorpay order id or Stripe Checkout Session id.
+  gatewayOrderId   String?
+  /// Razorpay payment id or Stripe PaymentIntent id.
+  gatewayPaymentId String?
+  settlementId     String?
+  utr              String?
+  reference        String?
+  note             String          @default("")
+  paidAt           DateTime?
+  recordedById     String?
+  confirmedById    String?
+  /// Set when a captured payment needs a manager's attention (late, mismatched, duplicate).
+  flaggedAt        DateTime?
+  flagReason       String?
+  /// The tax document waits for review (amount mismatch).
+  documentHeld     Boolean         @default(false)
+  capturedMinor    Int?
+  /// Tax configuration frozen when the payment was created.
+  taxSnapshot      Json
+  anonymisedAt     DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  member       Member          @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Restrict)
+  term         MembershipTerm? @relation(fields: [organisationId, termId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  lines        PaymentLine[]
+  refunds      Refund[]
+  documents    TaxDocument[]
+
+  @@unique([organisationId, id])
+  @@unique([provider, gatewayOrderId])
+  @@index([organisationId, status, createdAt])
+  @@index([organisationId, paidAt])
+  @@index([organisationId, memberId])
+  @@index([termId])
+}
+
+model PaymentLine {
+  id             String          @id @default(cuid())
+  organisationId String
+  paymentId      String
+  kind           PaymentLineKind
+  description    String
+  currency       String
+  amountMinor    Int
+  taxableMinor   Int
+  cgstMinor      Int             @default(0)
+  sgstMinor      Int             @default(0)
+  igstMinor      Int             @default(0)
+  otherTaxMinor  Int             @default(0)
+
+  payment Payment @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
+
+  @@index([paymentId])
+}
+
+/// Webhook idempotency: a provider event is applied once.
+model ProcessedWebhookEvent {
+  provider       PaymentProvider
+  eventId        String
+  organisationId String
+  receivedAt     DateTime        @default(now())
+
+  @@id([provider, eventId])
+  @@index([organisationId, receivedAt])
+}
+
+model Refund {
+  id              String       @id @default(cuid())
+  organisationId  String
+  paymentId       String
+  status          RefundStatus @default(PENDING)
+  currency        String
+  amountMinor     Int
+  reason          String       @default("")
+  gatewayRefundId String?      @unique
+  createdById     String?
+  failureReason   String?
+  createdAt       DateTime     @default(now())
+  processedAt     DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  payment      Payment      @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
+  document     TaxDocument?
+
+  @@unique([organisationId, id])
+  @@index([organisationId, createdAt])
+  @@index([paymentId])
+}
+
+/// Receipts, tax invoices, bills of supply and credit notes. The PDF is rendered from `snapshot`.
+model TaxDocument {
+  id              String          @id @default(cuid())
+  organisationId  String
+  paymentId       String?
+  refundId        String?         @unique
+  kind            TaxDocumentKind
+  /// "R" for payment documents, "C" for credit notes.
+  series          String
+  /// "2026-27" in the organisation's financial year.
+  financialYear   String
+  sequence        Int
+  number          String
+  currency        String
+  totalMinor      Int
+  taxableMinor    Int
+  cgstMinor       Int             @default(0)
+  sgstMinor       Int             @default(0)
+  igstMinor       Int             @default(0)
+  otherTaxMinor   Int             @default(0)
+  placeOfSupply   String?
+  sac             String?
+  snapshot        Json
+  templateVersion Int             @default(1)
+  issuedAt        DateTime        @default(now())
+  cancelledAt     DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  payment      Payment?     @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  refund       Refund?      @relation(fields: [refundId], references: [id], onDelete: Restrict)
+
+  @@unique([organisationId, number])
+  @@unique([organisationId, series, financialYear, sequence])
+  @@index([organisationId, issuedAt])
+  @@index([paymentId])
+}
+
+/// Gapless document numbering per organisation, series and financial year.
+model DocumentCounter {
+  organisationId String
+  series         String
+  financialYear  String
+  next           Int    @default(1)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, series, financialYear])
 }

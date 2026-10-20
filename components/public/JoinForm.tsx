@@ -13,7 +13,7 @@ type Question = { key: string; label: string; helpText: string; type: string; re
 
 const OUTCOME: Record<string, { title: string; body: string }> = {
   PENDING_APPROVAL: { title: "Application sent", body: "The team will review it and email you their decision." },
-  PENDING_PAYMENT: { title: "Almost there", body: "Your membership starts once it's paid. We've emailed you how to pay, and it's in your account too." },
+  PENDING_PAYMENT: { title: "Almost there", body: "Your membership starts once it's paid. Pay now, or later from the link we've emailed you." },
   ACTIVE: { title: "You're a member", body: "Your membership has started. See it any time in your account." },
   UPCOMING: { title: "You're all set", body: "Your membership starts soon." },
 };
@@ -29,6 +29,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<string | null>(null);
+  const [termId, setTermId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const set = (key: keyof typeof values, value: string | boolean) => setValues((current) => ({ ...current, [key]: value }));
 
@@ -38,7 +39,13 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       <div className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-6">
         <h2 className="text-h2 text-ink">{copy.title}</h2>
         <p className="text-body-ui text-ink-secondary">{copy.body}</p>
-        <div><Link href="/account" className={buttonClasses({ variant: "accent" })}>Go to your account</Link></div>
+        <div>
+          {outcome === "PENDING_PAYMENT" && termId ? (
+            <Link href={`/account/pay/${termId}`} className={buttonClasses({ variant: "accent" })}>Pay now</Link>
+          ) : (
+            <Link href="/account" className={buttonClasses({ variant: "accent" })}>Go to your account</Link>
+          )}
+        </div>
       </div>
     );
   }
@@ -51,7 +58,10 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
         setError(null);
         startTransition(async () => {
           const result = await submitJoin({ organisationSlug: orgSlug, planSlug, inviteToken, consent, profile: { ...values, unitId: values.unitId || null, stateCode: values.stateCode || null, fieldValues: answers } });
-          if (result.ok) setOutcome(result.data?.status ?? "ACTIVE");
+          if (result.ok) {
+            setOutcome(result.data?.status ?? "ACTIVE");
+            setTermId(result.data?.termId ?? null);
+          }
           else {
             setErrors(result.fieldErrors ?? {});
             setError(result.error);

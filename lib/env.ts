@@ -55,6 +55,7 @@ export const envSchema = z.object({
   HEALTHCHECK_SECRET: secret.optional(),
   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: serverActionsKey.optional(),
   MFA_ENCRYPTION_KEY: mfaEncryptionKey.optional(),
+  PAYMENT_SECRETS_KEY: mfaEncryptionKey.optional(),
   S3_BUCKET: z.string().min(1).optional(),
   S3_REGION: z.string().min(1).optional(),
   S3_ENDPOINT: z.string().url().optional(),

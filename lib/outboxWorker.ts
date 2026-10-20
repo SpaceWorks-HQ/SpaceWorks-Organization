@@ -8,6 +8,7 @@ import {
 } from "@/lib/operationalHeartbeat";
 import { purgeExpiredOperationalData } from "@/lib/retention";
 import { runMembershipSweep } from "@/lib/membership/sweep";
+import { reconcileGatewayPayments } from "@/lib/payments/reconcile";
 
 const OUTBOX_WORKER_INTERVAL_MS = 60_000;
 
@@ -29,6 +30,7 @@ export async function runOutboxScheduler() {
   try {
     // Membership changes first, so reminders and notices they queue go out in the same pass.
     await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
+    await reconcileGatewayPayments().catch(() => console.error("[payments reconcile] run failed"));
     const result = await deliverOutboxBatch();
     const purged = await purgeExpiredOperationalData();
     await recordOutboxSchedulerSuccess(result).catch(() => undefined);

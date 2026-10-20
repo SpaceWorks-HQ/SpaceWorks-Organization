@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { loadMemberView } from "@/lib/views/app__dashboard__orgSlug__members__memberId__page";
+import { loadMemberPayments } from "@/lib/views/app__dashboard__orgSlug__members__memberId__payments";
+import { MemberPaymentsSection } from "@/components/payments/MemberPaymentsSection";
 import { TERM_STATUS_LABELS } from "@/lib/membership/lifecycle";
 import { formatCalendarDate, lastValidDay, localDate } from "@/lib/membership/periods";
 import { money } from "@/lib/membership/describe";
@@ -15,6 +17,7 @@ export const metadata: Metadata = { title: "Member", robots: { index: false, fol
 
 export default async function MemberPage({ params }: { params: Promise<{ orgSlug: string; memberId: string }> }) {
   const view = await loadMemberView({ params });
+  const payments = await loadMemberPayments({ params });
   const { org, member } = view;
   const tz = org.timezone;
   const day = (date: Date) => formatCalendarDate(localDate(date, tz));
@@ -57,6 +60,7 @@ export default async function MemberPage({ params }: { params: Promise<{ orgSlug
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <MembershipPanel slug={org.slug} memberId={member.id} memberships={memberships} plans={view.plans} canManage={view.canManage} />
+          {payments ? <MemberPaymentsSection data={payments} /> : null}
           <Card as="section" className="rounded-xl">
             <CardHeader title="Details" />
             <MemberProfileForm
