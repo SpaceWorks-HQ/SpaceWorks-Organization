@@ -20,7 +20,11 @@ describe("CSV", () => {
   });
 
   it("writes cells that can never run as spreadsheet formulas", () => {
-    expect(toCsvRow(["=HYPERLINK(\"x\")", "+1", "-2", "@cmd", "plain, comma", 'say "hi"', null])).toBe(`"'=HYPERLINK(""x"")",'+1,'-2,'@cmd,"plain, comma","say ""hi""",`);
+    expect(toCsvRow(["=HYPERLINK(\"x\")", "+1", "-2+3", "@cmd", "plain, comma", 'say "hi"', null])).toBe(`"'=HYPERLINK(""x"")",'+1,'-2+3,'@cmd,"plain, comma","say ""hi""",`);
+  });
+
+  it("keeps plain numbers, negative ones included, as numbers", () => {
+    expect(toCsvRow([-1200.5, "-1200.50", "42", 0])).toBe("-1200.5,-1200.50,42,0");
   });
 });
 

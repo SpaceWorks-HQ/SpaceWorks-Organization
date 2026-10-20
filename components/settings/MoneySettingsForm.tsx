@@ -44,7 +44,7 @@ export function MoneySettingsForm({ slug, initial, calendarLocked, timezones, di
       }}
     >
       {status ? <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"}>{status.text}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Default currency" helperText="New plans start in this currency. Each plan can use its own." error={errors.currency?.[0]}>
           <Dropdown value={values.currency} disabled={disabled} onChange={(event) => setValues({ ...values, currency: event.target.value })}>
             {CURRENCY_CODES.map((code) => <option key={code} value={code}>{`${code} · ${CURRENCIES[code].name}`}</option>)}

@@ -32,7 +32,7 @@ export default async function OrgReportsRenewalsPage({ params, searchParams }: P
         <KpiTile label="Retention" value={s.retentionRate} format="percent" href={view.links.active} hint="Of members active at the start" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Renewal rate by month" description="By the month the membership ended. Months with fewer than 3 decided renewals are left out." table={{ columns: ["Month", "Due", "Renewed", "Rate"], rows: view.trend.map((p) => [p.label, p.due, p.renewed, formatValue(p.renewalRate, "percent")]) }}>
           <TrendChart ariaLabel="Renewal rate by month" format="percent" yMax={1} labels={view.trend.map((p) => p.label)} series={[{ key: "rate", label: "Renewal rate", slot: 1, values: view.trend.map((p) => (p.decided >= 3 ? p.renewalRate : null)) }]} />
         </ChartFrame>

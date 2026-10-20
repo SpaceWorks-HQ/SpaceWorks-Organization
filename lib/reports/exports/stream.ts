@@ -17,7 +17,20 @@ export type AuditedExport = {
  * The audit row is written when the stream ends, so the count is exact; a download the client abandons
  * part-way is still recorded, marked incomplete. Cells are formula-guarded by lib/csv.ts toCsvRow.
  */
-export function auditedCsvResponse(input: AuditedExport): Response {
+export async function auditedCsvResponse(input: AuditedExport): Promise<Response> {
+  try {
+    await recordAuditEvent({
+      action: input.audit.action,
+      actorUserId: input.audit.actorUserId,
+      organisationId: input.audit.organisationId,
+      targetType: input.audit.organisationId ? "Organisation" : "Platform",
+      targetId: input.audit.organisationId ?? undefined,
+      metadata: { report: input.audit.report, stage: "started", ...input.audit.filters },
+    });
+  } catch {
+    console.error("[reports] export refused: the audit row could not be written");
+    return new Response("The export couldn't be recorded, so it was not sent. Try again shortly.", { status: 503, headers: { "Cache-Control": "no-store", "Content-Type": "text/plain; charset=utf-8" } });
+  }
   const encoder = new TextEncoder();
   let rowCount = 0;
   let audited = false;

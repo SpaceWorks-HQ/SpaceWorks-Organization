@@ -45,7 +45,7 @@ export function PlanFieldsEditor({ slug, planId, initial, disabled }: { slug: st
       <ol className="flex flex-col gap-3">
         {fields.map((field, index) => (
           <li key={index} className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-4">
-            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
               <Field label={`Question ${index + 1}`}>
                 <Input value={field.label} disabled={disabled} maxLength={120} onChange={(event) => update(index, { label: event.target.value, ...(initial.some((q) => q.key === field.key) ? {} : { key: keyFrom(event.target.value, fields.filter((_, i) => i !== index).map((q) => q.key)) }) })} />
               </Field>

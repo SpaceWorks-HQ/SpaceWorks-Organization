@@ -23,7 +23,7 @@ export default async function SuperAdminStoragePage() {
         <StatTile className="rounded-xl" label="Stored file size" value={formatBytes(assetSummary._sum.byteSize == null ? 0 : Number(assetSummary._sum.byteSize))} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AdminPanel title="Files by provider and type">
           {sortedTypes.length === 0 ? (
             <EmptyState mood="sleepy">No tracked files.</EmptyState>

@@ -1,16 +1,18 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { termTotalMinor } from "@/lib/payments/tax";
 import { PORTAL_ORGANISATION_STATUSES, verifiedEmail } from "./member";
-import { walletState, type WalletState } from "./walletStatus";
+import { unpaidLiveTerms, walletState, type WalletState } from "./walletStatus";
 
 const termSelect = {
   id: true, planId: true, status: true, kind: true, startsAt: true, endsAt: true, graceUntil: true, paymentDueBy: true,
   renewedFromId: true, createdAt: true, currency: true, priceMinor: true, joiningFeeMinor: true,
-} as const;
+  payments: { where: { status: { in: ["PAID", "WAIVED", "AWAITING_CONFIRMATION"] } }, select: { status: true } },
+} satisfies Prisma.MembershipTermSelect;
 
-const planSelect = { id: true, name: true, slug: true, durationType: true, renewalWindowDays: true, joinMode: true, archivedAt: true } as const;
+const planSelect = { id: true, name: true, slug: true, durationType: true, renewalWindowDays: true, joinMode: true, archivedAt: true, paymentTiming: true } as const;
 
 export type WalletMembership = {
   planId: string;
@@ -63,7 +65,7 @@ export async function loadWallet(userId: string, now = new Date()): Promise<Wall
     for (const term of member.terms) byPlan.set(term.planId, [...(byPlan.get(term.planId) ?? []), term]);
     const memberships = [...byPlan.values()].map((chain): WalletMembership => {
       const plan = chain[0].plan;
-      const state = walletState(chain, plan, { now, timeZone: member.organisation.timezone, organisationActive: member.organisation.status === "ACTIVE" });
+      const state = walletState(chain, plan, { now, timeZone: member.organisation.timezone, organisationActive: member.organisation.status === "ACTIVE", unpaidLive: unpaidLiveTerms(chain) });
       const unpaid = state.actions.payTermId ? chain.find((term) => term.id === state.actions.payTermId) : null;
       return { planId: plan.id, planName: plan.name, planSlug: plan.slug, state, due: unpaid ? { minor: termTotalMinor(unpaid, taxSettings.get(member.organisation.id) ?? null, unpaid.currency, member.stateCode), currency: unpaid.currency } : null };
     });

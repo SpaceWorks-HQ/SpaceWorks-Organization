@@ -50,7 +50,8 @@ const invoiceRow = (doc: FinanceTaxDocument): InvoiceRow => ({ number: doc.numbe
 /** GSTR-1 for one return period (normally a month). Credit notes against B2C small invoices are netted into Table 7. */
 export function gstr1(documents: FinanceTaxDocument[], refunds: FinanceRefund[], window: Window, supplierState: string | null): Gstr1 {
   const docs = live(documents, window);
-  const invoiceForPayment = new Map(documents.filter((doc) => doc.kind === "TAX_INVOICE" && doc.paymentId).map((doc) => [doc.paymentId!, doc]));
+  const originals = originalDocuments(documents);
+  const invoiceForPayment = new Map([...originals].filter(([, doc]) => doc.kind === "TAX_INVOICE"));
   const refundPayment = new Map(refunds.map((refund) => [refund.id, refund.paymentId]));
   const isB2cl = (doc: FinanceTaxDocument) => !doc.recipientGstin && isInterState(doc, supplierState) && doc.totalMinor > B2CL_THRESHOLD_MINOR;
   const result: Gstr1 = { b2b: [], b2cl: [], b2cs: [], nilExempt: { inter: 0, intra: 0 }, cdnr: [], cdnur: [], hsnB2b: [], hsnB2c: [], totals: zero() };
@@ -86,8 +87,17 @@ export function gstr1(documents: FinanceTaxDocument[], refunds: FinanceRefund[],
       continue;
     }
     if (doc.kind === "CREDIT_NOTE") {
-      add(result.totals, doc, -1);
       const paymentId = doc.paymentId ?? (doc.refundId ? refundPayment.get(doc.refundId) : undefined);
+      const against = paymentId ? originals.get(paymentId) : undefined;
+      // A credit note reverses what its original declared: an exempt supply reduces nil/exempt, and a plain
+      // receipt (outside GST) appears nowhere.
+      if (against?.kind === "BILL_OF_SUPPLY") {
+        if (isInterState(against, supplierState)) result.nilExempt.inter -= doc.taxableMinor;
+        else result.nilExempt.intra -= doc.taxableMinor;
+        continue;
+      }
+      if (against && against.kind !== "TAX_INVOICE") continue;
+      add(result.totals, doc, -1);
       const original = paymentId ? invoiceForPayment.get(paymentId) : undefined;
       const b2b = Boolean(doc.recipientGstin ?? original?.recipientGstin);
       addHsn(doc, b2b, -1);
@@ -125,11 +135,19 @@ export function gstr3b(documents: FinanceTaxDocument[], refunds: FinanceRefund[]
   return { outwardTaxable: r1.totals, nilExempt: r1.nilExempt.inter + r1.nilExempt.intra, interStateUnregistered: [...byPos.values()].sort((a, b) => a.placeOfSupply.localeCompare(b.placeOfSupply)) };
 }
 
+/** The payment document (receipt, tax invoice or bill of supply) each payment was issued, by payment id. */
+function originalDocuments(documents: FinanceTaxDocument[]) {
+  return new Map(documents.filter((doc) => doc.kind !== "CREDIT_NOTE" && doc.paymentId).map((doc) => [doc.paymentId!, doc]));
+}
+
 /** GSTR-3B 3.1(a) liability per month: what each month's return would show. */
 export function monthlyLiability(documents: FinanceTaxDocument[], buckets: Bucket[]): Array<{ key: string; label: string } & TaxAmounts> {
   const rows = buckets.map((bucket) => ({ key: bucket.key, label: bucket.label, ...zero() }));
+  const originals = originalDocuments(documents);
   for (const doc of documents) {
     if (doc.currency !== "INR" || doc.cancelledAt || (doc.kind !== "TAX_INVOICE" && doc.kind !== "CREDIT_NOTE")) continue;
+    // Only credit notes against tax invoices reduce the tax liability.
+    if (doc.kind === "CREDIT_NOTE" && doc.paymentId && originals.get(doc.paymentId)?.kind !== "TAX_INVOICE") continue;
     const index = bucketIndex(buckets, doc.issuedAt);
     if (index >= 0) add(rows[index], doc, doc.kind === "CREDIT_NOTE" ? -1 : 1);
   }

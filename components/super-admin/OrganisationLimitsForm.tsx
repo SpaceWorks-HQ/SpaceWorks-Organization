@@ -30,7 +30,7 @@ export function OrganisationLimitsForm({ organisationId, memberLimit, managerLim
       <CardHeader title="Limits" description="Leave empty for no cap." />
       <form className="flex flex-col gap-4" onSubmit={submit}>
         {message ? <Callout tone={message.tone} role={message.tone === "danger" ? "alert" : "status"}>{message.text}</Callout> : null}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Members" optional>
             <Input value={members} onChange={(event) => setMembers(event.target.value.replace(/\D/g, ""))} inputMode="numeric" disabled={pending} />
           </Field>

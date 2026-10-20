@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/permissions";
 import { statusAt } from "@/lib/membership/lifecycle";
 import { findOwnMember } from "@/lib/portal/member";
-import { walletState } from "@/lib/portal/walletStatus";
+import { unpaidLiveTerms, walletState } from "@/lib/portal/walletStatus";
 import { termTotalMinor } from "@/lib/payments/tax";
 
 /**
@@ -23,7 +23,8 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
       where: { organisationId: org.id, memberId: member.id },
       orderBy: { createdAt: "asc" },
       include: {
-        plan: { select: { id: true, name: true, slug: true, durationType: true, renewalWindowDays: true, joinMode: true, archivedAt: true } },
+        plan: { select: { id: true, name: true, slug: true, durationType: true, renewalWindowDays: true, joinMode: true, archivedAt: true, paymentTiming: true } },
+        payments: { where: { status: { in: ["PAID", "WAIVED", "AWAITING_CONFIRMATION"] } }, select: { status: true } },
         events: { orderBy: { recordedAt: "asc" }, take: 60, select: { id: true, from: true, to: true, effectiveAt: true, recordedAt: true, cause: true } },
       },
     }),
@@ -49,7 +50,7 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
     const chain = terms.filter((term) => term.planId === planId);
     const plan = chain[0].plan;
     const successors = new Set(chain.filter((term) => term.renewedFromId && ["UPCOMING", "ACTIVE", "GRACE", "ENDED"].includes(term.status)).map((term) => term.renewedFromId!));
-    const state = walletState(chain, plan, { now, timeZone: org.timezone, organisationActive: org.status === "ACTIVE" });
+    const state = walletState(chain, plan, { now, timeZone: org.timezone, organisationActive: org.status === "ACTIVE", unpaidLive: unpaidLiveTerms(chain) });
     const unpaid = chain.find((term) => term.id === state.actions.payTermId);
     return {
       plan: { id: plan.id, name: plan.name, slug: plan.slug },

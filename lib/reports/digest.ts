@@ -38,15 +38,16 @@ export async function queueMonthlyDigests(now = new Date(), force = false) {
     // Nothing to summarise for an organisation created after last month ended.
     if (org.createdAt >= startOfLocalDay({ year: today.year, month: today.month, day: 1 }, org.timezone)) continue;
     const key = `report-digest:${monthKey(last)}`;
-    const claimed = await prisma.$queryRaw<Array<{ next: number }>>`
-      INSERT INTO "OrgCounter" ("organisationId", "name", "next") VALUES (${org.id}, ${key}, 1)
-      ON CONFLICT ("organisationId", "name") DO NOTHING RETURNING "next"`;
-    if (claimed.length === 0) continue;
-    const team = await prisma.teamMember.findMany({ where: { organisationId: org.id, reportDigest: true, role: { in: [...DIGEST_ROLES] }, user: { emailVerified: { not: null } } }, select: { userId: true } });
-    for (const person of team) {
-      await enqueueOutbox(prisma, "report-digest", { organisationId: org.id, userId: person.userId, month: monthKey(last) });
-      queued += 1;
-    }
+    // The claim and the emails commit together, so a crash midway leaves the month unclaimed for a retry.
+    queued += await prisma.$transaction(async (tx) => {
+      const claimed = await tx.$queryRaw<Array<{ next: number }>>`
+        INSERT INTO "OrgCounter" ("organisationId", "name", "next") VALUES (${org.id}, ${key}, 1)
+        ON CONFLICT ("organisationId", "name") DO NOTHING RETURNING "next"`;
+      if (claimed.length === 0) return 0;
+      const team = await tx.teamMember.findMany({ where: { organisationId: org.id, reportDigest: true, role: { in: [...DIGEST_ROLES] }, user: { emailVerified: { not: null } } }, select: { userId: true } });
+      for (const person of team) await enqueueOutbox(tx, "report-digest", { organisationId: org.id, userId: person.userId, month: monthKey(last) });
+      return team.length;
+    });
   }
   return queued;
 }

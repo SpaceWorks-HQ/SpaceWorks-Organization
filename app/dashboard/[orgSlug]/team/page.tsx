@@ -41,7 +41,7 @@ export default async function OrgMembersPage({ params, searchParams }: Props) {
         {adminView ? <MemberStat label="Open invite links" value={openInviteCount} hint="Each link works once" /> : null}
       </section>
 
-      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="flex min-w-0 flex-col gap-4">
           {rows.length === 0 ? (
             <EmptyState mood="sleepy">No members found.</EmptyState>

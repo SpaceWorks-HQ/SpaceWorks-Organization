@@ -20,7 +20,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ doc
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return refuse(401, "Sign in to download documents.");
-  if (!(await checkRateLimitById("dataExport", `doc:${userId}`))) return refuse(429, "Too many downloads. Try again later.");
+  if (!(await checkRateLimitById("documentView", `user:${userId}`))) return refuse(429, "Too many downloads. Try again later.");
   const { documentId } = await params;
   if (!/^[a-z0-9]{10,40}$/i.test(documentId)) return refuse(404, "Not found.");
   const document = await prisma.taxDocument.findUnique({ where: { id: documentId }, select: { organisationId: true, number: true, snapshot: true, payment: { select: { memberId: true, member: { select: { email: true } } } } } });

@@ -56,7 +56,7 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
       <OrganisationDecisionPanel organisationId={org.id} status={org.status} />
       {!hasOwner && org.status !== "REJECTED" ? <OwnerInviteResend organisationId={org.id} defaultEmail={ownerInviteEmail} /> : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AdminPanel title="Application details">
           <MetricRows
             rows={[
@@ -74,7 +74,7 @@ export default async function SuperAdminOrgDetailPage({ params }: Props) {
         </AdminPanel>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="grid grid-cols-2 content-start gap-3">
           <StatTile className="rounded-xl" label="Team" value={org._count.teamMembers.toLocaleString("en-IN")} />
           <StatTile className="rounded-xl" label="Stored files" value={assetStats._count._all.toLocaleString("en-IN")} hint={formatBytes(assetStats._sum.byteSize == null ? 0 : Number(assetStats._sum.byteSize))} />

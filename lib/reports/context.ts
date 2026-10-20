@@ -20,10 +20,13 @@ export type ReportContext = Awaited<ReturnType<typeof buildReportContext>>;
  * settings, the viewer's scope narrowed by the filters, the period, and the options for the filter bar.
  */
 export async function buildReportContext(access: ReportAccess, search: ReportSearch, now = new Date()) {
-  const org = await prisma.organisation.findUniqueOrThrow({
+  const found = await prisma.organisation.findUniqueOrThrow({
     where: { id: access.organisation.id },
-    select: { id: true, slug: true, name: true, logoUrl: true, timezone: true, financialYearStartMonth: true, currency: true, locale: true, unitLevels: true, stateCode: true },
+    select: { id: true, slug: true, name: true, logoUrl: true, timezone: true, financialYearStartMonth: true, currency: true, locale: true, unitLevels: true, stateCode: true, taxSettings: { select: { stateCode: true } } },
   });
+  // The supplier state for GST reports is the registration's state, as on the invoices themselves.
+  const { taxSettings, ...rest } = found;
+  const org = { ...rest, stateCode: taxSettings?.stateCode ?? rest.stateCode };
   const team = await teamScope(org.id, access.membership.unitId);
   const scope: ReportScope = await reportScope(team, { unit: search.unit, plan: search.plan });
   const period: ReportPeriod = resolvePeriod(search, org, now);

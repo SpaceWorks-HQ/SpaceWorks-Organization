@@ -36,7 +36,7 @@ export default async function OrgPlansPage({ params }: { params: Promise<{ orgSl
           A plan is what people join: for example an annual membership, a student plan or a lifetime membership.
         </EmptyState>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
             const { price, extras } = describePrice(plan, org.locale);
             return (

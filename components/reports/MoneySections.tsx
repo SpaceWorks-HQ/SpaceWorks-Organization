@@ -37,7 +37,7 @@ export function MoneyKpis({ view }: { view: View }) {
 export function RevenueCharts({ view }: { view: View }) {
   if (!view.series.length) return null;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {view.series.map(({ currency, points }) => (
         <ChartFrame key={currency} title={`Collected each month, ${currency}`} description="By payment date; refunds by the date they were made." table={{ columns: ["Month", "Collected", "Refunded", "Net"], rows: points.map((p) => [p.label, formatAmount(p.gross, currency, view.locale), formatAmount(p.refunds, currency, view.locale), formatAmount(p.net, currency, view.locale)]) }}>
           <ColumnChart ariaLabel={`Money collected and refunded each month in ${currency}`} format={`money:${currency}`} labels={points.map((p) => p.label)} series={[{ key: "gross", label: "Collected", slot: 1, values: points.map((p) => p.gross) }, { key: "refunds", label: "Refunded", slot: 2, values: points.map((p) => p.refunds) }]} />
@@ -58,7 +58,7 @@ function MoneyList({ title, rows, view, empty }: { title: string; rows: View["by
 export function RevenueBreakdowns({ view }: { view: View }) {
   const empty = "Nothing collected in this period.";
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       <MoneyList title="By plan" rows={view.byPlan} view={view} empty={empty} />
       {view.byUnit.length ? <MoneyList title="By unit" rows={view.byUnit} view={view} empty={empty} /> : null}
       <MoneyList title="By fee" rows={view.byFee} view={view} empty={empty} />

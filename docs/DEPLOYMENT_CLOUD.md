@@ -14,6 +14,19 @@ SpaceWorks' `docker-compose.cloud.yml` and `scripts/spaceworks-compose.sh cloud`
 | SMTP | Brevo, Amazon SES, Postmark | A verified sending domain. |
 | HTTPS | Your platform's load balancer, Cloudflare, or a reverse proxy | Terminates TLS in front of `APP_PORT` and overwrites the client-IP header named in `TRUSTED_PROXY_IP_HEADER`. |
 
+### Harden the database connection
+
+`sslmode=require` encrypts the connection but doesn't check who is at the other end. In production:
+
+- **Verify the server.** Use `sslmode=verify-full` with your provider's CA (`sslrootcert=/path/to/ca.pem`, mounted
+  read-only into the app and scheduler containers). Supabase, Neon and RDS all publish their CA bundles.
+- **Run the app as a data-only role.** Migrations need the schema owner; the running app doesn't. Create a second
+  role with `CONNECT`, `USAGE` on the schema and `SELECT, INSERT, UPDATE, DELETE` on its tables (plus
+  `USAGE, SELECT` on sequences and `ALTER DEFAULT PRIVILEGES` so new tables follow), put that role in
+  `DATABASE_URL`, and keep the owner only in `DIRECT_URL`, which only the `migrate` role uses. This is how the
+  bundled VPS stack runs (`sworg_app`), and it means a compromised app process can't alter the schema or the
+  payment triggers.
+
 ## Docker host with Compose
 
 ```bash

@@ -75,7 +75,7 @@ export function OverviewKpis({ view }: { view: View }) {
 export function OverviewTrends({ view }: { view: View }) {
   const labels = view.trend.map((point) => point.label);
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
       <ChartFrame
         className="lg:col-span-3"
         title="Active members"
@@ -106,7 +106,7 @@ export function OverviewNow({ view }: { view: View }) {
     { label: "In grace now", value: n.grace, href: view.links.graceNow },
   ];
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
       <ChartFrame className="lg:col-span-3" title="Renewal rate" description="Renewed ÷ (renewed + lapsed), by the month the membership ended. Months with fewer than 3 decided renewals are left out." table={{ columns: ["Period", "Due", "Renewed", "Rate"], rows: view.trend.map((point) => [point.label, point.due, point.renewed, formatValue(point.renewalRate, "percent")]) }}>
         <TrendChart ariaLabel="Renewal rate over the period" labels={view.trend.map((point) => point.label)} format="percent" yMax={1} series={[{ key: "rate", label: "Renewal rate", slot: 1, values: view.trend.map((point) => (point.decided >= 3 ? point.renewalRate : null)) }]} />
       </ChartFrame>

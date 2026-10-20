@@ -12,7 +12,8 @@ const credentials = { keyId: "rzp_test_abc", secret: "secret_key", webhookSecret
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Razorpay", () => {
-  const body = JSON.stringify({ event: "payment.captured", created_at: 1, payload: { payment: { entity: { id: "pay_1", order_id: "order_1", amount: 118000, currency: "INR", method: "upi", notes: { paymentId: "p1" } } } } });
+  const created = Math.floor(Date.now() / 1000);
+  const body = JSON.stringify({ event: "payment.captured", created_at: created, payload: { payment: { entity: { id: "pay_1", order_id: "order_1", amount: 118000, currency: "INR", method: "upi", notes: { paymentId: "p1" } } } } });
 
   it("accepts only webhooks signed with the webhook secret", () => {
     expect(razorpay.verifyWebhook(credentials, body, new Headers({ "x-razorpay-signature": hmac("hook_secret", body) }))).toBe(true);
@@ -21,14 +22,19 @@ describe("Razorpay", () => {
     expect(razorpay.verifyWebhook({ ...credentials, webhookSecret: null }, body, new Headers({ "x-razorpay-signature": hmac("hook_secret", body) }))).toBe(false);
   });
 
-  it("reads a capture with our payment id and the event id header", () => {
-    expect(razorpay.parseEvent(body, new Headers({ "x-razorpay-event-id": "evt_9" }))).toEqual({ type: "captured", eventId: "evt_9", orderId: "order_1", paymentId: "p1", gatewayPaymentId: "pay_1", amountMinor: 118000, currency: "INR", method: "upi" });
+  it("refuses a correctly signed body replayed after the retry window", () => {
+    const later = new Date((created + 40 * 3600) * 1000);
+    expect(razorpay.verifyWebhook(credentials, body, new Headers({ "x-razorpay-signature": hmac("hook_secret", body) }), later)).toBe(false);
+  });
+
+  it("reads a capture with our payment id, keyed on the signed body rather than the unsigned header", () => {
+    expect(razorpay.parseEvent(body, new Headers({ "x-razorpay-event-id": "evt_9" }))).toEqual({ type: "captured", eventId: `payment.captured:pay_1:${created}`, orderId: "order_1", paymentId: "p1", gatewayPaymentId: "pay_1", amountMinor: 118000, currency: "INR", method: "upi" });
   });
 
   it("carries our refund id through refund events and ignores the rest", () => {
     const refund = JSON.stringify({ event: "refund.processed", payload: { refund: { entity: { id: "rfnd_1", amount: 5000, notes: { refundId: "r1" } } } } });
     expect(razorpay.parseEvent(refund, new Headers({ "x-razorpay-event-id": "e" }))).toMatchObject({ type: "refund-processed", gatewayRefundId: "rfnd_1", refundId: "r1", amountMinor: 5000 });
-    expect(razorpay.parseEvent(JSON.stringify({ event: "order.paid" }), new Headers({ "x-razorpay-event-id": "e2" }))).toEqual({ type: "ignored", eventId: "e2" });
+    expect(razorpay.parseEvent(JSON.stringify({ event: "order.paid", created_at: 5 }), new Headers({ "x-razorpay-event-id": "e2" }))).toEqual({ type: "ignored", eventId: "order.paid::5" });
   });
 
   it("verifies the Checkout.js signature over order and payment ids", () => {

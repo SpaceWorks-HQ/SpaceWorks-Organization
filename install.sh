@@ -351,11 +351,16 @@ if ! docker compose version >/dev/null 2>&1; then
     https://api.github.com/repos/docker/compose/releases/latest)"
   compose_tag="$(printf '%s' "$compose_json" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
   [[ "$compose_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "Could not resolve a Docker Compose V2 plugin release."
+  compose_url="https://github.com/docker/compose/releases/download/$compose_tag/docker-compose-linux-$ARCH"
+  compose_tmp="$(mktemp)"
+  curl --fail --silent --show-error --location "$compose_url" -o "$compose_tmp"
+  # Docker publishes a SHA-256 beside every binary; refuse a download that doesn't match it.
+  compose_sum="$(curl --fail --silent --show-error --location "$compose_url.sha256" | awk '{print $1}')"
+  [[ "$compose_sum" =~ ^[0-9a-f]{64}$ ]] || { rm -f "$compose_tmp"; die "Could not fetch the Docker Compose checksum."; }
+  printf '%s  %s\n' "$compose_sum" "$compose_tmp" | sha256sum -c - >/dev/null 2>&1 || { rm -f "$compose_tmp"; die "The Docker Compose download didn't match its published checksum."; }
   ${SUDO[@]+"${SUDO[@]}"} install -m 0755 -d /usr/local/lib/docker/cli-plugins
-  ${SUDO[@]+"${SUDO[@]}"} curl --fail --silent --show-error --location \
-    "https://github.com/docker/compose/releases/download/$compose_tag/docker-compose-linux-$ARCH" \
-    -o /usr/local/lib/docker/cli-plugins/docker-compose
-  ${SUDO[@]+"${SUDO[@]}"} chmod 755 /usr/local/lib/docker/cli-plugins/docker-compose
+  ${SUDO[@]+"${SUDO[@]}"} install -m 0755 "$compose_tmp" /usr/local/lib/docker/cli-plugins/docker-compose
+  rm -f "$compose_tmp"
 fi
 if ! docker info >/dev/null 2>&1; then
   if [[ "$HOST_KIND" == linux ]] && command -v systemctl >/dev/null 2>&1; then

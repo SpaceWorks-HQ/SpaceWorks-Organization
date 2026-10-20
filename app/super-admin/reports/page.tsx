@@ -41,7 +41,7 @@ export default async function SuperAdminReportsPage({ searchParams }: Props) {
         <KpiTile label="Time to approve an organisation" value={null} display={formatHours(pipeline.medianHoursToApprove)} hint="Median, submitted to approved" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Members across organisations" description="Active at each month end, from the daily rollup." table={{ columns: ["Month", "Active", "In grace", "Organisations"], rows: tenants.series.map((p) => [p.label, p.active, p.grace, p.tenants]) }}>
           <TrendChart ariaLabel="Active members across all organisations" area labels={tenants.series.map((p) => p.label)} series={[{ key: "active", label: "Active members", slot: 1, values: tenants.series.map((p) => p.active) }]} />
         </ChartFrame>
@@ -57,7 +57,7 @@ export default async function SuperAdminReportsPage({ searchParams }: Props) {
         </ChartFrame>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Largest organisations" description="A2: active members at the latest rollup.">
           <BarList label="Organisations by active members" items={tenants.top.map((org) => ({ key: org.id, label: org.name, value: org.active, href: `/super-admin/orgs/${org.id}` }))} empty="No rollup yet. It fills in on the next sweep." />
         </ChartFrame>
@@ -80,7 +80,7 @@ export default async function SuperAdminReportsPage({ searchParams }: Props) {
         ) : <p className="text-label text-ink-muted">{view.financeReady ? "No payments in this window." : "Payments are not recorded on this instance yet."}</p>}
       </ChartFrame>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <AdminPanel title="Email outbox" description="A6. Details on the Email page.">
           <StackedBar label="Outbox messages by status" segments={health.outbox.map((row) => ({ key: row.status, label: row.status.toLowerCase().replace(/^./, (c) => c.toUpperCase()), value: row.count }))} />
           <p className="mt-3 text-label text-ink-secondary">{health.stuck} queued over 15 minutes · {formatValue(health.failureRate14d, "percent")} failed in 14 days · <Link href="/super-admin/email" className="underline underline-offset-4">Email</Link></p>

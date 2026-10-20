@@ -53,7 +53,7 @@ export function TaxSettingsForm({ slug, initial, canEdit }: { slug: string; init
       </p>
 
       {values.mode === "SIMPLE" ? (
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Tax name" error={errors.simpleTaxName?.[0]}><Input value={values.simpleTaxName} disabled={!canEdit} onChange={(event) => set("simpleTaxName", event.target.value)} maxLength={20} /></Field>
           <Field label="Rate (%)" error={errors.rateBps?.[0]}><Input inputMode="decimal" value={String(values.rateBps / 100)} disabled={!canEdit} onChange={(event) => set("rateBps", Math.round(Number(event.target.value || 0) * 100))} /></Field>
         </div>
@@ -61,7 +61,7 @@ export function TaxSettingsForm({ slug, initial, canEdit }: { slug: string; init
 
       {gst ? (
         <>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="GSTIN" error={errors.gstin?.[0]}><Input value={values.gstin} disabled={!canEdit} onChange={(event) => set("gstin", event.target.value.toUpperCase().trim())} maxLength={15} spellCheck={false} /></Field>
             <Field label="Registered state" error={errors.stateCode?.[0]}>
               <Dropdown value={values.stateCode} disabled={!canEdit} onChange={(event) => set("stateCode", event.target.value)}>
@@ -73,7 +73,7 @@ export function TaxSettingsForm({ slug, initial, canEdit }: { slug: string; init
             <Field label="SAC" helperText="999599 covers membership of associations." error={errors.sacCode?.[0]}><Input value={values.sacCode} disabled={!canEdit} onChange={(event) => set("sacCode", event.target.value.trim())} maxLength={8} inputMode="numeric" /></Field>
           </div>
           <Field label="Registered address" error={errors.address?.[0]}><Textarea value={values.address} disabled={!canEdit} onChange={(event) => set("address", event.target.value)} rows={2} maxLength={300} /></Field>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Scheme">
               <Dropdown value={values.scheme} disabled={!canEdit} onChange={(event) => set("scheme", event.target.value as TaxValues["scheme"])}>
                 <option value="REGULAR">Regular</option>

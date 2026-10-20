@@ -29,7 +29,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orgS
   const membership = org ? await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: org.id } } }) : null;
   if (!org || !membership) return refuse(404, "Not found.");
   if (!organisationAllows(org.status, "reports.finance") || !can(membership.role, "reports.finance") || membership.unitId) return refuse(403, "Only organisation-wide finance roles can download GSTR-1.");
-  if (!(await checkRateLimitById("dataExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
+  if (!(await checkRateLimitById("reportExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
   const tax = await prisma.orgTaxSettings.findUnique({ where: { organisationId: org.id }, select: { mode: true, gstin: true, stateCode: true } });
   if (tax?.mode !== "GST" || !tax.gstin) return refuse(400, "GSTR-1 needs GST switched on with a GSTIN in Settings → Payments and tax.");
 

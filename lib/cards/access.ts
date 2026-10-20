@@ -35,7 +35,7 @@ export async function authorizeCardAccess(cardId: string): Promise<CardViewer | 
   if (!card || card.member.anonymisedAt) return null;
 
   const membership = await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: card.organisationId } } });
-  if (membership && organisationAllows(card.organisation.status, "members.view") && can(membership.role, "members.view")) {
+  if (membership && organisationAllows(card.organisation.status, "members.view") && can(membership.role, "members.contact")) {
     const scope = await teamScope(card.organisationId, membership.unitId);
     if (unitInScope(scope, card.member.unit?.path ?? null)) return { userId, as: "team" };
   }

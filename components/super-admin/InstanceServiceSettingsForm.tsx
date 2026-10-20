@@ -50,7 +50,7 @@ export function InstanceServiceSettingsForm({ initial }: { initial: Values }) {
             {field("emailFrom", "Sender address")}
             {field("smtpService", "Service (optional)")}
             {field("smtpHost", "Host (optional)")}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {field("smtpPort", "Port", "number")}
               {field("smtpUser", "Username")}
             </div>

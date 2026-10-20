@@ -19,7 +19,7 @@ const now = at("2026-07-01T06:00:00Z");
 
 const sign = (body: string) => crypto.createHmac("sha256", "hook_secret").update(body).digest("hex");
 const captured = (paymentId: string, orderId: string, amount: number) =>
-  JSON.stringify({ event: "payment.captured", payload: { payment: { entity: { id: `pay_${paymentId.slice(-6)}`, order_id: orderId, amount, currency: "INR", method: "upi", notes: { paymentId } } } } });
+  JSON.stringify({ created_at: Math.floor(Date.now() / 1000), event: "payment.captured", payload: { payment: { entity: { id: `pay_${paymentId.slice(-6)}`, order_id: orderId, amount, currency: "INR", method: "upi", notes: { paymentId } } } } });
 const deliver = (body: string, eventId: string, signature = sign(body)) =>
   handleWebhook("RAZORPAY", code, body, new Headers({ "x-razorpay-signature": signature, "x-razorpay-event-id": eventId }));
 
@@ -106,9 +106,9 @@ describe.sequential("gateway webhooks", () => {
 
   it("fails an open attempt and acknowledges unknown events", async () => {
     const { payment, orderId } = await gatewayPayment("failure");
-    const failed = JSON.stringify({ event: "payment.failed", payload: { payment: { entity: { id: "pay_f", order_id: orderId, notes: { paymentId: payment.id }, error_description: "Bank declined" } } } });
+    const failed = JSON.stringify({ created_at: Math.floor(Date.now() / 1000), event: "payment.failed", payload: { payment: { entity: { id: "pay_f", order_id: orderId, notes: { paymentId: payment.id }, error_description: "Bank declined" } } } });
     expect((await deliver(failed, "evt_5")).status).toBe(200);
     expect(await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } })).toMatchObject({ status: "FAILED", note: "Bank declined" });
-    expect(await deliver(JSON.stringify({ event: "order.paid" }), "evt_6")).toEqual({ status: 200, body: "Ignored" });
+    expect(await deliver(JSON.stringify({ created_at: Math.floor(Date.now() / 1000), event: "order.paid" }), "evt_6")).toEqual({ status: 200, body: "Ignored" });
   });
 });

@@ -29,7 +29,7 @@ export default async function OrgReportsApplicationsPage({ params, searchParams 
         <KpiTile label="Approval rate" value={stats.approvalRate} format="percent" hint={`${stats.approved} approved, ${stats.rejected} declined${stats.withdrawn ? `, ${stats.withdrawn} withdrawn` : ""}`} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Join funnel" description="New memberships started in the period, followed to today. Each step shows how many dropped off." table={{ columns: ["Step", "People", "Dropped off"], rows: view.funnel.map((step) => [step.label, step.count, formatValue(step.dropOff, "percent")]) }}>
           <BarList label="Join funnel" ordinal items={view.funnel.map((step) => ({ key: step.key, label: step.label, value: step.count, hint: step.dropOff !== null ? `${formatValue(step.dropOff, "percent")} dropped off before this step` : undefined }))} />
         </ChartFrame>

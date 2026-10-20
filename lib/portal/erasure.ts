@@ -59,6 +59,11 @@ export async function anonymiseMember(tx: Tx, args: { org: OrgClock; memberId: s
       anonymisedAt: now,
     },
   });
+  // Free text the person or the team wrote about them goes too: their request reasons, notes on their
+  // memberships, and invitations addressed to their email.
+  await tx.erasureRequest.updateMany({ where: { organisationId: args.org.id, memberId: member.id }, data: { reason: "" } });
+  await tx.membershipTerm.updateMany({ where: { organisationId: args.org.id, memberId: member.id, reason: { not: "Details erased on request" } }, data: { reason: null } });
+  await tx.memberInvite.updateMany({ where: { organisationId: args.org.id, email: member.email.toLowerCase() }, data: { email: null, revokedAt: now } });
   // Payment rows keep amounts, dates, bank references (UTR) and tax documents, which accounting law needs
   // for eight years; free-text notes and references are cleared, and the rows are marked anonymised.
   await tx.payment.updateMany({ where: { organisationId: args.org.id, memberId: member.id }, data: { note: "", reference: null, anonymisedAt: now } });

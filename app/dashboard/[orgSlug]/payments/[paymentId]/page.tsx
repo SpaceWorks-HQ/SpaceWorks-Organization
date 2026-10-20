@@ -36,7 +36,7 @@ export default async function PaymentPage({ params }: { params: Promise<{ orgSlu
 
       {payment.flagReason && (payment.flaggedAt || payment.documentHeld) ? <Callout tone="warning" title="Needs review">{payment.flagReason}</Callout> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <Card as="section" className="rounded-xl">
             <CardHeader title="Charged" />

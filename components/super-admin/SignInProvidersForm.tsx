@@ -89,7 +89,7 @@ export function SignInProvidersForm({ initial }: { initial: SignInProviderValues
             <Field label="Services ID" optional>
               <Input value={values.appleClientId} onChange={(event) => set("appleClientId", event.target.value)} />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Team ID" optional>
                 <Input value={values.appleTeamId} onChange={(event) => set("appleTeamId", event.target.value)} />
               </Field>

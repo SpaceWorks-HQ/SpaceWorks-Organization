@@ -44,7 +44,7 @@ export function PortalProfileForm({ organisationSlug, organisationName, unitLabe
   return (
     <form className="flex flex-col gap-5" onSubmit={(event) => { event.preventDefault(); submit(); }}>
       {status ? <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"}>{status.text}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" required error={errors.name?.[0]}><Input value={values.name} autoComplete="name" onChange={(e) => set("name", e.target.value)} maxLength={120} /></Field>
         <Field label="Email" helperText="Your account's email. Change it in your profile."><ReadOnlyValue value={values.email} /></Field>
         <Field label="Phone" optional error={errors.phone?.[0]}><Input type="tel" autoComplete="tel" value={values.phone} onChange={(e) => set("phone", e.target.value)} maxLength={32} /></Field>
@@ -59,7 +59,7 @@ export function PortalProfileForm({ organisationSlug, organisationName, unitLabe
         ) : null}
       </div>
       {fields.length ? (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {fields.map((field) => {
             const value = values.fieldValues[field.key];
             const error = errors[`fieldValues.${field.key}`]?.[0];
@@ -80,7 +80,7 @@ export function PortalProfileForm({ organisationSlug, organisationName, unitLabe
         </div>
       ) : null}
       {values.isMinor ? (
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Guardian's name" required error={errors.guardianName?.[0]}><Input value={values.guardianName} onChange={(e) => set("guardianName", e.target.value)} /></Field>
           <Field label="Guardian's email" required error={errors.guardianEmail?.[0]}><Input type="email" value={values.guardianEmail} onChange={(e) => set("guardianEmail", e.target.value)} /></Field>
           <Field label="Guardian's phone" optional><Input type="tel" value={values.guardianPhone} onChange={(e) => set("guardianPhone", e.target.value)} /></Field>

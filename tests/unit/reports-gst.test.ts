@@ -85,3 +85,23 @@ describe("GSTR-1 and GSTR-3B (B7)", () => {
     expect(vat).toEqual([{ currency: "AED", rateBps: 500, taxable: 98_000, tax: 400, documents: 2 }]);
   });
 });
+
+describe("credit notes follow their original document", () => {
+  const exempt = doc("bos", 1, { kind: "BILL_OF_SUPPLY", paymentId: "pay-bos", cgstMinor: 0, sgstMinor: 0, totalMinor: 50_000, taxableMinor: 50_000, rateBps: 0 });
+  const plain = doc("rcpt", 2, { kind: "RECEIPT", paymentId: "pay-rcpt", cgstMinor: 0, sgstMinor: 0, totalMinor: 40_000, taxableMinor: 40_000, rateBps: 0 });
+  const againstExempt = doc("cn-bos", 1, { kind: "CREDIT_NOTE", series: "CN", paymentId: "pay-bos", cgstMinor: 0, sgstMinor: 0, totalMinor: 20_000, taxableMinor: 20_000, rateBps: 0 });
+  const againstReceipt = doc("cn-rcpt", 2, { kind: "CREDIT_NOTE", series: "CN", paymentId: "pay-rcpt", cgstMinor: 0, sgstMinor: 0, totalMinor: 10_000, taxableMinor: 10_000, rateBps: 0 });
+  const r1 = gstr1([exempt, plain, againstExempt, againstReceipt], [], MAY, "KL");
+
+  it("reduces nil/exempt for a bill of supply and leaves taxable supplies alone", () => {
+    expect(r1.nilExempt.intra).toBe(30_000);
+    expect(r1.totals).toEqual({ taxable: 0, igst: 0, cgst: 0, sgst: 0 });
+    expect(r1.b2cs).toEqual([]);
+    expect(r1.hsnB2c).toEqual([]);
+  });
+
+  it("keeps them out of the monthly tax liability", () => {
+    const buckets = periodBuckets(resolvePeriod({ period: "custom", from: "2026-05-01", to: "2026-05-31" }, { timezone: "Asia/Kolkata", financialYearStartMonth: 4 }, at("2026-06-15")), "Asia/Kolkata", "month");
+    expect(monthlyLiability([exempt, plain, againstExempt, againstReceipt], buckets).every((row) => row.taxable === 0)).toBe(true);
+  });
+});

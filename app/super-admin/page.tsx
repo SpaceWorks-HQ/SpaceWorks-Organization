@@ -29,7 +29,7 @@ export default async function SuperAdminOverviewPage() {
         />
       </AdminPanel>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <SparklineCard title="Organisations (7 days)" subtitle="Created per day" points={activity7d.map((d) => ({ xLabel: d.day, y: d.orgs }))} />
         <SparklineCard title="Users (7 days)" subtitle="Signed up per day" points={activity7d.map((d) => ({ xLabel: d.day, y: d.users }))} />
       </div>

@@ -67,7 +67,7 @@ export function GatewaySettingsForm({ slug, initial, canEdit, secretsReady }: { 
             {sameProvider && initial.hasSecret ? <Chip tone={initial.testMode ? "warning" : "success"}>{initial.testMode ? "Test mode" : "Live"}</Chip> : null}
             {sameProvider && initial.verifiedAt ? <Chip tone="outline">Keys checked {initial.verifiedAt}</Chip> : null}
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {provider === "RAZORPAY" ? (
               <Field label="Key id" helperText="Starts with rzp_test_ or rzp_live_." error={errors.keyId?.[0]}>
                 <Input value={keyId} onChange={(event) => setKeyId(event.target.value.trim())} disabled={locked} autoComplete="off" spellCheck={false} />

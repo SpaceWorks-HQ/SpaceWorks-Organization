@@ -1,4 +1,5 @@
 import "server-only";
+import { prisma } from "@/lib/db";
 
 import type { ReportContext } from "../context";
 import { csvAmount } from "../money";
@@ -29,9 +30,12 @@ export async function revenueExport(ctx: ReportContext): Promise<Built> {
 export async function outstandingExport(ctx: ReportContext): Promise<Built> {
   const rows = await loadFinanceRows(ctx.scope);
   const plan = new Map(ctx.plans.map((p) => [p.id, p.name]));
+  // Age payments from their term's due date, exactly as the Money page does.
+  const termIds = [...new Set(rows.payments.flatMap((payment) => (payment.termId ? [payment.termId] : [])))];
+  const dueBy = new Map((await prisma.membershipTerm.findMany({ where: { organisationId: ctx.org.id, id: { in: termIds } }, select: { id: true, paymentDueBy: true } })).map((term) => [term.id, term.paymentDueBy]));
   return {
     header: ["Kind", "Id", "Member id", "Plan", "Status", "Currency", "Amount", "Due", "Days past due", "Age band"],
-    rows: outstandingItems(rows, ctx.now).map((item) => [item.kind, item.id, item.memberId, item.planId ? plan.get(item.planId) ?? "" : "", item.status, item.currency, csvAmount(item.amountMinor, item.currency), iso(item.dueAt), item.daysPastDue, item.bucket]),
+    rows: outstandingItems(rows, ctx.now, dueBy).map((item) => [item.kind, item.id, item.memberId, item.planId ? plan.get(item.planId) ?? "" : "", item.status, item.currency, csvAmount(item.amountMinor, item.currency), iso(item.dueAt), item.daysPastDue, item.bucket]),
   };
 }
 

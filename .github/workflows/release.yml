@@ -22,8 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 jobs:
   tests:
@@ -74,6 +73,9 @@ jobs:
           echo "Preparing $version"
 
   publish:
+    permissions:
+      contents: read
+      packages: write
     needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -140,6 +142,8 @@ jobs:
           no-cache-filters: builder,frontend-builder
 
   github-release:
+    permissions:
+      contents: write
     needs:
       - prepare
       - publish
@@ -172,6 +176,9 @@ jobs:
             - `ghcr.io/${{ needs.prepare.outputs.registry_owner }}/spaceworks-organization-frontend:${{ needs.prepare.outputs.version }}` (website only, for the split layout)
 
   promote-latest:
+    permissions:
+      contents: read
+      packages: write
     needs:
       - prepare
       - publish

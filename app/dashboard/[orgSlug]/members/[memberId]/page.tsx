@@ -60,7 +60,7 @@ export default async function MemberPage({ params }: { params: Promise<{ orgSlug
         </span>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <MembershipPanel slug={org.slug} memberId={member.id} memberships={memberships} plans={view.plans} canManage={view.canManage} />
           {payments ? <MemberPaymentsSection data={payments} /> : null}

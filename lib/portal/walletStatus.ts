@@ -42,7 +42,11 @@ export type WalletState = {
 
 const REJOINABLE: ReadonlySet<TermStatus | "NONE"> = new Set(["LAPSED", "EXPIRED", "CANCELLED"]);
 
-export function walletState(chain: WalletTerm[], plan: WalletPlan, args: { now: Date; timeZone: string; organisationActive: boolean }): WalletState {
+/**
+ * `unpaidLive` holds terms that started before payment (plans that activate first and charge later) and have
+ * no settled payment yet; the wallet offers Pay for those too.
+ */
+export function walletState(chain: WalletTerm[], plan: WalletPlan, args: { now: Date; timeZone: string; organisationActive: boolean; unpaidLive?: ReadonlySet<string> }): WalletState {
   const { now, timeZone } = args;
   const derived = deriveStatus(chain, now);
   const current = derived.current;
@@ -72,10 +76,15 @@ export function walletState(chain: WalletTerm[], plan: WalletPlan, args: { now: 
     actions: {
       renew: offered && windowOpen && !blocked,
       rejoin: offered && !blocked && REJOINABLE.has(derived.status) && (plan.joinMode === "OPEN" || plan.joinMode === "APPROVAL"),
-      payTermId: pendingStatus === "PENDING_PAYMENT" ? derived.pending!.id : null,
+      payTermId: pendingStatus === "PENDING_PAYMENT" ? derived.pending!.id : current && args.unpaidLive?.has(current.id) ? current.id : null,
       withdrawTermId: withdrawable?.id ?? null,
       withdrawKind,
       leave: live,
     },
   };
+}
+
+/** Terms on activate-then-charge plans that are running with nothing paid yet. */
+export function unpaidLiveTerms(terms: Array<{ id: string; status: string; priceMinor: number; joiningFeeMinor: number; payments: Array<{ status: string }>; plan: { paymentTiming: string } }>) {
+  return new Set(terms.filter((term) => term.plan.paymentTiming === "ACTIVATE_THEN_CHARGE" && term.priceMinor + term.joiningFeeMinor > 0 && ["UPCOMING", "ACTIVE", "GRACE"].includes(term.status) && !term.payments.some((payment) => ["PAID", "WAIVED", "AWAITING_CONFIRMATION"].includes(payment.status))).map((term) => term.id));
 }

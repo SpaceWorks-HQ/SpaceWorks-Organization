@@ -103,7 +103,7 @@ export function GstSection({ view }: { view: View }) {
       <nav aria-label="Return month" className="flex flex-wrap gap-1.5">
         {view.months.map((month) => <Link key={month.key} href={monthHref(month.key)} aria-current={view.month?.key === month.key ? "page" : undefined} className={cn("inline-flex min-h-9 items-center rounded-full border px-3 text-sm", view.month?.key === month.key ? "border-primary bg-primary font-semibold text-on-primary" : "border-line bg-panel text-ink hover:bg-muted")}>{month.label}</Link>)}
       </nav>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="GSTR-3B 3.1(a) outward taxable supplies" description={`Nil-rated and exempt (3.1(c)): ${inr(r3.nilExempt, l)}`}>
           <DataTable table={{ columns: ["Taxable value", "IGST", "CGST", "SGST"], rows: [[inr(r3.outwardTaxable.taxable, l), inr(r3.outwardTaxable.igst, l), inr(r3.outwardTaxable.cgst, l), inr(r3.outwardTaxable.sgst, l)]] }} />
         </ChartFrame>
@@ -114,7 +114,7 @@ export function GstSection({ view }: { view: View }) {
       <ChartFrame title="Table 7: B2C others, by place of supply and rate" description="Net of credit notes on these supplies.">
         {r1.b2cs.length ? <DataTable table={{ columns: ["Place of supply", "Type", "Rate", "Taxable value", "IGST", "CGST", "SGST"], rows: r1.b2cs.map((row) => [row.placeOfSupply, row.supplyType === "INTER" ? "Inter-state" : "Intra-state", rate(row.rateBps), inr(row.taxable, l), inr(row.igst, l), inr(row.cgst, l), inr(row.sgst, l)]) }} /> : <p className="text-label text-ink-muted">None this month.</p>}
       </ChartFrame>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Table 4A: B2B (members with a GSTIN)" description={`${r1.b2b.length} invoices`}>
           {r1.b2b.length ? <DataTable table={{ columns: ["GSTIN", "Invoice", "Value", "Taxable", "Tax"], rows: r1.b2b.map((row) => [row.gstin ?? "", row.number, inr(row.value, l), inr(row.taxable, l), inr(row.igst + row.cgst + row.sgst, l)]) }} /> : <p className="text-label text-ink-muted">None this month.</p>}
         </ChartFrame>
@@ -122,7 +122,7 @@ export function GstSection({ view }: { view: View }) {
           {r1.b2cl.length ? <DataTable table={{ columns: ["Invoice", "Place of supply", "Value", "IGST"], rows: r1.b2cl.map((row) => [row.number, row.placeOfSupply ?? "", inr(row.value, l), inr(row.igst, l)]) }} /> : <p className="text-label text-ink-muted">None this month.</p>}
         </ChartFrame>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartFrame title="Table 12: SAC summary" description="B2B and B2C rows, UQC NA for services.">
           <DataTable table={{ columns: ["Tab", "SAC", "Rate", "Taxable", "IGST", "CGST", "SGST"], rows: [...r1.hsnB2b.map((row) => ["B2B", row.sac, rate(row.rateBps), inr(row.taxable, l), inr(row.igst, l), inr(row.cgst, l), inr(row.sgst, l)]), ...r1.hsnB2c.map((row) => ["B2C", row.sac, rate(row.rateBps), inr(row.taxable, l), inr(row.igst, l), inr(row.cgst, l), inr(row.sgst, l)])] }} />
         </ChartFrame>

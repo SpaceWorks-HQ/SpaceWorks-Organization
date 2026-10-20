@@ -137,7 +137,11 @@ describe.sequential("audited, streamed exports", () => {
   it("audits finance exports as finance exports", async () => {
     const response = await call(ids.owner, "outstanding");
     await response.text();
-    expect(await prisma.auditEvent.count({ where: { organisationId: org.id, action: "FINANCE_REPORT_EXPORTED" } })).toBe(1);
+    // One row before any data leaves (exports fail closed), one when the stream finishes with the count.
+    const rows = await prisma.auditEvent.findMany({ where: { organisationId: org.id, action: "FINANCE_REPORT_EXPORTED" }, orderBy: { createdAt: "asc" }, select: { metadata: true } });
+    expect(rows).toHaveLength(2);
+    expect(rows[0].metadata).toMatchObject({ report: "outstanding", stage: "started" });
+    expect(rows[1].metadata).toMatchObject({ report: "outstanding", complete: true });
   });
 });
 

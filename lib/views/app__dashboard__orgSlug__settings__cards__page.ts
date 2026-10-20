@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { can, requireOrgCapability } from "@/lib/permissions";
+import { memberWhere, teamScope } from "@/lib/membership/scope";
 import { deriveCardPrefix } from "@/lib/cards/core";
 import { brandingFor, designFor, loadCardOrgContext } from "@/lib/cards/data";
 import { normalizeCardDesign } from "@/lib/cards/design/presets";
@@ -20,7 +21,7 @@ export async function loadOrgCardSettingsView({ params, searchParams }: { params
       take: 10,
       select: { id: true, format: true, status: true, cardCount: true, byteSize: true, error: true, createdAt: true, finishedAt: true, expiresAt: true, storageKey: true },
     }),
-    prisma.memberCard.count({ where: { organisationId: organisation.id, revokedAt: null } }),
+    prisma.memberCard.count({ where: { organisationId: organisation.id, revokedAt: null, member: memberWhere(await teamScope(organisation.id, membership.unitId)) } }),
   ]);
   const plan = planParam ? plans.find((item) => item.id === planParam) ?? null : null;
   if (planParam && !plan) notFound();

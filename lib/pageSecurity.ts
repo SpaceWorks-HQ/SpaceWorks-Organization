@@ -14,7 +14,8 @@ export function pageSecurity(request: NextRequest) {
     "img-src 'self' data: blob: https:", "font-src 'self' data: https:", `connect-src 'self' https:${testBackend}`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
+    // Upgrading only makes sense on an HTTPS install; the installer's plain-HTTP mode would break every asset.
+    ...(process.env.NODE_ENV === "production" && process.env.ALLOW_PLAIN_HTTP !== "1" && !(process.env.NEXT_PUBLIC_BASE_URL ?? "").startsWith("http:") ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
   const incoming = new Headers(request.headers);
   incoming.set("Content-Security-Policy", csp);

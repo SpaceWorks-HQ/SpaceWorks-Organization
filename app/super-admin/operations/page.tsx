@@ -32,7 +32,7 @@ export default async function SuperAdminOperationsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="Operations" description="Backup posture, queue health, retention jobs, and safe maintenance controls for this deployment." />
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         <AdminPanel title="Database backups">
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap gap-2">

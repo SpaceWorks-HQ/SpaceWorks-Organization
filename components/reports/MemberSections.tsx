@@ -15,7 +15,7 @@ type View = OrgReportsMembers;
 export function MemberBreakdowns({ view }: { view: View }) {
   const q = view.quality;
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {view.units.length ? (
         <ChartFrame className="md:col-span-2 xl:col-span-3" title={`${view.unitLevel} league table`} description="Each row counts its whole subtree. Share is of active members in this view." table={{ columns: ["Unit", "Active", "In grace", "Joined", "Lapsed", "Renewal rate", "Share"], rows: view.units.map((row) => [row.name, row.active, row.grace, row.joined, row.lapsed, formatValue(row.renewalRate, "percent"), formatValue(row.share, "percent")]) }}>
           <BarList label="Active members by unit" items={view.units.map((row) => ({ key: row.unitId ?? "none", label: row.name, value: row.active, href: row.href, display: `${row.active.toLocaleString("en-IN")} · ${formatValue(row.share, "percent")}`, hint: `${row.joined} joined · ${row.lapsed} lapsed · renewal rate ${formatValue(row.renewalRate, "percent")}` }))} />

@@ -24,7 +24,7 @@ export function PlanCards({ org, plans, takingMembers, preview = false }: {
     <div className="flex flex-col gap-6">
       {!takingMembers ? <Callout tone="info">{org.name} isn&apos;t taking new members right now. Existing members can still sign in to see their membership.</Callout> : null}
       {plans.length === 0 ? <EmptyState mood="sleepy">No membership plans are open yet.</EmptyState> : (
-        <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
             const { price, extras } = describePrice(plan, org.locale);
             const joinable = takingMembers && plan.joinMode !== "CLOSED" && plan.joinMode !== "INVITE_ONLY";

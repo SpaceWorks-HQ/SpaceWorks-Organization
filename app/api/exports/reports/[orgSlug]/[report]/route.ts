@@ -44,7 +44,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orgS
   const membership = org ? await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: org.id } } }) : null;
   if (!org || !membership || !definition) return refuse(404, "Not found.");
   if (!organisationAllows(org.status, definition.capability) || !can(membership.role, definition.capability)) return refuse(403, "Your role can't export this report.");
-  if (!(await checkRateLimitById("dataExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
+  if (!(await checkRateLimitById("reportExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
 
   const search = new URL(request.url).searchParams;
   const ctx = await buildReportContext({ organisation: org, membership, userId }, Object.fromEntries(search));

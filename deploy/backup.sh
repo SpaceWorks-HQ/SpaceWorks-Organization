@@ -24,7 +24,10 @@ database() {
 }
 
 mc_alias() {
-  until mc alias set local https://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null; do sleep 2; done
+  # Credentials through the environment, not the command line (see deploy/createbuckets.sh).
+  MC_HOST_local="https://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@minio:9000"
+  export MC_HOST_local
+  until mc ls local >/dev/null 2>&1; do sleep 2; done
 }
 
 case "${1:-}" in

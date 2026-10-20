@@ -32,7 +32,7 @@ function RoleForm({ slug, units, role, onDone }: { slug: string; units: UnitOpti
   return (
     <form className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-4" onSubmit={(event) => { event.preventDefault(); submit(); }}>
       {error ? <Callout tone="danger" role="alert">{error}</Callout> : null}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Role name" required>
           <Input value={values.name} onChange={(event) => setValues({ ...values, name: event.target.value })} maxLength={60} placeholder="Systems Engineer" autoFocus />
         </Field>

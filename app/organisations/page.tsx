@@ -33,7 +33,7 @@ export default async function OrganisationsDirectoryPage({ searchParams }: { sea
       ) : (
         <>
           <p className="text-caption text-ink-muted">{total} {total === 1 ? "organisation" : "organisations"}</p>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {organisations.map((org) => (
               <li key={org.slug}>
                 <Link href={`/o/${org.slug}`} className="flex h-full flex-col gap-3 rounded-2xl border border-line bg-panel p-5 transition-colors hover:border-line-strong hover:bg-subtle">

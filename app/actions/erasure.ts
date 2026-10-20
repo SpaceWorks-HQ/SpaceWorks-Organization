@@ -28,7 +28,7 @@ const decisionSchema = z.object({
 export async function decideErasureRequest(input: unknown): Promise<ActionResult> {
   const parsed = decisionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
-  const access = await orgActionAccess(parsed.data.organisationSlug, "members.manage");
+  const access = await orgActionAccess(parsed.data.organisationSlug, "erasure.decide");
   if (!access.ok) return access;
   if (await isActionRateLimited("action", access.userId)) return { ok: false, error: "Too many requests. Try again shortly." };
   const org = await prisma.organisation.findUniqueOrThrow({ where: { id: access.organisation.id }, select: { id: true, slug: true, timezone: true, financialYearStartMonth: true } });

@@ -54,7 +54,7 @@ function Units({ units, intro }: { units: PageUnit[]; intro: string }) {
     <div className="flex flex-col gap-5">
       {intro ? <p className="max-w-[720px] whitespace-pre-wrap text-body-l text-ink-secondary">{intro}</p> : null}
       {top.length === 0 ? <p className="text-body-ui text-ink-muted">No units yet.</p> : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {top.map((unit) => {
             const children = units.filter((other) => other.parentId === unit.id);
             return (

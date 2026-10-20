@@ -33,7 +33,7 @@ export default async function DashboardPage() {
           organisation owner to invite you to their team.
         </EmptyState>
       ) : (
-        <section aria-label="Your organisations" className="grid gap-4 sm:grid-cols-2">
+        <section aria-label="Your organisations" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {teams.map((team) => (
             <Link
               key={team.slug}

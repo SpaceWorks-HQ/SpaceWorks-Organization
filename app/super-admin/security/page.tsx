@@ -23,7 +23,7 @@ export default async function SuperAdminSecurityPage() {
         <StatTile className="rounded-xl" label="Platform admins" value={platformAdmins.length.toLocaleString()} hint={adminsWithoutMfa > 0 ? `${adminsWithoutMfa} without MFA` : "All use MFA"} tone={adminsWithoutMfa > 0 ? "attention" : "default"} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <AdminPanel title="Sign-in methods">
           <MetricRows
             rows={[

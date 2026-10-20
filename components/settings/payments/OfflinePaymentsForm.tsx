@@ -30,7 +30,7 @@ export function OfflinePaymentsForm({ slug, initial, canEdit }: { slug: string; 
       }}
     >
       {status ? <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"}>{status.text}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="UPI ID" optional helperText="Members see a QR code for the exact amount." error={errors.upiVpa?.[0]}>
           <Input value={values.upiVpa} disabled={!canEdit} placeholder="club@okbank" onChange={(event) => setValues({ ...values, upiVpa: event.target.value.trim() })} maxLength={80} spellCheck={false} />
         </Field>

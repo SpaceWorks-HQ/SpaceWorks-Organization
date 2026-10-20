@@ -49,7 +49,7 @@ function Gallery({ slug, section, disabled, onChange }: Props<"gallery">) {
   return (
     <div className="flex flex-col gap-4">
       {images.length ? (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {images.map((image, index) => (
             <li key={image.key} className="flex flex-col gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element -- uploaded through the app's own storage route */}
@@ -82,7 +82,7 @@ function Links({ section, disabled, error, onChange }: Props<"links">) {
               {LINK_KINDS.map((kind) => <option key={kind} value={kind}>{LINK_LABELS[kind]}</option>)}
             </Dropdown>
           </Field>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Label" error={error(`links.${index}.label`)}><Input value={link.label} maxLength={60} disabled={disabled} onChange={(event) => set(index, { label: event.target.value })} /></Field>
             <Field label="Address" error={error(`links.${index}.url`)}><Input type="url" inputMode="url" value={link.url} maxLength={500} placeholder="https://" disabled={disabled} onChange={(event) => set(index, { url: event.target.value.trim() })} /></Field>
           </div>
@@ -110,7 +110,7 @@ export function SectionFields(props: { slug: string; section: PageSection; disab
       return <Intro section={section} disabled={disabled} onChange={(intro) => onChange({ ...section, intro })} note="Your units show below it, from Settings → Units and roles." />;
     case "contact":
       return (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Email" optional error={error("email")}><Input type="email" value={section.email} maxLength={320} disabled={disabled} onChange={(event) => onChange({ ...section, email: event.target.value })} /></Field>
           <Field label="Phone" optional error={error("phone")}><Input type="tel" value={section.phone} maxLength={32} disabled={disabled} onChange={(event) => onChange({ ...section, phone: event.target.value })} /></Field>
           <Field label="Address" optional className="sm:col-span-2"><Textarea value={section.address} rows={2} maxLength={400} disabled={disabled} onChange={(event) => onChange({ ...section, address: event.target.value })} /></Field>

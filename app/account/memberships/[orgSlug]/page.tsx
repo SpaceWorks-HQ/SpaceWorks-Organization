@@ -42,7 +42,7 @@ export default async function MembershipDetailPage({ params }: { params: Promise
         </Link>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           {memberships.map((membership) => (
             <Card as="section" key={membership.plan.id} className="rounded-xl" aria-labelledby={`plan-${membership.plan.id}`}>

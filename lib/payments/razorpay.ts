@@ -3,6 +3,8 @@ import "server-only";
 import { gatewayRequest, hmacHex, num, safeEqualHex, str, type PaymentGateway } from "./gateway";
 
 const API = "https://api.razorpay.com/v1";
+/** Razorpay retries a failed webhook for up to 24 hours; allow a little more. */
+const REPLAY_WINDOW_SECONDS = 36 * 3600;
 
 function auth(keyId: string | null, secret: string) {
   if (!keyId) throw new Error("Razorpay needs a key id.");
@@ -32,15 +34,26 @@ export const razorpay: PaymentGateway = {
     return { kind: "razorpay", orderId, keyId: credentials.keyId! };
   },
 
-  verifyWebhook(credentials, rawBody, headers) {
+  verifyWebhook(credentials, rawBody, headers, now = new Date()) {
     const signature = headers.get("x-razorpay-signature") ?? "";
     if (!credentials.webhookSecret || !signature) return false;
-    return safeEqualHex(signature, hmacHex(credentials.webhookSecret, rawBody));
+    if (!safeEqualHex(signature, hmacHex(credentials.webhookSecret, rawBody))) return false;
+    // Razorpay signs no timestamp header; refuse signed bodies older than its retry window so a captured
+    // request can't be replayed later.
+    try {
+      const created = num((JSON.parse(rawBody) as Record<string, unknown>).created_at);
+      return created > 0 && now.getTime() / 1000 - created < REPLAY_WINDOW_SECONDS;
+    } catch {
+      return false;
+    }
   },
 
   parseEvent(rawBody, headers) {
     const body = JSON.parse(rawBody) as Record<string, unknown>;
-    const eventId = headers.get("x-razorpay-event-id") ?? `${str(body.event)}:${str(entity(body, "payment").id) ?? str(entity(body, "refund").id)}:${num(body.created_at)}`;
+    // The event id header isn't covered by the signature, so de-duplication keys on the signed body only:
+    // the event, its entity and when Razorpay created it.
+    void headers;
+    const eventId = `${str(body.event)}:${str(entity(body, "payment").id) ?? str(entity(body, "refund").id) ?? ""}:${num(body.created_at)}`;
     switch (body.event) {
       case "payment.captured": {
         const payment = entity(body, "payment");

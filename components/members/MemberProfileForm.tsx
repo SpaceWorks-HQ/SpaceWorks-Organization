@@ -46,7 +46,7 @@ export function MemberProfileForm({
   return (
     <form className="flex flex-col gap-5" onSubmit={(event) => { event.preventDefault(); submit(); }}>
       {status ? <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"}>{status.text}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" required error={errors.name?.[0]}><Input value={values.name} disabled={disabled} onChange={(e) => set("name", e.target.value)} maxLength={120} /></Field>
         <Field label="Email" required error={errors.email?.[0]}><Input type="email" value={values.email} disabled={disabled} onChange={(e) => set("email", e.target.value)} maxLength={320} /></Field>
         <Field label="Phone" optional error={errors.phone?.[0]}><Input type="tel" value={values.phone} disabled={disabled} onChange={(e) => set("phone", e.target.value)} maxLength={32} /></Field>
@@ -74,7 +74,7 @@ export function MemberProfileForm({
         ) : null}
       </div>
       {fields.length ? (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {fields.map((field) => {
             const value = values.fieldValues[field.key];
             const error = errors[`fieldValues.${field.key}`]?.[0];
@@ -94,7 +94,7 @@ export function MemberProfileForm({
       ) : null}
       <CheckboxField checked={values.isMinor} disabled={disabled} onCheckedChange={(checked) => set("isMinor", checked === true)} label="Under 18" description="A parent or guardian consents and receives the emails too." />
       {values.isMinor ? (
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Guardian's name" required error={errors.guardianName?.[0]}><Input value={values.guardianName} disabled={disabled} onChange={(e) => set("guardianName", e.target.value)} /></Field>
           <Field label="Guardian's email" required error={errors.guardianEmail?.[0]}><Input type="email" value={values.guardianEmail} disabled={disabled} onChange={(e) => set("guardianEmail", e.target.value)} /></Field>
           <Field label="Guardian's phone" optional><Input type="tel" value={values.guardianPhone} disabled={disabled} onChange={(e) => set("guardianPhone", e.target.value)} /></Field>

@@ -70,7 +70,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       }}
     >
       {error ? <Callout tone="danger" role="alert">{error}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" required error={errors.name?.[0]}><Input value={values.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" maxLength={120} /></Field>
         <Field label="Email" helperText="From your account."><ReadOnlyValue value={user.email} /></Field>
         <Field label="Phone" optional error={errors.phone?.[0]}><Input type="tel" value={values.phone} onChange={(e) => set("phone", e.target.value)} autoComplete="tel" maxLength={32} /></Field>
@@ -102,7 +102,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       })}
       <CheckboxField checked={values.isMinor} onCheckedChange={(c) => set("isMinor", c === true)} label="I'm under 18" description="A parent or guardian needs to agree too." />
       {values.isMinor ? (
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Guardian's name" required error={errors.guardianName?.[0]}><Input value={values.guardianName} onChange={(e) => set("guardianName", e.target.value)} /></Field>
           <Field label="Guardian's email" required error={errors.guardianEmail?.[0]}><Input type="email" value={values.guardianEmail} onChange={(e) => set("guardianEmail", e.target.value)} /></Field>
           <Field label="Guardian's phone" optional><Input type="tel" value={values.guardianPhone} onChange={(e) => set("guardianPhone", e.target.value)} /></Field>
