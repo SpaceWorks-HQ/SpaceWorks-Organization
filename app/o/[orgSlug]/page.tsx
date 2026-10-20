@@ -1,13 +1,22 @@
-import Link from "next/link";
-import { ArrowUpRight, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { loadPublicOrgPage } from "@/lib/views/app__o__orgSlug__page";
-import { describeDuration, describePrice, JOIN_MODE_LABELS } from "@/lib/membership/describe";
 import { indianStateName } from "@/lib/indianStates";
-import { buttonClasses } from "@/components/ui/button";
-import { Callout, Chip, EmptyState, OrgLogo } from "@/components/ui/display";
+import { PageSections } from "@/components/public/PageSections";
+import { PlanCards } from "@/components/public/PlanCards";
+import { Chip, OrgLogo } from "@/components/ui/display";
 
 export default async function PublicOrganisationPage({ params }: { params: Promise<{ orgSlug: string }> }) {
-  const { org, plans, takingMembers } = await loadPublicOrgPage({ params });
+  const { org, plans, takingMembers, page, units } = await loadPublicOrgPage({ params });
+
+  // A published custom page (Settings → Public page) replaces the plain one.
+  if (page) {
+    return (
+      <div className="mx-auto w-full max-w-[1120px] px-4 py-10 sm:px-6 lg:py-16">
+        <PageSections document={page} org={org} plans={plans} units={units} takingMembers={takingMembers} preview={false} />
+      </div>
+    );
+  }
+
   const place = [org.city, indianStateName(org.stateCode)].filter(Boolean).join(", ");
   return (
     <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-12 px-4 py-10 sm:px-6 lg:py-16">
@@ -30,40 +39,7 @@ export default async function PublicOrganisationPage({ params }: { params: Promi
 
       <section aria-labelledby="plans" className="flex flex-col gap-6">
         <h2 id="plans" className="text-h1 text-ink">Membership</h2>
-        {!takingMembers ? <Callout tone="info">{org.name} isn&apos;t taking new members right now. Existing members can still sign in to see their membership.</Callout> : null}
-        {plans.length === 0 ? <EmptyState mood="sleepy">No membership plans are open yet.</EmptyState> : (
-          <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {plans.map((plan) => {
-              const { price, extras } = describePrice(plan, org.locale);
-              const joinable = takingMembers && plan.joinMode !== "CLOSED" && plan.joinMode !== "INVITE_ONLY";
-              return (
-                <li key={plan.id} className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-6">
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-h3 text-ink">{plan.name}</h3>
-                    <p className="text-caption text-ink-muted">{describeDuration(plan, org.financialYearStartMonth)}</p>
-                  </div>
-                  <div>
-                    <p className="text-h2 tabular-nums text-ink">{price}</p>
-                    {extras.length ? <p className="text-caption text-ink-secondary">{extras.join(" · ")}</p> : null}
-                  </div>
-                  {plan.description ? <p className="whitespace-pre-wrap text-body-ui text-ink-secondary">{plan.description}</p> : null}
-                  {!plan.allUnits ? <p className="text-caption text-ink-muted">For {plan.units.map((entry) => entry.unit.name).join(", ")}</p> : null}
-                  <div className="mt-auto flex flex-col gap-2 pt-2">
-                    {joinable ? (
-                      <Link href={`/o/${org.slug}/join/${plan.slug}`} className={buttonClasses({ variant: "accent", fullWidth: true })}>
-                        {plan.joinMode === "APPROVAL" ? "Apply to join" : "Join"}
-                        <ArrowUpRight aria-hidden className="size-4" />
-                      </Link>
-                    ) : (
-                      <span className="text-center text-caption text-ink-muted">{JOIN_MODE_LABELS[plan.joinMode].label}</span>
-                    )}
-                    {plan.joinMode === "APPROVAL" && joinable ? <p className="text-center text-caption text-ink-muted">The team reviews each application.</p> : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <PlanCards org={org} plans={plans} takingMembers={takingMembers} />
       </section>
     </div>
   );

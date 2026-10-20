@@ -101,3 +101,32 @@ April to March. It shares its vocabulary with the sister Space Works site:
   - The year ruler fills as the section scrolls.
   - The receipt prints once and the terminal caret blinks.
 - **Design brief:** `.impeccable/surfaces/app-page-tsx.md`.
+
+## Member portal (`/account`)
+
+- **Wallet first.** `/account` is the membership wallet: one card per organisation (logo, member number,
+  unit, role chips), one row per plan with a status chip, a single sentence on where it stands ("Valid until
+  31 Mar 2027 · 20 days left") and only the actions that apply now. Pay is the accent button; Renew is
+  primary; Cancel renewal is ghost; Leave is a quiet danger link behind a confirmation.
+- **Tabs.** Memberships, Profile, Data and privacy, Organisations (team roles), Security. Each membership's
+  page (history, details, receipts) and the pay page sit under Memberships.
+- **History** reads as a timeline per term: dates and amount, then each change in plain words
+  ("Active · Payment received").
+- **Irreversible steps** (leaving, erasure) always confirm, say what stays (payments) and what doesn't.
+  Approving an erasure asks the manager to type ERASE.
+- **Slots.** `components/portal/Slots.tsx` reserves the card (P6) and receipts (P7) spots, so they plug in
+  without a layout change.
+
+## Public page editor (Settings → Public page)
+
+- **Two columns** from 1280px: the form on the left, a sticky live preview on the right (inert, rendered by
+  the same `PageSections` component as `/o/[slug]`, inside the page's own accent scope). Below that width
+  the preview follows the form.
+- **Sections** are collapsible rows with a show/hide switch, move up and down buttons and remove; one is
+  open at a time. Errors from the server mark the row "Needs attention".
+- **Draft and publish.** A sticky bar holds Publish, Save draft, Discard changes and Unpublish, with status
+  chips for published, unsaved changes and unpublished draft.
+- **Accent check.** Presets plus the custom picker; the line under it gives the button contrast against the
+  light page and the label contrast, and warns below 3:1.
+- **On the public page** the tagline is the layout's one Unbounded phrase. FAQs use native
+  `<details>`, so they work without script.

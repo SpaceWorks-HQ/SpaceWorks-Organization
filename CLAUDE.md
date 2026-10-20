@@ -86,6 +86,15 @@ npx vitest run tests/unit/health.test.ts
   - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.
   - Card text is shaped with fontkit (Gilroy, then Noto for extended Latin, ₹, Malayalam and Devanagari) and drawn as outlines in both the PDF and the PNG. Never draw card text with pdf-lib's `drawText`.
   - Bulk exports are `CardExportJob` rows run by the scheduler pass and stored privately through `lib/storage/private.ts`.
+- **Member portal (`/account`):**
+  - A person's member records are found only by their account's verified email, lowercased, matched to
+    `Member.email` (`lib/portal/member.ts`). Never by a member id alone. Anonymised records never match.
+  - Members change memberships only through `lib/membership/service.ts` (`startRenewal`, `decideTerm` with
+    the `withdraw` action), so every change writes a status event and an audit row.
+  - Erasure anonymises in one place, `anonymiseMember` in `lib/portal/erasure.ts`; money rows are never deleted.
+- **User content on public pages** is rendered from parsed trees as React text (`lib/publicPage/markdown.ts`),
+  never as HTML strings. Links must pass `isSafeLink`; page images must be this organisation's
+  `page-images` uploads. The page document schema lives in `lib/publicPage/sections.ts`.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Operations:**
   - Two images from one `Dockerfile`: `spaceworks-organization-backend` (`runner`; every backend role through

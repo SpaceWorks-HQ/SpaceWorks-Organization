@@ -2,6 +2,7 @@ import "server-only";
 
 import type { TeamRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { buildMembershipExport, loadMembershipExportSource, MEMBERSHIP_EXPORT_LIMIT, type MembershipExport } from "@/lib/portal/dataExport";
 
 /**
  * Per-collection safety cap. A personal export is the user's own data, so the caps are generous;
@@ -9,7 +10,7 @@ import { prisma } from "@/lib/db";
  */
 export const ACCOUNT_EXPORT_LIMIT = 2000;
 
-export const ACCOUNT_EXPORT_FORMAT_VERSION = 2;
+export const ACCOUNT_EXPORT_FORMAT_VERSION = 3;
 
 /* ---------- Raw input shapes (exactly what the loader selects) ---------- */
 
@@ -23,6 +24,8 @@ export type AccountExportSource = {
   };
   signInProviders: Array<{ provider: string }>;
   teamMembers: Array<{ role: TeamRole; createdAt: Date; organisation: { name: string; slug: string } }>;
+  /** Member records in each organisation, already allow-list shaped (lib/portal/dataExport.ts). */
+  memberships?: MembershipExport;
 };
 
 function iso(value: Date | null | undefined) {
@@ -54,8 +57,10 @@ export function buildAccountDataExport(source: AccountExportSource, generatedAt:
       role: team.role,
       joinedAt: team.createdAt.toISOString(),
     })),
+    memberships: source.memberships ?? [],
     truncated: {
       organisationTeams: source.teamMembers.length > ACCOUNT_EXPORT_LIMIT,
+      memberships: (source.memberships?.length ?? 0) >= MEMBERSHIP_EXPORT_LIMIT,
     },
   };
 }
@@ -82,5 +87,7 @@ export async function loadAccountExportSource(userId: string): Promise<AccountEx
     }),
   ]);
   if (!user) return null;
-  return { user, signInProviders, teamMembers };
+  // Member records are matched by verified email only, the same rule as the member portal.
+  const memberships = user.email && user.emailVerified ? buildMembershipExport(await loadMembershipExportSource(user.email)) : [];
+  return { user, signInProviders, teamMembers, memberships };
 }
