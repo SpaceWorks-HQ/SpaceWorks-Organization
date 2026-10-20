@@ -14,6 +14,7 @@ export const MEMBERSHIP_NOTICES = [
   "renewal-confirmed",
   "rejected",
   "revoked",
+  "left",
 ] as const;
 
 export type MembershipNotice = (typeof MEMBERSHIP_NOTICES)[number];
@@ -105,6 +106,12 @@ export async function deliverMembershipNotice(payload: NoticePayload, messageId:
       heading: "Membership revoked",
       paragraphs: [`Hi ${first}, ${org.name} has revoked your ${term.plan.name} membership.`, ...(term.reason ? [`Their note: ${term.reason}`] : [])],
       action: { label: "See your account", url: account },
+    },
+    left: {
+      subject: `You've left ${org.name}`,
+      heading: "Membership ended",
+      paragraphs: [`Hi ${first}, you ended your ${term.plan.name} membership with ${org.name} from your account. Payments already made stay on record; ask ${org.name} if you expect a refund.`],
+      action: { label: `Visit ${org.name}`, url: home },
     },
   }[payload.notice];
   await sendBrandedEmail({ to: term.member.email, messageId, ...content });

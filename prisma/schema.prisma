@@ -244,6 +244,8 @@ model Organisation {
   members       Member[]
   terms         MembershipTerm[]
   counters      OrgCounter[]
+  page          OrganisationPage?
+  erasureRequests ErasureRequest[]
 
   @@index([status, createdAt])
   @@index([visibility, status])
@@ -560,6 +562,7 @@ model Member {
   terms        MembershipTerm[]
   roles        MemberRoleAssignment[]
   consents     ConsentRecord[]
+  erasureRequests ErasureRequest[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, email])
@@ -697,4 +700,58 @@ model MemberInvite {
   plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
 
   @@index([organisationId, planId])
+}
+
+// ─── Member portal and public page (P8) ─────────────────────────────────────
+
+/**
+ * The organisation's public page at /o/[slug]. The columns hold what is published; `draft` holds unpublished
+ * edits in the same shape (lib/publicPage/sections.ts). With no publishedAt the plain page shows.
+ */
+model OrganisationPage {
+  organisationId String    @id
+  tagline        String    @default("")
+  /// Storage key of the cover image (organisations/<id>/page-images/<uuid>.webp).
+  coverAssetKey  String?
+  /// Validated #RRGGBB; null uses the organisation's accent.
+  accentColor    String?
+  sections       Json      @default("[]")
+  publishedAt    DateTime?
+  draft          Json?
+  updatedById    String?
+  updatedAt      DateTime  @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+enum ErasureStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+/**
+ * A member asking an organisation to erase their details. A manager approves (the member is anonymised;
+ * money rows stay) or rejects with a note.
+ */
+model ErasureRequest {
+  id                String        @id @default(cuid())
+  organisationId    String
+  memberId          String
+  /// The account that asked; its email gets the decision.
+  requestedByUserId String?
+  status            ErasureStatus @default(PENDING)
+  reason            String        @default("")
+  decidedById       String?
+  decidedAt         DateTime?
+  decisionNote      String?
+  createdAt         DateTime      @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  member       Member       @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+
+  @@unique([organisationId, id])
+  @@index([organisationId, status, createdAt])
+  @@index([memberId])
 }

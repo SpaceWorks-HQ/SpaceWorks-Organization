@@ -65,6 +65,15 @@ npx vitest run tests/unit/health.test.ts
   - Amounts are integer paise.
   - Receipt numbers are gapless per organisation per financial year (April–March, in the organisation's timezone).
   - Paid rows are never edited or deleted; reverse them with credit notes.
+- **Member portal (`/account`):**
+  - A person's member records are found only by their account's verified email, lowercased, matched to
+    `Member.email` (`lib/portal/member.ts`). Never by a member id alone. Anonymised records never match.
+  - Members change memberships only through `lib/membership/service.ts` (`startRenewal`, `decideTerm` with
+    the `withdraw` action), so every change writes a status event and an audit row.
+  - Erasure anonymises in one place, `anonymiseMember` in `lib/portal/erasure.ts`; money rows are never deleted.
+- **User content on public pages** is rendered from parsed trees as React text (`lib/publicPage/markdown.ts`),
+  never as HTML strings. Links must pass `isSafeLink`; page images must be this organisation's
+  `page-images` uploads. The page document schema lives in `lib/publicPage/sections.ts`.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Copy:** sentence case, en-GB, buttons named after their action, and no "Oops" or exclamation marks on errors.
 - **Line endings:** LF everywhere (see `.gitattributes`). Never commit `.env*` files except the `*.example` ones.

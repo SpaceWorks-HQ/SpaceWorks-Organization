@@ -96,6 +96,8 @@ export const TRANSITIONS = {
   revoke: ["UPCOMING", "ACTIVE", "GRACE"],
   reinstate: ["REVOKED"],
   extend: ["UPCOMING", "ACTIVE", "GRACE", "LAPSED"],
+  /** The member calls it off from their account: an application, an unpaid or paid-early term, or leaving. */
+  withdraw: ["PENDING_APPROVAL", "PENDING_PAYMENT", "UPCOMING", "ACTIVE", "GRACE"],
 } as const satisfies Record<string, readonly TermStatus[]>;
 
 export type TermAction = keyof typeof TRANSITIONS;

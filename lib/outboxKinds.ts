@@ -5,6 +5,7 @@ import { sendPasswordResetEmail } from "@/lib/email/passwordReset";
 import { sendEmailVerificationEmail } from "@/lib/email/emailVerification";
 import { asAdminPayload, asInvitePayload, asNoticePayload, deliverAdminApplicationAlert, deliverOrganisationNotice, deliverOwnerInvite } from "@/lib/email/organisation";
 import { asMemberInvitePayload, asMembershipNoticePayload, asReminderPayload, deliverMemberInvite, deliverMembershipNotice, deliverRenewalReminder } from "@/lib/email/membership";
+import { asErasurePayload, deliverErasureNotice } from "@/lib/email/erasure";
 
 /** What a handler reports after a delivery attempt. Throw to retry; throw PermanentOutboxError to give up. */
 export type DeliveryOutcome = "sent" | "dropped";
@@ -135,6 +136,15 @@ const memberInvite: OutboxKindHandler = {
   },
 };
 
+const erasureNotice: OutboxKindHandler = {
+  capability: false,
+  async deliver(value, messageId) {
+    const payload = asErasurePayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverErasureNotice(payload, messageId);
+  },
+};
+
 /** Every email the platform can send. Add a kind here when a feature needs a new message. */
 export const OUTBOX_KINDS = {
   "password-reset": passwordReset,
@@ -145,6 +155,7 @@ export const OUTBOX_KINDS = {
   "membership-notice": membershipNotice,
   "renewal-reminder": renewalReminder,
   "member-invite": memberInvite,
+  "erasure-notice": erasureNotice,
 } satisfies Record<string, OutboxKindHandler>;
 
 export type OutboxKind = keyof typeof OUTBOX_KINDS;

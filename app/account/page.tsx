@@ -1,30 +1,38 @@
-import { loadAccountView } from "@/lib/views/app__account__page";
+import Link from "next/link";
 import type { Metadata } from "next";
-import { gravatarUrl } from "@/lib/gravatar";
-import { AccountProfileForm } from "@/components/account/AccountProfileForm";
-import { AccountEmailCard } from "@/components/account/AccountEmailCard";
-import { AccountAppearanceCard } from "@/components/account/AccountAppearanceCard";
+import { loadAccountWalletView } from "@/lib/views/app__account__page";
+import { WalletCard } from "@/components/portal/WalletCard";
+import { buttonClasses } from "@/components/ui/button";
+import { Callout, EmptyState, SectionHeading } from "@/components/ui/display";
 
-export const metadata: Metadata = { title: "Account settings" };
+export const metadata: Metadata = { title: "Your memberships" };
 
-export default async function AccountPage() {
-  const { user } = await loadAccountView();
+export default async function AccountWalletPage() {
+  const { wallet, emailVerified } = await loadAccountWalletView();
   return (
     <div className="flex flex-col gap-6">
-      <AccountProfileForm
-        initialName={user.name ?? ""}
-        email={user.email}
-        image={user.image}
-        profileImageUrl={user.profileImageUrl}
-        gravatarUrl={user.email ? gravatarUrl(user.email) : null}
-      />
-      <AccountEmailCard
-        email={user.email}
-        verified={Boolean(user.emailVerified)}
-        // Resending only applies to password accounts (see resendEmailVerification); only a boolean leaves the server.
-        canResend={user.hasPassword}
-      />
-      <AccountAppearanceCard />
+      <SectionHeading title="Your memberships" description="Every organisation you belong to, in one place." />
+      {!emailVerified ? (
+        <Callout
+          tone="warning"
+          title="Verify your email to see your memberships"
+          action={<Link href="/account/profile" className={buttonClasses({ variant: "secondary", size: "sm" })}>Verify your email</Link>}
+        >
+          Organisations know you by your email address, so we show your memberships once it&apos;s verified.
+        </Callout>
+      ) : wallet.length === 0 ? (
+        <EmptyState
+          mood="waiting"
+          title="No memberships yet"
+          action={<Link href="/organisations" className={buttonClasses({ variant: "secondary", size: "sm" })}>Find an organisation</Link>}
+        >
+          When you join an organisation with this email address, your membership shows up here.
+        </EmptyState>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {wallet.map((entry) => <WalletCard key={entry.memberId} entry={entry} />)}
+        </div>
+      )}
     </div>
   );
 }

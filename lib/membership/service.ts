@@ -183,11 +183,12 @@ export async function decideTerm(
     }
     case "reject":
     case "cancel":
+    case "withdraw":
     case "revoke": {
-      const to: TermStatus = args.action === "reject" ? "REJECTED" : args.action === "cancel" ? "CANCELLED" : "REVOKED";
+      const to: TermStatus = args.action === "reject" ? "REJECTED" : args.action === "revoke" ? "REVOKED" : "CANCELLED";
       result = await tx.membershipTerm.update({ where: { id: term.id }, data: { status: to, decidedById: args.actorUserId, decidedAt: now, reason: args.reason ?? null } });
       await recordEvent(tx, result, current, to, now, args.actorUserId, args.action);
-      if (args.action !== "cancel") await notifyMember(tx, result, args.action === "reject" ? "rejected" : "revoked");
+      if (args.action === "reject" || args.action === "revoke") await notifyMember(tx, result, args.action === "reject" ? "rejected" : "revoked");
       break;
     }
     case "reinstate": {

@@ -14,6 +14,7 @@ export const loadPublicOrganisation = cache(async (slug: string) => {
     select: {
       id: true, slug: true, name: true, kind: true, description: true, logoUrl: true, accentColor: true, status: true, visibility: true,
       city: true, stateCode: true, website: true, contactEmail: true, contactPhone: true, locale: true, financialYearStartMonth: true, unitLevels: true,
+      page: { select: { accentColor: true, tagline: true, publishedAt: true } },
     },
   });
   if (!org || (org.status !== "ACTIVE" && org.status !== "SUSPENDED")) notFound();

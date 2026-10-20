@@ -9,6 +9,7 @@ import { MembershipPanel, type MembershipView } from "@/components/members/Membe
 import { MemberProfileForm } from "@/components/members/MemberProfileForm";
 import { MemberRolesPicker } from "@/components/members/MemberRolesPicker";
 import { TermStatusChip } from "@/components/members/TermStatusChip";
+import { ErasureRequestCard } from "@/components/members/ErasureRequestCard";
 import { Avatar, Card, CardHeader } from "@/components/ui/display";
 
 export const metadata: Metadata = { title: "Member", robots: { index: false, follow: false } };
@@ -76,6 +77,7 @@ export default async function MemberPage({ params }: { params: Promise<{ orgSlug
           </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
+          <ErasureRequestCard slug={org.slug} requests={member.erasureRequests} anonymisedAt={member.anonymisedAt} canManage={view.canManage} timeZone={tz} />
           <MemberRolesPicker slug={org.slug} memberId={member.id} roles={view.roles} initial={member.roles.map((a) => a.roleId)} initialPrimary={primary} canManage={view.canManage} />
           <Card as="section" className="rounded-xl">
             <CardHeader title="History" />

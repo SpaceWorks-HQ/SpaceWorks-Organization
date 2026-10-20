@@ -6,14 +6,29 @@
       "id": "app__account__layout:loadAccountShell"
     },
     {
+      "module": "lib/views/app__account__memberships__orgSlug__page",
+      "name": "loadMembershipDetailView",
+      "id": "app__account__memberships__orgSlug__page:loadMembershipDetailView"
+    },
+    {
       "module": "lib/views/app__account__organisations__page",
       "name": "loadAccountOrganisationsView",
       "id": "app__account__organisations__page:loadAccountOrganisationsView"
     },
     {
       "module": "lib/views/app__account__page",
-      "name": "loadAccountView",
-      "id": "app__account__page:loadAccountView"
+      "name": "loadAccountWalletView",
+      "id": "app__account__page:loadAccountWalletView"
+    },
+    {
+      "module": "lib/views/app__account__privacy__page",
+      "name": "loadAccountPrivacyView",
+      "id": "app__account__privacy__page:loadAccountPrivacyView"
+    },
+    {
+      "module": "lib/views/app__account__profile__page",
+      "name": "loadAccountProfileView",
+      "id": "app__account__profile__page:loadAccountProfileView"
     },
     {
       "module": "lib/views/app__account__security__page",
@@ -84,6 +99,11 @@
       "module": "lib/views/app__dashboard__orgSlug__settings__page",
       "name": "loadOrgSettingsView",
       "id": "app__dashboard__orgSlug__settings__page:loadOrgSettingsView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__public-page__page",
+      "name": "loadPublicPageEditorView",
+      "id": "app__dashboard__orgSlug__settings__public-page__page:loadPublicPageEditorView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__settings__structure__page",
@@ -246,6 +266,11 @@
       "module": "app/actions/auth",
       "name": "resendEmailVerification",
       "id": "auth:resendEmailVerification"
+    },
+    {
+      "module": "app/actions/erasure",
+      "name": "decideErasureRequest",
+      "id": "erasure:decideErasureRequest"
     },
     {
       "module": "app/actions/instance-settings",
@@ -411,6 +436,66 @@
       "module": "app/actions/plans",
       "name": "savePlanFields",
       "id": "plans:savePlanFields"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "renewMembership",
+      "id": "portal:renewMembership"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawTerm",
+      "id": "portal:withdrawTerm"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "leaveMembership",
+      "id": "portal:leaveMembership"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "updateMemberProfile",
+      "id": "portal:updateMemberProfile"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawConsent",
+      "id": "portal:withdrawConsent"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "requestDataErasure",
+      "id": "portal:requestDataErasure"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawDataErasure",
+      "id": "portal:withdrawDataErasure"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "savePublicPageDraft",
+      "id": "public-page:savePublicPageDraft"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "publishPublicPage",
+      "id": "public-page:publishPublicPage"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "discardPublicPageDraft",
+      "id": "public-page:discardPublicPageDraft"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "unpublishPublicPage",
+      "id": "public-page:unpublishPublicPage"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "uploadPublicPageImage",
+      "id": "public-page:uploadPublicPageImage"
     },
     {
       "module": "app/actions/security",
