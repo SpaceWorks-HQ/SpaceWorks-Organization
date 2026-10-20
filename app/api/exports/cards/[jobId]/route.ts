@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * A finished bulk card export. Only the person who asked for it may download it, while they still
- * manage cards in that organisation; everyone else (and expired files) gets 404.
+ * manage cards in that organisation with the same unit scope; everyone else (and expired files) gets 404.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
@@ -20,6 +20,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ job
   if (!job || job.requestedById !== userId || job.status !== "DONE" || !job.storageKey || (job.expiresAt && job.expiresAt <= new Date())) return notFoundResponse();
   const membership = await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: job.organisationId } } });
   if (!membership || !can(membership.role, "cards.manage") || !organisationAllows(job.organisation.status, "cards.manage")) return notFoundResponse();
+  // The file was built for the requester's unit scope at the time; a changed scope can't fetch it.
+  const filter = (job.filter ?? {}) as Record<string, unknown>;
+  if ((typeof filter.scopeUnitId === "string" ? filter.scopeUnitId : null) !== membership.unitId) return notFoundResponse();
 
   const file = await downloadPrivateExport(job.storageKey);
   if (!file) return notFoundResponse();

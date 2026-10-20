@@ -119,10 +119,17 @@ describe.sequential("member cards", () => {
     expect(readZip(Buffer.from(file!.body)).map((entry) => entry.name)).toHaveLength(2);
   });
 
+  it("fails an export that keeps crashing its worker instead of reclaiming it again", async () => {
+    const stuck = await prisma.cardExportJob.create({ data: { organisationId: org.id, format: "sheet", filter: {}, status: "PROCESSING", attempts: 3, lockedAt: new Date(Date.now() - 60 * 60_000) } });
+    await runCardExportJobs(0);
+    expect(await prisma.cardExportJob.findUniqueOrThrow({ where: { id: stuck.id } })).toMatchObject({ status: "FAILED" });
+  });
+
   it("reissue replaces the old QR; revoke turns the new one off", async () => {
     const owner = await prisma.user.findFirstOrThrow({ where: { email: `owner-${suffix}@example.test` } });
     const fresh = await prisma.$transaction((tx) => reissueCard(tx, { organisationId: org.id, memberId, planId: plan.id }, owner.id));
     expect(fresh.verifyToken).not.toBe(token);
+    expect(fresh.cardNumber).toBe((await prisma.memberCard.findFirstOrThrow({ where: { verifyToken: token } })).cardNumber);
     expect(await lookupVerification(token)).toEqual({ state: "card-replaced", organisationName: "SpaceWorks Cards" });
     expect(await lookupVerification(fresh.verifyToken)).toMatchObject({ state: "member", verdict: "valid" });
 

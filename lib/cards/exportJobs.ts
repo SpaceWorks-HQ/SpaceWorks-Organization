@@ -64,7 +64,7 @@ async function buildExport(job: CardExportJob) {
   if (count > exportLimit(format)) throw new ExportError(`${count} cards match; one export takes up to ${exportLimit(format)}. Narrow the filter.`);
   const title = `${ctx.organisation.name} membership cards`;
   const body = format === "zip"
-    ? await renderMemberCardsZip(exportCards(job, ctx), (holder) => `${holder.idNumber ?? "card"}-${slugForFile(holder.displayName, "member")}.pdf`)
+    ? await renderMemberCardsZip(exportCards(job, ctx), (holder) => `${holder.idNumber ?? "card"}-${slugForFile(holder.planName ?? "", "plan")}-${slugForFile(holder.displayName, "member")}.pdf`)
     : await renderMemberCardsPdf(exportCards(job, ctx), format === "sheet" ? "a4" : "card", title);
   const key = privateExportKey(job.organisationId, format === "zip" ? "zip" : "pdf");
   await uploadPrivateExport(key, body, job.organisationId);
@@ -81,13 +81,17 @@ async function purgeExpired(now: Date) {
 
 /** Run at most `limit` waiting exports. Call from the scheduler, never a request path. */
 export async function runCardExportJobs(limit = 1, now = new Date()) {
-  await prisma.cardExportJob.updateMany({ where: { status: "PROCESSING", lockedAt: { lt: new Date(now.getTime() - STALE_MS) } }, data: { status: "PENDING", lockedAt: null } });
+  // A claim left by a crashed worker goes back to the queue, unless it has crashed too often (an export
+  // that runs the process out of memory must not crash it again every half hour).
+  const stale = { status: "PROCESSING" as const, lockedAt: { lt: new Date(now.getTime() - STALE_MS) } };
+  await prisma.cardExportJob.updateMany({ where: { ...stale, attempts: { gte: MAX_ATTEMPTS } }, data: { status: "FAILED", lockedAt: null, error: "The export couldn't be built.", finishedAt: now } });
+  await prisma.cardExportJob.updateMany({ where: stale, data: { status: "PENDING", lockedAt: null } });
   await purgeExpired(now);
   let done = 0;
   for (let index = 0; index < limit; index += 1) {
-    const job = await prisma.cardExportJob.findFirst({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } });
+    const job = await prisma.cardExportJob.findFirst({ where: { status: "PENDING", attempts: { lt: MAX_ATTEMPTS } }, orderBy: { createdAt: "asc" } });
     if (!job) break;
-    const claim = await prisma.cardExportJob.updateMany({ where: { id: job.id, status: "PENDING" }, data: { status: "PROCESSING", lockedAt: new Date(), attempts: { increment: 1 } } });
+    const claim = await prisma.cardExportJob.updateMany({ where: { id: job.id, status: "PENDING", attempts: { lt: MAX_ATTEMPTS } }, data: { status: "PROCESSING", lockedAt: new Date(), attempts: { increment: 1 } } });
     if (claim.count !== 1) continue;
     const release = tryAcquireRenderSlot();
     if (!release) {
@@ -113,4 +117,22 @@ export async function runCardExportJobs(limit = 1, now = new Date()) {
     }
   }
   return { done };
+}
+
+const RUNNING = Symbol.for("swo.cardExportRun");
+type RunHolder = typeof globalThis & { [RUNNING]?: boolean };
+
+/**
+ * Start an export pass without waiting for it, so a long render never holds up the scheduler's mail
+ * and sweep. One pass at a time per process; an interrupted pass is picked up by the stale reclaim.
+ */
+export function kickCardExportJobs() {
+  const holder = globalThis as RunHolder;
+  if (holder[RUNNING]) return;
+  holder[RUNNING] = true;
+  void runCardExportJobs()
+    .catch(() => console.error("[card exports] run failed"))
+    .finally(() => {
+      holder[RUNNING] = false;
+    });
 }

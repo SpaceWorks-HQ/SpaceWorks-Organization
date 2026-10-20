@@ -1,6 +1,6 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { revalidatePath as nextRevalidatePath } from "next/cache";
 import { trackedRevalidation } from "@/lib/frontend/revalidation";
@@ -32,7 +32,10 @@ async function planFor(organisationId: string, planId: string | null) {
   return plan ? { ok: true as const, plan } : { ok: false as const };
 }
 
-/** The row a design is stored in (created from the default when missing), for the watermark upload. */
+/**
+ * The row a design is stored in, created from the default when missing. Two saves racing to create it
+ * (two managers, or a save and an upload) hit the unique index; the loser reads the winner's row.
+ */
 async function designRow(organisation: { id: string; name: string }, plan: { id: string; name: string } | null, userId: string) {
   const existing = await prisma.cardDesign.findFirst({ where: { organisationId: organisation.id, planId: plan?.id ?? null } });
   if (existing) return existing;
@@ -46,6 +49,9 @@ async function designRow(organisation: { id: string; name: string }, plan: { id:
       numberPrefix: fallback?.numberPrefix ?? deriveCardPrefix(organisation.name),
       updatedById: userId,
     },
+  }).catch(async (error: unknown) => {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
+    return prisma.cardDesign.findFirstOrThrow({ where: { organisationId: organisation.id, planId: plan?.id ?? null } });
   });
 }
 

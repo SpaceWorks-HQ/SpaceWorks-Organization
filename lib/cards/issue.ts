@@ -40,9 +40,9 @@ async function numberPrefix(tx: Tx, organisationId: string) {
   return deriveCardPrefix(org.name);
 }
 
-async function createCard(tx: Tx, ref: CardRef, memberNumber: number, actorUserId: string | null) {
+async function createCard(tx: Tx, ref: CardRef, memberNumber: number, actorUserId: string | null, cardNumber?: string) {
   const card = await tx.memberCard.create({
-    data: { ...ref, cardNumber: formatCardNumber(await numberPrefix(tx, ref.organisationId), memberNumber), verifyToken: newVerifyToken(), issuedById: actorUserId },
+    data: { ...ref, cardNumber: cardNumber ?? formatCardNumber(await numberPrefix(tx, ref.organisationId), memberNumber), verifyToken: newVerifyToken(), issuedById: actorUserId },
   });
   return card;
 }
@@ -84,7 +84,8 @@ export async function reissueCard(tx: Tx, ref: CardRef, actorUserId: string) {
   const member = await lockMember(tx, ref.organisationId, ref.memberId);
   const old = await liveCard(tx, ref);
   if (old) await tx.memberCard.update({ where: { id: old.id }, data: { revokedAt: new Date(), revokedById: actorUserId, revokedReason: "REISSUED" } });
-  const card = await createCard(tx, ref, member.memberNumber, actorUserId);
+  // The replacement keeps the printed number, even if the prefix has changed since.
+  const card = await createCard(tx, ref, member.memberNumber, actorUserId, old?.cardNumber);
   await recordAuditEvent({ action: old ? "CARD_REISSUED" : "CARD_ISSUED", actorUserId, organisationId: ref.organisationId, targetType: "MemberCard", targetId: card.id, metadata: old ? { replaces: old.id } : undefined, client: tx });
   return card;
 }

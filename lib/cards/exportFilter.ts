@@ -51,7 +51,7 @@ export function exportCardsWhere(scope: TeamScope, filter: CardExportFilter, now
         memberWhere(scope),
         { anonymisedAt: null },
         statusWhere(filter.status, now),
-        ...(q ? [{ OR: [{ name: { contains: q, mode: "insensitive" as const } }, { email: { contains: q, mode: "insensitive" as const } }, ...(/^\d+$/.test(q) ? [{ memberNumber: Number(q) }] : [])] }] : []),
+        ...(q ? [{ OR: [{ name: { contains: q, mode: "insensitive" as const } }, { email: { contains: q, mode: "insensitive" as const } }, ...(/^\d{1,9}$/.test(q) ? [{ memberNumber: Number(q) }] : [])] }] : []),
         ...(filter.unitId ? [{ unitId: filter.unitId }] : []),
         ...(filter.roleId ? [{ roles: { some: { roleId: filter.roleId } } }] : []),
       ],
