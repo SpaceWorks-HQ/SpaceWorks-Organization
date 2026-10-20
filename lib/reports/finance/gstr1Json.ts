@@ -3,10 +3,11 @@ import type { Table13Row } from "./documents";
 import type { CreditNoteRow, Gstr1, HsnRow, InvoiceRow } from "./gst";
 
 /**
- * GSTR-1 as JSON in the layout of the GST portal's offline tool (sections b2b, b2cl, b2cs, cdnr, cdnur,
- * nil, hsn and doc_issue), with the offline tool's version and hash envelope. Amounts are rupees with two decimals, dates dd-mm-yyyy, places of supply the two-digit
- * GST state codes. Always open it in the current offline tool and validate before uploading: the portal
- * revises the schema from time to time. docs/REPORTS.md describes each section.
+ * GSTR-1 as JSON in the layout of the GST portal's offline tool 3.2.4 (sections b2b, b2cl, b2cs, cdnr,
+ * cdnur, nil, doc_issue and hsn) with its version and hash envelope; valid against GSTN's "Save GSTR1"
+ * schema v4.1, the shape that tool writes (checked October 2026). Amounts are rupees with two decimals,
+ * dates dd-mm-yyyy, places of supply the two-digit GST state codes. Validate in the current offline tool
+ * before uploading: the portal revises the schema from time to time. docs/REPORTS.md describes each section.
  */
 
 const rupees = (minor: number) => Math.round(minor) / 100;
@@ -79,6 +80,8 @@ export const GSTR1_OFFLINE_VERSION = "GST3.2.4";
 
 export function gstr1Json(report: Gstr1, args: { gstin: string; period: string; supplierState: string | null; timeZone: string; documents: Table13Row[] }) {
   const { supplierState, timeZone } = args;
+  const docs = docIssue(args.documents);
+  // The offline tool's key order: doc_issue, only when there is something to report, comes before hsn.
   return {
     gstin: args.gstin,
     fp: args.period,
@@ -90,7 +93,7 @@ export function gstr1Json(report: Gstr1, args: { gstin: string; period: string; 
     cdnr: groupBy(report.cdnr, (row) => row.gstin ?? "").map(([ctin, rows]) => ({ ctin, nt: rows.map((row) => ({ ...note(row, supplierState, timeZone), rchrg: "N", inv_typ: "R" })) })),
     cdnur: report.cdnur.map((row) => ({ typ: "B2CL", ...note(row, supplierState, timeZone) })),
     nil: { inv: [{ sply_ty: "INTRB2C", expt_amt: rupees(report.nilExempt.inter), nil_amt: 0, ngsup_amt: 0 }, { sply_ty: "INTRAB2C", expt_amt: rupees(report.nilExempt.intra), nil_amt: 0, ngsup_amt: 0 }] },
+    ...(docs.doc_det.length ? { doc_issue: docs } : {}),
     hsn: { hsn_b2b: hsn(report.hsnB2b), hsn_b2c: hsn(report.hsnB2c) },
-    doc_issue: docIssue(args.documents),
   };
 }

@@ -47,7 +47,7 @@ npm run lint           # ESLint (next core-web-vitals + typescript)
 npm run typecheck      # next typegen + tsc --noEmit
 npm run test:unit      # Vitest unit tests (tests/unit)
 npm run test:integration   # needs TEST_DATABASE_URL pointing at a disposable Postgres
-npm run test:e2e       # Playwright
+npm run test:e2e       # Playwright (tests/e2e); signed-in journeys need db:seed-demo, db:seed-reports and DEMO_PASSWORD
 npm run build          # production build (standalone output)
 npm run db:migrate     # create/apply a migration in development
 npm run db:deploy      # apply migrations

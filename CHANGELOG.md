@@ -13,6 +13,10 @@ to. Pushes to `dev` publish staging images tagged `dev` without a release.
   B2CL place of supply on the group only.
 - Profile pictures no longer fall back to Gravatar, so no member email hash leaves the server.
 - The installer no longer offers an invalid default sender for `localhost` or IP addresses.
+- **Tests.** CI now runs the PostgreSQL integration suite and a browser end-to-end suite (public pages,
+  sign-in, accounts, roles, member portal) against real PostgreSQL and Redis. Stripe webhooks and the
+  webhook route's size and signature checks gained integration tests. GSTR-1 JSON was checked against
+  GSTN's "Save GSTR1" schemas v4.1 and v5.0.
 
 ## 0.5.0 (2026-10-20)
 

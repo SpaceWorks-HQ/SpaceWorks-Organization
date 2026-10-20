@@ -27,7 +27,10 @@ describe("GSTR-1 JSON", () => {
     expect(json).toMatchObject({ gstin: "32ABCDE1234F1Z5", fp: "042026", version: "GST3.2.4", hash: "hash" });
   });
 
-  it("keeps the B2CL place of supply on the group only", () => {
+  it("keeps the B2CL place of supply on the group only, and leaves out an empty Table 13", () => {
+    const empty = gstr1Json(report, { gstin: "32ABCDE1234F1Z5", period: "042026", supplierState: "KL", timeZone: "Asia/Kolkata", documents: [] });
+    expect(empty).not.toHaveProperty("doc_issue");
+    expect(Object.keys(json).slice(-2)).toEqual(["doc_issue", "hsn"]);
     const b2cl = gstr1Json({ ...report, b2cl: [{ ...report.b2b[0], gstin: null, value: 11_800_000, taxable: 10_000_000, igst: 1_800_000 }] }, { gstin: "32ABCDE1234F1Z5", period: "042026", supplierState: "KL", timeZone: "Asia/Kolkata", documents: [] }).b2cl;
     expect(b2cl).toEqual([{ pos: "29", inv: [{ inum: "KRC-2627-00003", idt: "10-04-2026", val: 118000, itms: [{ num: 1801, itm_det: { txval: 100000, rt: 18, iamt: 18000, csamt: 0 } }] }] }]);
   });

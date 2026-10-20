@@ -8,10 +8,12 @@ const defaultServerCommand = process.env.PLAYWRIGHT_PRODUCTION_SERVER === "1"
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  // The ticket scenario seeds one isolated RSVP shared by this file.
+  // Signed-in journeys share the seeded demo organisations, so files run one after another.
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
+  // The development server compiles each route on first visit, which is slow on CI runners.
+  timeout: process.env.CI ? 120_000 : 60_000,
   use: {
     // Use IPv4 explicitly: on this workstation localhost/::1 is served by a
     // separate development app while SpaceWorks Organization is bound on 127.0.0.1.
@@ -23,6 +25,6 @@ export default defineConfig({
     command: process.env.PLAYWRIGHT_SERVER_COMMAND || defaultServerCommand,
     url: `${testBaseUrl}/api/health`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 240_000,
   },
 });

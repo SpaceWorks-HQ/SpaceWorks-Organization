@@ -295,8 +295,10 @@ Once wired, P7 also calls `markStatsDirty` (`lib/reports/rollup.ts`) inside back
   credit notes, nil/exempt, SAC summary (Table 12, B2B and B2C) and documents issued (Table 13, codes 1
   and 5) in the GST offline tool's layout (`version` GST3.2.4, `hash`), rupees with two decimals,
   dd-mm-yyyy dates and two-digit GST state codes; B2CL carries its place of supply on the group only
-  (`lib/reports/finance/gstr1Json.ts`). Checked against the offline tool's published format in October 2026,
-  not GSTN's schema file, which is not public; validate in the current offline tool before uploading.
+  (`lib/reports/finance/gstr1Json.ts`). In October 2026 a month covering every section validated against
+  GSTN's "Save GSTR1" API schemas v4.1 (the shape the offline tool writes) and v5.0 (whose Table 13 uses a
+  newer `doc_det_new` layout that the offline tool does not write). Still open it in the current offline
+  tool before uploading.
 - **Cohort retention by financial year** (Renewals tab): the share of each joining year still active at the
   end of that year and the four after it.
 - **Monthly summary email**: on the first scheduler pass of each month, every owner, manager and treasurer
