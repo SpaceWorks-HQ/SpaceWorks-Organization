@@ -85,8 +85,8 @@ April to March. It shares its vocabulary with the sister Space Works site:
   unit, role chips), one row per plan with a status chip, a single sentence on where it stands ("Valid until
   31 Mar 2027 · 20 days left") and only the actions that apply now. Pay is the accent button; Renew is
   primary; Cancel renewal is ghost; Leave is a quiet danger link behind a confirmation.
-- **Tabs.** Memberships, Profile, Privacy, Teams, Security. Each membership's page (history, details) sits
-  under Memberships.
+- **Tabs.** Memberships, Profile, Data and privacy, Organisations (team roles), Security. Each membership's
+  page (history, details, receipts) and the pay page sit under Memberships.
 - **History** reads as a timeline per term: dates and amount, then each change in plain words
   ("Active · Payment received").
 - **Irreversible steps** (leaving, erasure) always confirm, say what stays (payments) and what doesn't.

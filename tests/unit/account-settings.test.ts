@@ -26,7 +26,7 @@ describe("account tabs", () => {
   });
 
   it("keeps exactly one tab active per account path", () => {
-    for (const path of ["/account", "/account/memberships/spaceworks", "/account/privacy", "/account/security", "/account/security/x"]) {
+    for (const path of ["/account", "/account/memberships/spaceworks", "/account/pay/term_1", "/account/privacy", "/account/security", "/account/security/x"]) {
       expect(ACCOUNT_TABS.filter((tab) => isAccountTabActive(path, tab.href))).toHaveLength(1);
     }
   });
