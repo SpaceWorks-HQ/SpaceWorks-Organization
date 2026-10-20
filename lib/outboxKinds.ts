@@ -6,6 +6,7 @@ import { sendEmailVerificationEmail } from "@/lib/email/emailVerification";
 import { asAdminPayload, asInvitePayload, asNoticePayload, deliverAdminApplicationAlert, deliverOrganisationNotice, deliverOwnerInvite } from "@/lib/email/organisation";
 import { asMemberInvitePayload, asMembershipNoticePayload, asReminderPayload, deliverMemberInvite, deliverMembershipNotice, deliverRenewalReminder } from "@/lib/email/membership";
 import { asPaymentNoticePayload, deliverPaymentNotice } from "@/lib/email/payments";
+import { asMemberCardPayload, deliverMemberCard } from "@/lib/email/memberCard";
 
 /** What a handler reports after a delivery attempt. Throw to retry; throw PermanentOutboxError to give up. */
 export type DeliveryOutcome = "sent" | "dropped";
@@ -145,6 +146,16 @@ const paymentNotice: OutboxKindHandler = {
   },
 };
 
+const memberCard: OutboxKindHandler = {
+  // The PDF carries the card's QR, but the row holds only ids and the card is rendered at send time.
+  capability: false,
+  async deliver(value, messageId) {
+    const payload = asMemberCardPayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverMemberCard(payload, messageId);
+  },
+};
+
 /** Every email the platform can send. Add a kind here when a feature needs a new message. */
 export const OUTBOX_KINDS = {
   "password-reset": passwordReset,
@@ -156,6 +167,7 @@ export const OUTBOX_KINDS = {
   "renewal-reminder": renewalReminder,
   "member-invite": memberInvite,
   "payment-notice": paymentNotice,
+  "member-card": memberCard,
 } satisfies Record<string, OutboxKindHandler>;
 
 export type OutboxKind = keyof typeof OUTBOX_KINDS;

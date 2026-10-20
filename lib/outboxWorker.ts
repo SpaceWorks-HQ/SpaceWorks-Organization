@@ -9,6 +9,7 @@ import {
 import { purgeExpiredOperationalData } from "@/lib/retention";
 import { runMembershipSweep } from "@/lib/membership/sweep";
 import { reconcileGatewayPayments } from "@/lib/payments/reconcile";
+import { kickCardExportJobs } from "@/lib/cards/exportJobs";
 
 const OUTBOX_WORKER_INTERVAL_MS = 60_000;
 
@@ -32,6 +33,8 @@ export async function runOutboxScheduler() {
     await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
     await reconcileGatewayPayments().catch(() => console.error("[payments reconcile] run failed"));
     const result = await deliverOutboxBatch();
+    // Bulk card exports (background PDF/ZIP builds) run on their own, so a long render never holds this pass up.
+    kickCardExportJobs();
     const purged = await purgeExpiredOperationalData();
     await recordOutboxSchedulerSuccess(result).catch(() => undefined);
     return { ...result, purged };

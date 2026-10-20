@@ -10,6 +10,7 @@ import { money } from "@/lib/membership/describe";
 import { MembershipPanel, type MembershipView } from "@/components/members/MembershipPanel";
 import { MemberProfileForm } from "@/components/members/MemberProfileForm";
 import { MemberRolesPicker } from "@/components/members/MemberRolesPicker";
+import { MemberCardPanel } from "@/components/cards/MemberCardPanel";
 import { TermStatusChip } from "@/components/members/TermStatusChip";
 import { Avatar, Card, CardHeader } from "@/components/ui/display";
 
@@ -80,6 +81,7 @@ export default async function MemberPage({ params }: { params: Promise<{ orgSlug
           </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
+          <MemberCardPanel slug={org.slug} memberId={member.id} memberName={member.name} plans={view.cards} canManage={view.canManageCards} />
           <MemberRolesPicker slug={org.slug} memberId={member.id} roles={view.roles} initial={member.roles.map((a) => a.roleId)} initialPrimary={primary} canManage={view.canManage} />
           <Card as="section" className="rounded-xl">
             <CardHeader title="History" />

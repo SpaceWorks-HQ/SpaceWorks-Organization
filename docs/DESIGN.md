@@ -59,6 +59,29 @@ run the tests.
 - **Copy.** Sentence case, en-GB, and buttons named after their action. No "Oops", and no exclamation marks
   on errors.
 
+## Member cards
+
+- **One drawing, three outputs.** `components/cards/CardCanvas.tsx` (browser) and `lib/cards/layout.ts` (PDF and
+  PNG) draw the same boxes, palette and template decor. Cards are CR80 (85.6 × 54 mm), landscape or portrait, with
+  four presets: Community, Corporate, Night and Student.
+- **Type on cards.** Gilroy Light and ExtraBold first, then OFL Noto Sans (extended Latin and ₹), Noto Sans
+  Malayalam and Noto Sans Devanagari. The browser loads the same files under one `"SWO Card"` family with
+  unicode ranges (`components/cards/cardFonts.tsx`). Long names shrink until they fit the room kept for them,
+  measured with real shaping on the server and with canvas metrics in the browser.
+- **Colour.** Card colours are brand keys plus the organisation's accent; every text colour keeps 4.5:1 against
+  what it sits on, and Workshop Orange is a fill only.
+- **The designer** (Settings → Cards) is three panes from 1280px: settings, the card to scale, and the selected
+  item's inspector. Below that they stack, card first. It autosaves; a sample switch shows Latin, Malayalam and
+  Devanagari names.
+- **Delight moment.** A card issued in the last two minutes rises into place on the member page and one Citron and
+  Sky Blue sweep crosses it, once per tab (`components/cards/cards.module.css`). With reduced motion the card
+  simply appears.
+- **The holographic card** tilts towards the pointer or the phone and flips to its back; with reduced motion it
+  stays flat and the flip is an instant swap.
+- **`/verify/[token]`** leads with the verdict (Current member, Renewal due, Not started yet, Not a current member,
+  Membership revoked), each a colour plus an icon plus words, then the name, plan, valid-until and card number.
+  It never shows contact details and is not indexed.
+
 ## Landing page (`/`)
 
 The marketing home follows one sample member, Shaan Shoukath of SpaceWorks, through a membership year,

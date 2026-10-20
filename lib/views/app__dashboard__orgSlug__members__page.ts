@@ -101,6 +101,7 @@ export async function loadOrgMembersDirectory({ params, searchParams }: { params
     selected: { plan: search.plan ?? "", unit: search.unit ?? "", role: search.role ?? "" },
     canManage: can(membership.role, "members.manage"),
     canExport: can(membership.role, "members.export"),
+    canManageCards: can(membership.role, "cards.manage"),
     scopedUnit: scope.unitId !== null,
   };
 }

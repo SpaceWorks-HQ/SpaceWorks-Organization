@@ -52,6 +52,7 @@
     "@radix-ui/react-tooltip": "1.2.16",
     "bcryptjs": "3.0.3",
     "clsx": "2.1.1",
+    "fontkit": "2.0.4",
     "ioredis": "6.0.0",
     "jose": "6.2.12",
     "lucide-react": "1.59.0",
@@ -71,6 +72,7 @@
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
+    "@types/fontkit": "2.0.8",
     "@types/node": "22.20.5",
     "@types/nodemailer": "8.0.2",
     "@types/qrcode": "1.5.6",

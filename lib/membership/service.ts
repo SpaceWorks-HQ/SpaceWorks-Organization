@@ -3,6 +3,7 @@ import "server-only";
 import type { MembershipPlan, MembershipTerm, Organisation, Prisma, TermKind, TermStatus } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { issueCardOnActivation } from "@/lib/cards/issue";
 import { canTransition, chargesJoiningFee, statusAt, type TermAction } from "./lifecycle";
 import { graceUntil, localDate, renewalStartDay, termWindow } from "./periods";
 
@@ -155,6 +156,7 @@ export async function activateTerm(tx: Tx, args: { org: OrgClock; termId: string
   });
   await recordEvent(tx, updated, term.status, status, now, args.actorUserId, args.cause);
   await notifyMember(tx, updated, status === "UPCOMING" ? "renewal-confirmed" : "activated");
+  await issueCardOnActivation(tx, updated, args.actorUserId);
   return updated;
 }
 

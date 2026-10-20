@@ -96,6 +96,11 @@
       "id": "app__dashboard__orgSlug__plans__planId__page:loadPlanView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__settings__cards__page",
+      "name": "loadOrgCardSettingsView",
+      "id": "app__dashboard__orgSlug__settings__cards__page:loadOrgCardSettingsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__settings__money__page",
       "name": "loadOrgMoneySettingsView",
       "id": "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView"
@@ -239,6 +244,11 @@
       "module": "lib/views/app__super-admin__users__userId__page",
       "name": "loadSuperAdminUserDetailView",
       "id": "app__super-admin__users__userId__page:loadSuperAdminUserDetailView"
+    },
+    {
+      "module": "lib/views/app__verify__token__page",
+      "name": "loadVerifyView",
+      "id": "app__verify__token__page:loadVerifyView"
     }
   ],
   "actions": [
@@ -271,6 +281,46 @@
       "module": "app/actions/auth",
       "name": "resendEmailVerification",
       "id": "auth:resendEmailVerification"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "saveCardDesign",
+      "id": "card-design:saveCardDesign"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "revertToOrganisationCardDesign",
+      "id": "card-design:revertToOrganisationCardDesign"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "uploadCardWatermark",
+      "id": "card-design:uploadCardWatermark"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "issueMemberCard",
+      "id": "cards:issueMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "reissueMemberCard",
+      "id": "cards:reissueMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "revokeMemberCard",
+      "id": "cards:revokeMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "emailMemberCard",
+      "id": "cards:emailMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "requestCardExport",
+      "id": "cards:requestCardExport"
     },
     {
       "module": "app/actions/instance-settings",

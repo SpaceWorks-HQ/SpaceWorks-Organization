@@ -20,7 +20,8 @@ export type Bucket =
   | "verifyCard"
   | "apiRead"
   | "apiWrite"
-  | "dataExport";
+  | "dataExport"
+  | "cardRender";
 
 const limits: Record<Bucket, { max: number; windowMs: number; }> = {
   global: { max: 300, windowMs: 60_000 },
@@ -46,6 +47,8 @@ const limits: Record<Bucket, { max: number; windowMs: number; }> = {
   apiRead: { max: 600, windowMs: 60_000 },
   apiWrite: { max: 60, windowMs: 60_000 },
   dataExport: { max: 5, windowMs: 60 * 60_000 },
+  // Member card PDF/PNG renders: CPU-heavy, so per person per hour.
+  cardRender: { max: 60, windowMs: 60 * 60_000 },
 };
 
 // Local fallback store

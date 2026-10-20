@@ -81,6 +81,11 @@ npx vitest run tests/unit/health.test.ts
   - Payments live in `lib/payments/*` (see `docs/PAYMENTS.md` and `docs/GST.md`). Settle money only through
     `settlePayment` (lock order payment → term → counter); triggers in migration 0005 enforce immutability.
     Gateway secrets need `PAYMENT_SECRETS_KEY`.
+- **Member cards** (`lib/cards/*`):
+  - One live card per member and plan. The verify token (in the QR) is 32 random bytes; reissuing revokes the old card. Renewals keep the card, because `/verify` reads `deriveStatus` live.
+  - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.
+  - Card text is shaped with fontkit (Gilroy, then Noto for extended Latin, ₹, Malayalam and Devanagari) and drawn as outlines in both the PDF and the PNG. Never draw card text with pdf-lib's `drawText`.
+  - Bulk exports are `CardExportJob` rows run by the scheduler pass and stored privately through `lib/storage/private.ts`.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Operations:**
   - Two images from one `Dockerfile`: `spaceworks-organization-backend` (`runner`; every backend role through

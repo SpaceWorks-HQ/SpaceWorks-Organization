@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { can, requireOrgCapability } from "@/lib/permissions";
 import { deriveStatus, statusAt } from "@/lib/membership/lifecycle";
 import { memberWhere, teamScope } from "@/lib/membership/scope";
+import { loadMemberCardPanel } from "@/lib/cards/panel";
 
 /** One member: profile, roles, every membership with its history, and consent. */
 export async function loadMemberView({ params }: { params: Promise<{ orgSlug: string; memberId: string }> }) {
@@ -46,9 +47,13 @@ export async function loadMemberView({ params }: { params: Promise<{ orgSlug: st
     .sort((a, b) => b.recordedAt.getTime() - a.recordedAt.getTime())
     .slice(0, 40);
 
+  const cards = await loadMemberCardPanel(organisation.id, member.id, memberships.map((m) => ({ planId: m.planId, planName: m.planName, started: m.terms.some((term) => term.startsAt !== null) })));
+
   return {
     org,
     member,
+    cards,
+    canManageCards: can(membership.role, "cards.manage"),
     memberships,
     timeline,
     plans,
