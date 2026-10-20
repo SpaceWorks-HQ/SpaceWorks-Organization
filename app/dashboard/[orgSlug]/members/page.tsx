@@ -108,7 +108,7 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
       ) : null}
 
       {rows.length === 0 ? (
-        <EmptyState mood="sleepy" title={total === 0 && filter === "all" && !view.q ? "No members yet" : "Nobody matches"}>
+        <EmptyState {...(total === 0 && filter === "all" && !view.q ? { patch: true } : { mood: "sleepy" as const })} title={total === 0 && filter === "all" && !view.q ? "No members yet" : "Nobody matches"}>
           {total === 0 && filter === "all" && !view.q ? "Share a plan's join link, add people by hand, or import a spreadsheet." : "Try another filter or search."}
         </EmptyState>
       ) : (

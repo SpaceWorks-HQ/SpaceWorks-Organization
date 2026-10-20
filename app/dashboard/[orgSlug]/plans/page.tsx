@@ -29,7 +29,7 @@ export default async function OrgPlansPage({ params }: { params: Promise<{ orgSl
 
       {plans.length === 0 ? (
         <EmptyState
-          mood="sleepy"
+          patch
           title="No plans yet"
           action={canManage ? <Link href={`${base}/new`} className={buttonClasses({ variant: "primary" })}>Create your first plan</Link> : undefined}
         >

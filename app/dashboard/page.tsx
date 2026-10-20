@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       />
 
       {teams.length === 0 ? (
-        <EmptyState mood="sleepy" title="No organisations yet" action={apply}>
+        <EmptyState patch title="No organisations yet" action={apply}>
           Apply to run your organisation&rsquo;s memberships here. A platform admin reviews every application, or ask an
           organisation owner to invite you to their team.
         </EmptyState>

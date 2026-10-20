@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { decideMemberships, extendMembership, renewMember } from "@/app/actions/members";
+import { Patch } from "@/components/brand/Patch";
 import { TermStatusChip } from "@/components/members/TermStatusChip";
 import { Button } from "@/components/ui/button";
 import { Callout, Card, CardHeader } from "@/components/ui/display";
@@ -22,16 +23,16 @@ export function MembershipPanel({ slug, memberId, memberships, plans, canManage 
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState("");
   const [addPlan, setAddPlan] = useState("");
-  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [status, setStatus] = useState<{ ok: boolean; text: string; sneeze?: boolean } | null>(null);
   const [busy, startTransition] = useTransition();
-  const done = (result: { ok: boolean; error?: string }, text: string) => {
-    setStatus(result.ok ? { ok: true, text } : { ok: false, text: result.error ?? "Couldn't save." });
+  const done = (result: { ok: boolean; error?: string }, text: string, sneeze = false) => {
+    setStatus(result.ok ? { ok: true, text, sneeze } : { ok: false, text: result.error ?? "Couldn't save." });
     setDialog(null);
     setReason("");
     router.refresh();
   };
   const decide = (termId: string, action: "approve" | "reject" | "cancel" | "revoke" | "reinstate", text: string) =>
-    startTransition(async () => done(await decideMemberships({ organisationSlug: slug, termIds: [termId], action, reason }), text));
+    startTransition(async () => done(await decideMemberships({ organisationSlug: slug, termIds: [termId], action, reason }), text, action === "approve"));
   const renew = (planId: string) => startTransition(async () => done(await renewMember({ organisationSlug: slug, memberId, planId }), "Renewal started. The member is emailed how to pay."));
   const available = plans.filter((plan) => !memberships.some((m) => m.planId === plan.id));
 
@@ -39,7 +40,13 @@ export function MembershipPanel({ slug, memberId, memberships, plans, canManage 
     <Card as="section" className="rounded-xl">
       <CardHeader title="Memberships" />
       <div className="flex flex-col gap-5">
-        {status ? <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"}>{status.text}</Callout> : null}
+        {/* Letting a member in is the pack deciding together, so Patch sneezes its vote (once). */}
+        {status ? (
+          <div className="flex items-center gap-1">
+            {status.sneeze ? <Patch key={status.text} pose="sneeze" size={64} className="-my-2 -ml-2" /> : null}
+            <Callout tone={status.ok ? "success" : "danger"} role={status.ok ? "status" : "alert"} className="min-w-0 flex-1">{status.text}</Callout>
+          </div>
+        ) : null}
         {memberships.length === 0 ? <p className="text-body-ui text-ink-secondary">No memberships yet.</p> : null}
         {memberships.map((membership) => {
           const open = membership.terms.some((t) => ["PENDING_APPROVAL", "PENDING_PAYMENT", "UPCOMING"].includes(t.status));

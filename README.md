@@ -1,52 +1,160 @@
-<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.png" />
+  <source media="(prefers-color-scheme: light)" srcset="docs/readme/banner.png" />
+  <img src="docs/readme/banner.png" width="100%" alt="Space Works Organization. Your members. In good standing. Free, open-source membership software for clubs, associations and alumni bodies. With Patch, the Space Works painted wolf." />
+</picture>
 
-  <h1>Space Works Organization</h1>
-
-<p>
-  Self-hostable, multi-tenant <strong>membership platform for organisations</strong>: plans, join forms and
-  approvals, members, renewals, online and offline payments, GST receipts, ID cards and reports, in one place.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0--or--later-006E63?style=flat-square&labelColor=142C2A" alt="Licence: AGPL-3.0-or-later" /></a>
+  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16-B5CDFF?style=flat-square&labelColor=142C2A&logo=nextdotjs&logoColor=FFF4E8" alt="Next.js 16" /></a>
+  <a href="#development"><img src="https://img.shields.io/badge/Node-22-DFFF8F?style=flat-square&labelColor=142C2A&logo=nodedotjs&logoColor=FFF4E8" alt="Node 22" /></a>
+  <a href="#install-in-one-line"><img src="https://img.shields.io/badge/deploy-one--line%20installer-FFF4E8?style=flat-square&labelColor=142C2A&logo=docker&logoColor=FFF4E8" alt="Deploy: one-line installer" /></a>
+  <a href="https://github.com/SpaceWorks-HQ/SpaceWorks-Organization/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/SpaceWorks-HQ/SpaceWorks-Organization/release.yml?branch=main&style=flat-square&label=release&labelColor=142C2A&color=FFD447" alt="Release" /></a>
 </p>
 
-<p>
-  <a href="LICENSE"><img alt="License: AGPL-3.0-or-later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg"></a>
-  <a href="https://github.com/SpaceWorks-HQ/SpaceWorks-Organization/actions/workflows/release.yml"><img alt="Release" src="https://github.com/SpaceWorks-HQ/SpaceWorks-Organization/actions/workflows/release.yml/badge.svg?branch=main"></a>
-  <img alt="Stack" src="https://img.shields.io/badge/stack-Next.js%2016%20%C2%B7%20React%2019%20%C2%B7%20PostgreSQL%2016-0b7285.svg">
+<p align="center">
+  <a href="#install-in-one-line">Host on a VPS</a> ·
+  <a href="#cloud-mode">Cloud hosting</a> ·
+  <a href="#website-on-netlify">Website on Netlify</a> ·
+  <a href="#development">Develop locally</a> ·
+  <a href="#documentation">Documentation</a> ·
+  <a href="#credits">Credits</a>
 </p>
 
-</div>
+**Space Works Organization is free, open-source membership software from Space Works for clubs,
+associations, societies and alumni bodies.** Publish your plans, take join applications, approve members,
+collect fees online or by UPI, issue GST-correct receipts and member cards anyone can check with a scan,
+chase renewals and read the year at a glance, all from one self-hosted app you control. It is built for the
+secretaries and treasurers who run all of this by hand today, with spreadsheets, UPI screenshots and receipt
+books, and for Indian organisations first: the April–March year, GST and UPI are built in.
 
----
+One deployment hosts **many organisations**. Each owns its plans, members, money and pages, fully isolated
+from the others. Organisations apply at `/start` and a platform admin reviews them, or the platform admin sets
+one up and invites its owner. It is part of the [Space Works](https://github.com/SpaceWorks-HQ/SpaceWorks)
+family.
 
-Space Works Organization is for the secretaries, treasurers and committee members who run a club, association,
-society or alumni body by hand today: spreadsheets of members, UPI screenshots and paper receipts. It gives them
-a calm place to take members, collect fees, issue receipts and cards, and see who has lapsed. It is built for
-Indian organisations first (GST-correct receipts, the April–March financial year, UPI-friendly offline payments)
-and is part of the [Space Works](https://github.com/SpaceWorks-HQ/SpaceWorks) family.
-
-One deployment hosts **many organisations** (tenants). Each owns its plans, members, money and pages, fully
-isolated from the others. Organisations apply at `/start` and a platform admin reviews them, or the platform
-admin sets one up directly and invites its owner.
-
-> **Status:** being rebuilt phase by phase. See
+> **Status:** in active development, phase by phase. See
 > [`docs/plans/2026-10-19-membership-rebuild.md`](docs/plans/2026-10-19-membership-rebuild.md).
 
-## Features
+## What you can do
 
-- **Plans and periods**: fixed or rolling membership plans, prices in integer paise, early and late renewals
-  with grace periods, and an automatic membership sweep that moves members through their lifecycle.
-- **Join forms and approvals**: public join pages per organisation, invitations, approvals and CSV or Google
-  Sheets import.
-- **Payments**: Razorpay, Stripe and offline payments with maker-checker confirmation. Gateway keys are
-  encrypted at rest (`PAYMENT_SECRETS_KEY`).
-- **GST receipts**: gapless receipt numbers per organisation per financial year; paid rows are never edited,
-  only reversed with credit notes.
-- **Member ID cards** with QR verification, and a member portal for receipts, cards and renewals.
-- **Reports** for the platform, each organisation and each member.
-- **Units**: districts, chapters or branches with their own managers.
-- **Sign-in**: email and password with optional authenticator MFA, plus Google, GitHub and Apple. Each provider
-  is switchable at install time or later in Super admin → Settings.
-- **Operable in production**: TLS between every service, a least-privilege database role, a scheduler for the
-  email outbox and membership sweep, scheduled backups, health and readiness endpoints, and an operator check.
+Grouped the way an organisation's year actually goes.
+
+### Plans and joining
+
+- Fixed (financial year) or rolling plans with prices in integer paise, joining fees, renewal prices and other
+  currencies.
+- A public page per organisation, edited in Settings, with every plan and a **Join** or **Apply to join** button.
+- Join forms with your own questions, open, approval-only or invitation-only, with consent recorded.
+
+### Members and units
+
+- A member register with search, filters (active, waiting, in grace, lapsed, ending soon) and bulk approvals.
+- Districts, chapters or branches as **units**, with managers scoped to their own unit.
+- Member roles that print on the card, CSV or Google Sheets import, and an export of everything.
+- A membership sweep that moves people through grace and lapse, with renewal reminders by email.
+
+### Payments and GST receipts
+
+- Razorpay or Stripe on the organisation's own account, or **UPI, bank transfer and cash** with a UPI QR for the
+  exact amount.
+- Maker-checker: a member or one staff member records a payment, another confirms it.
+- **Gapless receipt numbers** per organisation per financial year; tax invoices with CGST and SGST or IGST,
+  bills of supply, and credit notes. Paid rows are never edited, only reversed.
+
+### ID cards and /verify
+
+- One card per member and plan, issued when the membership starts, in your colours, with photo and role.
+- A **verify QR** on every card that opens a public check page: Valid, Expired, Revoked or Replaced, read live.
+- PDF and PNG downloads, and bulk exports for printing.
+
+### Member portal
+
+- Members sign in once and see every organisation they belong to: status, history, cards and receipts.
+- Pay what is due, renew, update their details, export their data or ask to be erased.
+
+### Public pages
+
+- A directory of organisations, and a page for each one with its own accent colour, sections and images.
+
+### Reports and analytics
+
+- Membership change, renewal rate, churn, joins and lapses, applications, renewals due, money by plan and
+  GST summaries, for the platform, each organisation and each unit. PDF snapshots and CSV exports.
+
+### Self-hosting
+
+- A one-line installer, automatic deploys from GitHub Actions, backups, updates and rollback, cloud mode and a
+  Netlify website split. Details below.
+
+## A look around
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/home.webp" alt="The Space Works Organization home page: Your members. In good standing." />
+      <p><strong>Home.</strong> What it is, in one screen.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/org-page.webp" alt="An organisation's public page with its three membership plans" />
+      <p><strong>Public page.</strong> Every plan, and one clear way to join.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/join-form.webp" alt="The join form for an annual membership" />
+      <p><strong>Join form.</strong> Name and email from the account, then your questions.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/members.webp" alt="The member register with filters and membership status" />
+      <p><strong>Members.</strong> Who is active, waiting, in grace or lapsed.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/member-card.webp" alt="A member's page with an active membership, a paid receipt and their ID card" />
+      <p><strong>Member and card.</strong> Membership, receipt and a card with a verify QR.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/payments.webp" alt="The payments list with UPI references and gapless receipt numbers" />
+      <p><strong>Payments.</strong> Confirmed, receipted and numbered without gaps.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/pay-upi.webp" alt="A member's pay page with the amount due, GST and a UPI QR code" />
+      <p><strong>Pay by UPI.</strong> A QR for the exact amount, then the reference.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/reports.webp" alt="The reports overview with membership change, renewal rate and charts" />
+      <p><strong>Reports.</strong> The year at a glance, for the committee.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/settings.webp" alt="Payment settings with the UPI ID, payee name and other ways to pay" />
+      <p><strong>Settings.</strong> Gateways, UPI and GST, per organisation.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/wallet-dark.webp" alt="A member's view of their membership, history and receipts, in dark mode" />
+      <p><strong>Member portal, dark mode.</strong> History, receipts and details.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/org-page-phone.webp" alt="An organisation's public page on a phone" width="60%" />
+      <img src="docs/readme/screens/pay-upi-phone.webp" alt="The UPI QR on a phone" width="38%" />
+      <p><strong>On a phone.</strong> The public page and the UPI QR.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/readme/screens/not-found.webp" alt="The 404 page, with Patch the painted wolf trotting along the bottom" />
+      <p><strong>404.</strong> Patch is out looking for it too.</p>
+    </td>
+  </tr>
+</table>
+
+Screenshots come from the demo data (`npm run db:seed-demo` and `npm run db:seed-reports`); every name, email,
+UPI ID and GSTIN in them is made up.
 
 ## Quick start
 
@@ -179,6 +287,23 @@ The website can render on Netlify while every database, payment and email operat
 Choose "backend only" in the installer, then follow [docs/DEPLOYMENT_NETLIFY.md](docs/DEPLOYMENT_NETLIFY.md).
 The same website also ships as a container, `ghcr.io/spaceworks-hq/spaceworks-organization-frontend`.
 
+## Design system
+
+Space Works Organization follows the [Space Works design system](https://github.com/SpaceWorks-HQ/SpaceWorks-Design):
+Gilroy Light and ExtraBold, pill-shaped controls, one Unbounded phrase or one bold moment per layout, light and
+dark modes, and reduced motion respected everywhere. The details are in [docs/DESIGN.md](docs/DESIGN.md).
+
+| | Colour | Hex | | Colour | Hex |
+|---|---|---|---|---|---|
+| <img src="docs/readme/swatch-deep-ink.svg" width="48" height="24" alt="" /> | Deep Ink | `#142C2A` | <img src="docs/readme/swatch-citron.svg" width="48" height="24" alt="" /> | Citron | `#DFFF8F` |
+| <img src="docs/readme/swatch-maker-teal.svg" width="48" height="24" alt="" /> | Maker Teal | `#006E63` | <img src="docs/readme/swatch-sky-blue.svg" width="48" height="24" alt="" /> | Sky Blue | `#B5CDFF` |
+| <img src="docs/readme/swatch-workshop-orange.svg" width="48" height="24" alt="" /> | Workshop Orange | `#FF7447` | <img src="docs/readme/swatch-warm-yellow.svg" width="48" height="24" alt="" /> | Warm Yellow | `#FFD447` |
+| <img src="docs/readme/swatch-warm-cream.svg" width="48" height="24" alt="" /> | Warm Cream | `#FFF4E8` | | | |
+
+**Patch**, the Space Works painted wolf, is the friendly face of the product; the box symbol stays the logo.
+Patch walks the 404 page, keeps first-time empty lists company, trots while pages load, and sneezes its vote
+when an organisation or a member is approved. The README art is drawn by `node scripts/generate-readme-art.mjs`.
+
 ## Documentation
 
 - [Deploying on a server (VPS)](docs/DEPLOYMENT_VPS.md): installer, layout, backups, restore, update and rollback
@@ -186,7 +311,8 @@ The same website also ships as a container, `ghcr.io/spaceworks-hq/spaceworks-or
 - [Website on Netlify (split hosting)](docs/DEPLOYMENT_NETLIFY.md)
 - [Configuration reference](docs/CONFIGURATION.md): every environment variable
 - [Architecture](docs/ARCHITECTURE.md) and [security](docs/SECURITY.md)
-- [Design](docs/DESIGN.md)
+- [Design](docs/DESIGN.md), including Patch and every easter egg
+- [Payments](docs/PAYMENTS.md), [GST](docs/GST.md) and [reports](docs/REPORTS.md)
 
 ## Development
 
@@ -203,6 +329,29 @@ npm run dev                 # http://localhost:3000
 `npm run lint`, `npm run typecheck`, `npm run test:unit` and `bash scripts/compose-smoke.sh` (the bundled stack
 end to end) are what CI runs. See [CLAUDE.md](CLAUDE.md) for conventions.
 
-## License
+## Credits
 
-[GNU Affero General Public License v3.0 or later](LICENSE). See [NOTICE](NOTICE) for attribution.
+- **Brand.** The Space Works identity (logo, colours, voice) comes from the
+  [Space Works design system](https://github.com/SpaceWorks-HQ/SpaceWorks-Design).
+- **Patch**, the Space Works painted wolf, is artwork from the design system's
+  [`mascot/`](https://github.com/SpaceWorks-HQ/SpaceWorks-Design/tree/main/mascot), used exactly as drawn. Patch
+  walks the 404 page, keeps empty lists company, trots while pages load and sneezes when an organisation or a
+  member is approved: painted wolves vote by sneezing.
+- **Member IDs** grew out of Aarannu, a community digital ID project by Shaan Shoukath, and the ID cards and
+  platform code come from [Space Works Events](https://github.com/SpaceWorks-HQ/SpaceWorks-Events), itself built
+  on [Yuyu](https://github.com/twilighty-abhi/yuyu) by Abhiram N J. The easter eggs are Yuyu's, in Space Works
+  colours.
+- **The team:** Shaan Shoukath (Systems Engineer), Abhiram NJ (Cloud Specialist), Abdul Samad MJ (Full Stack
+  Developer), Midlaj C (Backend Engineer), Ajzal P (Marketing Specialist) and Anin Arafath (App Developer).
+- **Fonts.** Gilroy by Radomir Tinkov (free release), and [Unbounded](https://github.com/googlefonts/unbounded)
+  by the Unbounded Project Authors under the SIL Open Font License 1.1.
+
+## Licence
+
+Copyright © 2026 Space Works.
+
+Space Works Organization is free software under the
+[GNU Affero General Public License v3.0 or later](LICENSE) (`AGPL-3.0-or-later`). If you run a modified
+version for other people over a network, you must offer them its source code too. See [NOTICE](NOTICE) for
+attribution. The fonts in `public/brand/fonts` and Patch's artwork keep their own terms and are not covered by
+the AGPL.

@@ -32,6 +32,9 @@ them, or reviews the ones that sign up. There are **no events** in this product.
   - **Buttons and controls:** pill-shaped (`--radius-control: 9999px`).
   - **Fonts:** only the free Gilroy weights (Light 300 for text, ExtraBold 800 for headings), plus Unbounded for
     one accent phrase per layout.
+  - **Patch (mascot):** `components/brand/Patch.tsx` (idle, sneeze, walk), artwork from SpaceWorks-Design via
+    `scripts/sync-patch.mjs`. Never recolour, mirror or resize it past native size, never beside the box logo, and
+    it counts as a layout's one bold moment. Where it appears and every easter egg are in `docs/DESIGN.md`.
 - **Operations:** releases, Actions, installer and compose layout mirror the main SpaceWorks repo (see
   "Operations" below and `docs/DEPLOYMENT_VPS.md`).
 
