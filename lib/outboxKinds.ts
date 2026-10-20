@@ -6,6 +6,7 @@ import { sendEmailVerificationEmail } from "@/lib/email/emailVerification";
 import { asAdminPayload, asInvitePayload, asNoticePayload, deliverAdminApplicationAlert, deliverOrganisationNotice, deliverOwnerInvite } from "@/lib/email/organisation";
 import { asMemberInvitePayload, asMembershipNoticePayload, asReminderPayload, deliverMemberInvite, deliverMembershipNotice, deliverRenewalReminder } from "@/lib/email/membership";
 import { asPaymentNoticePayload, deliverPaymentNotice } from "@/lib/email/payments";
+import { asReportDigestPayload, deliverReportDigest } from "@/lib/email/reportDigest";
 import { asMemberCardPayload, deliverMemberCard } from "@/lib/email/memberCard";
 import { asErasurePayload, deliverErasureNotice } from "@/lib/email/erasure";
 
@@ -166,6 +167,15 @@ const erasureNotice: OutboxKindHandler = {
   },
 };
 
+const reportDigest: OutboxKindHandler = {
+  capability: false,
+  async deliver(value, messageId) {
+    const payload = asReportDigestPayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverReportDigest(payload, messageId);
+  },
+};
+
 /** Every email the platform can send. Add a kind here when a feature needs a new message. */
 export const OUTBOX_KINDS = {
   "password-reset": passwordReset,
@@ -177,6 +187,7 @@ export const OUTBOX_KINDS = {
   "renewal-reminder": renewalReminder,
   "member-invite": memberInvite,
   "payment-notice": paymentNotice,
+  "report-digest": reportDigest,
   "member-card": memberCard,
   "erasure-notice": erasureNotice,
 } satisfies Record<string, OutboxKindHandler>;

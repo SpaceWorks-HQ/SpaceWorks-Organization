@@ -6,7 +6,9 @@ import { periodBuckets } from "@/lib/reports/period";
 import { currenciesOf, amountIn } from "@/lib/reports/money";
 import { openReport, reportShell } from "@/lib/reports/shell";
 import { loadReportRows, scopedTermWhere } from "@/lib/reports/source";
-import { loadFinancePlans, loadFinanceRows } from "@/lib/reports/finance/source";
+import { loadFinancePlans, loadFinanceRows, loadTermPeriods } from "@/lib/reports/finance/source";
+import { subscriptionIncome } from "@/lib/reports/finance/subscriptionIncome";
+import { addMonths, financialYearLabel, financialYearStart, localDate, startOfLocalDay } from "@/lib/membership/periods";
 import { paymentHealth, revenueBy, revenueByFeeKind, revenueSeries, revenueSummary } from "@/lib/reports/finance/revenue";
 import { ageingTable, collectionRate, offlineQueue, outstandingItems } from "@/lib/reports/finance/outstanding";
 import { forecastVsActual, renewalForecast } from "@/lib/reports/finance/forecast";
@@ -38,6 +40,10 @@ export async function loadOrgReportsMoney({ params, searchParams }: Props) {
   const forecastTerms = data.terms.map((term) => ({ id: term.id, planId: term.planId, memberId: term.memberId, endsAt: term.endsAt, renewed: term.renewed, active: termActiveAt(term, now), renewedFromId: term.renewedFromId }));
   const named = (list: ReturnType<typeof revenueBy>, labels: (key: string) => string) => list.slice(0, 12).map((row) => ({ ...row, label: labels(row.key) }));
   const offline = offlineQueue(rows, period, primary);
+  // The financial year the period ends in, for the subscription income schedule.
+  const fyFirst = financialYearStart(localDate(new Date(period.to.getTime() - 1), org.timezone), org.financialYearStartMonth);
+  const fy = { from: startOfLocalDay(fyFirst, org.timezone), to: startOfLocalDay(addMonths(fyFirst, 12), org.timezone) };
+  const termPeriods = await loadTermPeriods(scope, [...new Set(rows.payments.flatMap((payment) => (payment.termId ? [payment.termId] : [])))]);
 
   return {
     shell: reportShell(ctx, "money"),
@@ -59,6 +65,7 @@ export async function loadOrgReportsMoney({ params, searchParams }: Props) {
     offline: { ...offline, awaiting: offline.awaiting.slice(0, 50).map((payment) => ({ ...payment, name: data.memberById.get(payment.memberId)?.name ?? "Member" })), flagged: offline.flagged.slice(0, 50).map((payment) => ({ ...payment, name: data.memberById.get(payment.memberId)?.name ?? "Member" })) },
     forecast: renewalForecast(forecastTerms, plans, now, trailing, primary),
     trailingRenewalRate: trailing,
+    subscriptionIncome: { yearLabel: `FY ${financialYearLabel(fyFirst, org.financialYearStartMonth)}`, rows: subscriptionIncome(rows, termPeriods, fy, primary) },
     forecastVsActual: forecastVsActual(forecastTerms, plans, rows, buckets, primary).filter((_, index) => buckets[index].from <= now),
   };
 }

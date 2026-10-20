@@ -284,12 +284,25 @@ Once wired, P7 also calls `markStatsDirty` (`lib/reports/rollup.ts`) inside back
 - GSTN advisory: Table 12 split into B2B and B2C, Table 13 mandatory from May 2025: https://tutorial.gst.gov.in/downloads/news/updated_advisory_hsn_table12_25042025.pdf
 - Not verified: Glue Up and Hivebrite formulas, and the Supreme Court status of s.7(1)(aa) after the Kerala High Court's IMA ruling (April 2025).
 
-## Later
+## Added after the first release (owner, 2026-10-20)
 
-These are not built yet:
-- subscription income reconciliation by financial year (earned, received in advance, arrears)
-- a receipts and payments account
-- GSTR-1 JSON
-- Table 11 advances (receipts are issued at payment, so none arise today)
-- cohort reports by financial year
-- scheduled emailed reports
+- **Subscription income by financial year** (Money tab): fees received in the year, plus advances received
+  earlier, less advances for later years, plus arrears paid after the year end, less earlier years' arrears,
+  equals fees earned in the year. Fees are earned day by day over the membership; joining fees and lifetime
+  memberships count when received. Taxable values only, net of processed refunds, per currency. The identity
+  holds to the paisa (`lib/reports/finance/subscriptionIncome.ts`, tested).
+- **GSTR-1 JSON** (Tax tab, organisation-wide finance roles only, audited): the month's B2B, B2CL, B2CS,
+  credit notes, nil/exempt and SAC summary in the GST offline tool's layout, rupees with two decimals,
+  dd-mm-yyyy dates and two-digit GST state codes (`lib/reports/finance/gstr1Json.ts`). Validate it in the
+  current offline tool before uploading; the portal revises the schema from time to time.
+- **Cohort retention by financial year** (Renewals tab): the share of each joining year still active at the
+  end of that year and the four after it.
+- **Monthly summary email**: on the first scheduler pass of each month, every owner, manager and treasurer
+  gets last month's members, renewals, money (finance roles only) and waiting applications, for what they
+  can see. Each person switches it off on the organisation overview. One claim per organisation and month.
+
+## Not applicable
+
+- **A receipts and payments account** needs the organisation's expenses too; this product records only
+  membership income, so the income side is the subscription schedule above and the revenue export.
+- **Table 11 advances**: receipts are issued when money arrives, so no advance without a document arises.

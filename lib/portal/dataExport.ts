@@ -32,6 +32,16 @@ export async function loadMembershipExportSource(email: string) {
       },
       consents: { orderBy: { grantedAt: "asc" }, select: { purpose: true, noticeVersion: true, grantedAt: true, withdrawnAt: true, byGuardian: true } },
       erasureRequests: { orderBy: { createdAt: "asc" }, select: { status: true, createdAt: true, decidedAt: true } },
+      payments: {
+        orderBy: { createdAt: "asc" },
+        take: 500,
+        select: {
+          status: true, provider: true, method: true, currency: true, amountMinor: true, createdAt: true, paidAt: true, utr: true,
+          term: { select: { plan: { select: { name: true } } } },
+          documents: { select: { kind: true, number: true, issuedAt: true, totalMinor: true } },
+          refunds: { select: { status: true, amountMinor: true, createdAt: true, processedAt: true } },
+        },
+      },
     },
   });
   const hidden = await prisma.planField.findMany({
@@ -79,6 +89,19 @@ export function buildMembershipExport(source: MembershipExportSource) {
       })),
       consents: member.consents.map((consent) => ({ purpose: consent.purpose, noticeVersion: consent.noticeVersion, grantedAt: consent.grantedAt.toISOString(), withdrawnAt: iso(consent.withdrawnAt), byGuardian: consent.byGuardian })),
       erasureRequests: member.erasureRequests.map((request) => ({ status: request.status, requestedAt: request.createdAt.toISOString(), decidedAt: iso(request.decidedAt) })),
+      payments: member.payments.map((payment) => ({
+        plan: payment.term?.plan.name ?? null,
+        status: payment.status,
+        provider: payment.provider,
+        method: payment.method,
+        currency: payment.currency,
+        amountMinor: payment.amountMinor,
+        startedAt: payment.createdAt.toISOString(),
+        paidAt: iso(payment.paidAt),
+        reference: payment.utr,
+        documents: payment.documents.map((document) => ({ kind: document.kind, number: document.number, issuedAt: document.issuedAt.toISOString(), totalMinor: document.totalMinor })),
+        refunds: payment.refunds.map((refund) => ({ status: refund.status, amountMinor: refund.amountMinor, requestedAt: refund.createdAt.toISOString(), processedAt: iso(refund.processedAt) })),
+      })),
     };
   });
 }

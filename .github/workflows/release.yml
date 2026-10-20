@@ -62,13 +62,15 @@ jobs:
           registry_owner="$(printf '%s' "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
           version="${base}-${channel}.${GITHUB_RUN_NUMBER}.${short_sha}"
 
-          echo "base=$base" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
-          echo "series=$series" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
-          echo "channel=$channel" >> "$GITHUB_OUTPUT"
-          echo "registry_owner=$registry_owner" >> "$GITHUB_OUTPUT"
+          {
+            echo "base=$base"
+            echo "version=$version"
+            echo "tag=v$version"
+            echo "series=$series"
+            echo "short_sha=$short_sha"
+            echo "channel=$channel"
+            echo "registry_owner=$registry_owner"
+          } >> "$GITHUB_OUTPUT"
           echo "Preparing $version"
 
   publish:

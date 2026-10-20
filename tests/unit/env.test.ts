@@ -11,7 +11,7 @@ beforeEach(() => {
     DATABASE_URL: "postgresql://user:pass@db.example.test/sworg?sslmode=require",
     AUTH_SECRET: "a".repeat(32), AUTH_URL: "https://members.example.test", NEXT_PUBLIC_BASE_URL: "https://members.example.test",
     REDIS_URL: "rediss://redis.example.test", CRON_SECRET: "c".repeat(32), HEALTHCHECK_SECRET: "h".repeat(32),
-    NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: key, MFA_ENCRYPTION_KEY: key, EMAIL_FROM: "Space Works Events <noreply@example.test>",
+    NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: key, MFA_ENCRYPTION_KEY: key, PAYMENT_SECRETS_KEY: key, EMAIL_FROM: "Space Works Organization <noreply@example.test>",
     SMTP_SERVICE: "test", SMTP_ALLOW_UNAUTHENTICATED: "1", TRUSTED_PROXY_IP_HEADER: "x-forwarded-for",
     S3_BUCKET: "private-assets", S3_REGION: "us-east-1",
   });

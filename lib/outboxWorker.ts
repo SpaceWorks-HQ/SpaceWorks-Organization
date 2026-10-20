@@ -9,7 +9,8 @@ import {
 import { purgeExpiredOperationalData } from "@/lib/retention";
 import { runMembershipSweep } from "@/lib/membership/sweep";
 import { reconcileGatewayPayments } from "@/lib/payments/reconcile";
-import { kickCardExportJobs } from "@/lib/cards/exportJobs";
+import { queueMonthlyDigests } from "@/lib/reports/digest";
+import { kickCardExportJobs, runCardExportJobs } from "@/lib/cards/exportJobs";
 
 const OUTBOX_WORKER_INTERVAL_MS = 60_000;
 
@@ -23,8 +24,12 @@ function workerState() {
   return globalThis as typeof globalThis & { __sweOutboxWorker?: OutboxWorkerState };
 }
 
-/** Runs one complete delivery/retention pass and records its operational state. */
-export async function runOutboxScheduler() {
+/**
+ * Runs one complete delivery/retention pass and records its operational state. `awaitExports` is for the
+ * cron endpoint: on a serverless host the process may stop once the request returns, so the card export
+ * pass is waited for instead of left running in the background.
+ */
+export async function runOutboxScheduler(options: { awaitExports?: boolean } = {}) {
   // Heartbeat persistence is observability, not part of the delivery commit.
   // A heartbeat-table issue must not stop otherwise healthy queue processing.
   await recordOutboxSchedulerStarted().catch(() => undefined);
@@ -32,9 +37,11 @@ export async function runOutboxScheduler() {
     // Membership changes first, so reminders and notices they queue go out in the same pass.
     await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
     await reconcileGatewayPayments().catch(() => console.error("[payments reconcile] run failed"));
+    await queueMonthlyDigests().catch(() => console.error("[report digest] run failed"));
     const result = await deliverOutboxBatch();
     // Bulk card exports (background PDF/ZIP builds) run on their own, so a long render never holds this pass up.
-    kickCardExportJobs();
+    if (options.awaitExports) await runCardExportJobs().catch(() => console.error("[card exports] run failed"));
+    else kickCardExportJobs();
     const purged = await purgeExpiredOperationalData();
     await recordOutboxSchedulerSuccess(result).catch(() => undefined);
     return { ...result, purged };

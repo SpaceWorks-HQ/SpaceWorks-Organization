@@ -1,7 +1,7 @@
 import { prepareDataset } from "@/lib/reports/dataset";
 import { drillHref } from "@/lib/reports/drillLinks";
 import { membershipSummary } from "@/lib/reports/metrics/flows";
-import { cohortRetention, membershipTrend } from "@/lib/reports/metrics/series";
+import { cohortRetention, fyCohortRetention, membershipTrend } from "@/lib/reports/metrics/series";
 import { periodBuckets } from "@/lib/reports/period";
 import { expiryCalendar, lapsedNotBack, renewalWorklist, WORKLIST_DAYS } from "@/lib/reports/renewals";
 import { drillFilters, openReport, reportShell } from "@/lib/reports/shell";
@@ -38,6 +38,7 @@ export async function loadOrgReportsRenewals({ params, searchParams }: Props) {
     },
     calendar: expiryCalendar(data, now, org.timezone),
     cohorts: cohortRetention(data, org.timezone, now, 12, 12),
+    fyCohorts: fyCohortRetention(data, org, now, 5),
     links: {
       due: drillHref(org.slug, "due", filters),
       renewed: drillHref(org.slug, "renewed", filters),

@@ -63,6 +63,10 @@ export default async function OrgReportsRenewalsPage({ params, searchParams }: P
         <HeatTable label="Share of each joining cohort still active" columns={Array.from({ length: 12 }, (_, i) => String(i))} rows={view.cohorts} />
       </ChartFrame>
 
+      <ChartFrame title="Cohort retention by financial year" description="Members by the financial year they first joined: the share still active at the end of that year and each later one (0 is the joining year).">
+        <HeatTable label="Share of each financial-year cohort still active" columns={Array.from({ length: 5 }, (_, i) => String(i))} rows={view.fyCohorts} />
+      </ChartFrame>
+
       <section aria-labelledby="lapsed-title" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

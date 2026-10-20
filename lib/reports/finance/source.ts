@@ -121,3 +121,10 @@ export async function loadPlatformPayments(window: { from: Date; to: Date }): Pr
   const rows = await prisma.payment.findMany({ where: { status: "PAID", paidAt: { gte: window.from, lt: window.to } }, select: paymentSelect });
   return rows.map((row) => ({ ...toPayment(row), organisationId: row.organisationId }));
 }
+
+/** Start and end of the terms behind the given payments, for subscription income by financial year. */
+export async function loadTermPeriods(scope: ReportScope, termIds: string[]): Promise<Array<{ termId: string; startsAt: Date | null; endsAt: Date | null }>> {
+  if (termIds.length === 0) return [];
+  const terms = await prisma.membershipTerm.findMany({ where: { organisationId: scope.organisationId, id: { in: termIds } }, select: { id: true, startsAt: true, endsAt: true } });
+  return terms.map((term) => ({ termId: term.id, startsAt: term.startsAt, endsAt: term.endsAt }));
+}

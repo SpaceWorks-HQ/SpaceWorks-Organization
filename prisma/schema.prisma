@@ -311,6 +311,8 @@ model TeamMember {
   role           TeamRole
   /// Set to limit this person to one unit's subtree (members, payments and reports there only).
   unitId         String?
+  /// Email this person a monthly summary of the organisation (their own unit when scoped).
+  reportDigest   Boolean  @default(true)
   createdAt      DateTime @default(now())
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)

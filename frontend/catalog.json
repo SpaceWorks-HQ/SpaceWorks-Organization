@@ -26,6 +26,11 @@
       "id": "app__account__pay__termId__page:loadPayView"
     },
     {
+      "module": "lib/views/app__account__payments__page",
+      "name": "loadAccountPaymentsView",
+      "id": "app__account__payments__page:loadAccountPaymentsView"
+    },
+    {
       "module": "lib/views/app__account__privacy__page",
       "name": "loadAccountPrivacyView",
       "id": "app__account__privacy__page:loadAccountPrivacyView"
@@ -478,6 +483,11 @@
       "id": "member-payments:submitPaymentClaim"
     },
     {
+      "module": "app/actions/member-photo",
+      "name": "setMemberPhoto",
+      "id": "member-photo:setMemberPhoto"
+    },
+    {
       "module": "app/actions/members",
       "name": "addMember",
       "id": "members:addMember"
@@ -686,6 +696,11 @@
       "module": "app/actions/refunds",
       "name": "refundPayment",
       "id": "refunds:refundPayment"
+    },
+    {
+      "module": "app/actions/report-digest",
+      "name": "setReportDigest",
+      "id": "report-digest:setReportDigest"
     },
     {
       "module": "app/actions/reports",

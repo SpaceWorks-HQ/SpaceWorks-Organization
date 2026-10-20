@@ -39,5 +39,8 @@ export async function loadOrgOverviewView({ params }: { params: Promise<{ orgSlu
     { id: "team", label: "Invite your team", description: "Add treasurers and admins who help run memberships.", done: teamCount > 1, href: `/dashboard/${details.slug}/team`, visible: can(membership.role, "team.manage") },
     { id: "plan", label: "Create a membership plan", description: "Set the price, duration and how people join.", done: planCount > 0, href: `/dashboard/${details.slug}/plans/new`, visible: manager },
   ].filter((step) => step.visible);
-  return { organisation: details, role: membership.role, teamCount, openInvites, members, steps };
+  const digest = ["OWNER", "ADMIN", "TREASURER"].includes(membership.role)
+    ? (await prisma.teamMember.findUnique({ where: { id: membership.id }, select: { reportDigest: true } }))?.reportDigest ?? true
+    : null;
+  return { organisation: details, role: membership.role, teamCount, openInvites, members, steps, digest };
 }

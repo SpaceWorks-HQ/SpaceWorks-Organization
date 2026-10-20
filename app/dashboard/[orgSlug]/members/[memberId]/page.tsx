@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { loadMemberView } from "@/lib/views/app__dashboard__orgSlug__members__memberId__page";
 import { loadMemberPayments } from "@/lib/views/app__dashboard__orgSlug__members__memberId__payments";
 import { MemberPaymentsSection } from "@/components/payments/MemberPaymentsSection";
+import { MemberPhotoField } from "@/components/members/MemberPhotoField";
 import { TERM_STATUS_LABELS } from "@/lib/membership/lifecycle";
 import { formatCalendarDate, lastValidDay, localDate } from "@/lib/membership/periods";
 import { money } from "@/lib/membership/describe";
@@ -13,7 +14,7 @@ import { MemberRolesPicker } from "@/components/members/MemberRolesPicker";
 import { MemberCardPanel } from "@/components/cards/MemberCardPanel";
 import { TermStatusChip } from "@/components/members/TermStatusChip";
 import { ErasureRequestCard } from "@/components/members/ErasureRequestCard";
-import { Avatar, Card, CardHeader } from "@/components/ui/display";
+import { Card, CardHeader } from "@/components/ui/display";
 
 export const metadata: Metadata = { title: "Member", robots: { index: false, follow: false } };
 
@@ -47,7 +48,7 @@ export default async function MemberPage({ params }: { params: Promise<{ orgSlug
         Members
       </Link>
       <header className="flex flex-wrap items-center gap-4">
-        <Avatar name={member.name} src={member.photoUrl} size="lg" />
+        <MemberPhotoField slug={org.slug} memberId={member.id} name={member.name} photoUrl={member.photoUrl} canManage={view.canManage && !member.anonymisedAt} />
         <div className="min-w-0 flex-1">
           <h1 className="break-words text-h1 text-ink">{member.name}</h1>
           <p className="text-caption tabular-nums text-ink-muted">

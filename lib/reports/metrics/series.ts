@@ -2,7 +2,7 @@
  * Time series for the trend charts and cohort retention. Pure. Buckets come from lib/reports/period.ts.
  * Definitions: docs/REPORTS.md "Trends" and "Cohort retention".
  */
-import { addMonths, localDate, startOfLocalDay } from "@/lib/membership/periods";
+import { addMonths, financialYearLabel, financialYearStart, localDate, startOfLocalDay } from "@/lib/membership/periods";
 import { bucketIndex, type Bucket } from "../period";
 import { inRange, ratio, type Dataset } from "../dataset";
 import { renewalOutcomes } from "./flows";
@@ -80,6 +80,41 @@ export function cohortRetention(data: Dataset, timezone: string, now: Date, coho
       cells.push(members.length ? still / members.length : null);
     }
     rows.push({ key, label: `${MONTHS[month.month - 1]} ${month.year}`, size: members.length, cells });
+  }
+  return rows;
+}
+
+/**
+ * Financial-year cohorts: of the members who first joined in a financial year, the share still active at the
+ * end of that year and each later one (offset 0 is the joining year; the current year is read at now).
+ */
+export function fyCohortRetention(data: Dataset, calendar: { timezone: string; financialYearStartMonth: number }, now: Date, years = 5): CohortRow[] {
+  const { timezone, financialYearStartMonth: startMonth } = calendar;
+  const current = financialYearStart(localDate(now, timezone), startMonth);
+  const firstYear = addMonths(current, -12 * (years - 1));
+  const byCohort = new Map<string, string[]>();
+  for (const [memberId, terms] of data.termsByMember) {
+    const first = firstActivation(terms);
+    if (!first) continue;
+    const key = financialYearLabel(localDate(first, timezone), startMonth);
+    byCohort.set(key, [...(byCohort.get(key) ?? []), memberId]);
+  }
+  const rows: CohortRow[] = [];
+  for (let index = 0; index < years; index += 1) {
+    const start = addMonths(firstYear, 12 * index);
+    const key = financialYearLabel(start, startMonth);
+    const members = byCohort.get(key) ?? [];
+    const cells: Array<number | null> = [];
+    for (let offset = 0; offset < years; offset += 1) {
+      if (startOfLocalDay(addMonths(start, 12 * offset), timezone) > now) {
+        cells.push(null);
+        continue;
+      }
+      const at = closingInstant(startOfLocalDay(addMonths(start, 12 * (offset + 1)), timezone), now);
+      const still = members.filter((id) => standingAt(data.termsByMember.get(id), at) === "ACTIVE").length;
+      cells.push(members.length ? still / members.length : null);
+    }
+    rows.push({ key, label: `FY ${key}`, size: members.length, cells });
   }
   return rows;
 }

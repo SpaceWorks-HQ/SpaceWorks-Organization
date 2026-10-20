@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
+import { buttonClasses } from "@/components/ui/button";
 import type { OrgReportsTax } from "@/lib/views/app__dashboard__orgSlug__reports__tax__page";
 import { formatAmount } from "@/lib/reports/money";
 import { Chip, EmptyState } from "@/components/ui/display";
@@ -86,7 +88,17 @@ export function GstSection({ view }: { view: View }) {
           <h2 id="gst-title" className="text-h4 text-ink">GST return figures, {view.month?.label}</h2>
           <p className="text-label text-ink-muted">Laid out like GSTR-1 and GSTR-3B. Check them with your accountant before filing.</p>
         </div>
-        {view.shell.canExportFinance && view.month ? <ExportLink shell={view.shell} report="gstr1" label="Export GSTR-1 tables" extra={`month=${view.month.key}`} /> : null}
+        {view.shell.canExportFinance && view.month ? (
+          <span className="flex flex-wrap gap-2">
+            <ExportLink shell={view.shell} report="gstr1" label="Export GSTR-1 tables" extra={`month=${view.month.key}`} />
+            {!view.shell.scopedUnitName ? (
+              <a href={`/api/exports/gstr1/${view.shell.org.slug}${view.shell.query ? `${view.shell.query}&` : "?"}month=${view.month.key}`} className={buttonClasses({ variant: "secondary", size: "sm", className: "sw-print-hide" })} download>
+                <Download aria-hidden className="size-4" />
+                GSTR-1 JSON
+              </a>
+            ) : null}
+          </span>
+        ) : null}
       </div>
       <nav aria-label="Return month" className="flex flex-wrap gap-1.5">
         {view.months.map((month) => <Link key={month.key} href={monthHref(month.key)} aria-current={view.month?.key === month.key ? "page" : undefined} className={cn("inline-flex min-h-9 items-center rounded-full border px-3 text-sm", view.month?.key === month.key ? "border-primary bg-primary font-semibold text-on-primary" : "border-line bg-panel text-ink hover:bg-muted")}>{month.label}</Link>)}
