@@ -171,6 +171,11 @@ export async function deleteOrganisation(input: unknown): Promise<ActionResult> 
     return { ok: false, error: "For security, sign in again before deleting an organisation." };
   }
 
+  // Money records are kept for audit (8 years); an organisation that has taken payments is archived instead.
+  if (await prisma.payment.count({ where: { organisationId: org.id, status: { in: ["PAID", "WAIVED"] } } })) {
+    return { ok: false, error: "This organisation has taken payments, so its records must be kept. Ask a platform admin to archive it instead." };
+  }
+
   const slug = org.slug;
   // Deliberately omit organisationId: deleting the organisation cascades its
   // scoped records, while this audit record must survive at the instance level.
@@ -180,7 +185,11 @@ export async function deleteOrganisation(input: unknown): Promise<ActionResult> 
     targetType: "organisation",
     targetId: org.id,
   });
-  await prisma.organisation.delete({ where: { id: org.id } });
+  await prisma.$transaction([
+    prisma.paymentLine.deleteMany({ where: { organisationId: org.id } }),
+    prisma.payment.deleteMany({ where: { organisationId: org.id } }),
+    prisma.organisation.delete({ where: { id: org.id } }),
+  ]);
 
   revalidatePath("/dashboard");
   revalidatePath(`/o/${slug}`);

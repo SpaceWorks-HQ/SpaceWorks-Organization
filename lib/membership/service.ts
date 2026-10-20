@@ -3,6 +3,7 @@ import "server-only";
 import type { MembershipPlan, MembershipTerm, Organisation, Prisma, TermKind, TermStatus } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { issueCardOnActivation } from "@/lib/cards/issue";
 import { canTransition, chargesJoiningFee, statusAt, type TermAction } from "./lifecycle";
 import { graceUntil, localDate, renewalStartDay, termWindow } from "./periods";
 
@@ -155,6 +156,7 @@ export async function activateTerm(tx: Tx, args: { org: OrgClock; termId: string
   });
   await recordEvent(tx, updated, term.status, status, now, args.actorUserId, args.cause);
   await notifyMember(tx, updated, status === "UPCOMING" ? "renewal-confirmed" : "activated");
+  await issueCardOnActivation(tx, updated, args.actorUserId);
   return updated;
 }
 
@@ -183,11 +185,12 @@ export async function decideTerm(
     }
     case "reject":
     case "cancel":
+    case "withdraw":
     case "revoke": {
-      const to: TermStatus = args.action === "reject" ? "REJECTED" : args.action === "cancel" ? "CANCELLED" : "REVOKED";
+      const to: TermStatus = args.action === "reject" ? "REJECTED" : args.action === "revoke" ? "REVOKED" : "CANCELLED";
       result = await tx.membershipTerm.update({ where: { id: term.id }, data: { status: to, decidedById: args.actorUserId, decidedAt: now, reason: args.reason ?? null } });
       await recordEvent(tx, result, current, to, now, args.actorUserId, args.action);
-      if (args.action !== "cancel") await notifyMember(tx, result, args.action === "reject" ? "rejected" : "revoked");
+      if (args.action === "reject" || args.action === "revoke") await notifyMember(tx, result, args.action === "reject" ? "rejected" : "revoked");
       break;
     }
     case "reinstate": {

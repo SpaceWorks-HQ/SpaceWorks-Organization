@@ -14,11 +14,16 @@ This guide covers the split setup, which is how the public landing page is hoste
 
 ## 1. Run the backend
 
-Install the backend on a VPS (see the installer in the README) with:
+Install the backend on a VPS with the one-line installer (see the README) and answer **Website: 2) No, backend
+only**. It asks for the Netlify website's HTTPS origin, requires HTTPS for the backend's own domain, and writes
+to the install's `.env`:
 
 - `DEPLOYMENT_MODE=backend`, so it serves only the API and Server Actions.
-- `FRONTEND_GATEWAY_SECRET`: a long random value, also set on Netlify.
-- `NEXT_PUBLIC_BASE_URL`: the public site address, the Netlify domain or your own.
+- `FRONTEND_GATEWAY_SECRET`: 64 random hex characters, also set on Netlify (copy it from `.env`).
+- `PUBLIC_APP_BASE_URL`: the public site address (the Netlify domain or your own), which becomes
+  `NEXT_PUBLIC_BASE_URL` and `AUTH_URL`.
+
+In the cloud topology set the same three values in `cloud.env` ([DEPLOYMENT_CLOUD.md](DEPLOYMENT_CLOUD.md)).
 
 ## 2. Create the Netlify site
 
@@ -46,7 +51,13 @@ Install the backend on a VPS (see the installer in the README) with:
 - `/login` signs in through the backend.
 - `/start` submits an application, and the backend's outbox emails the applicant.
 
+## The website as a container instead of Netlify
+
+The same build is published as `ghcr.io/spaceworks-hq/spaceworks-organization-frontend`. Run it with the
+variables in the table above and `FRONTEND_TRUSTED_IP_HEADER=x-real-ip` behind a proxy that overwrites
+`X-Real-IP`; the public origins are applied when the container starts, so one image serves any domain.
+
 ## Hosting on one server instead
 
-Leave `DEPLOYMENT_MODE` unset on the VPS and point your domain at it; the same app then serves the landing
+Answer **Website: 1) Yes** in the installer (`DEPLOYMENT_MODE` stays unset) and point your domain at the VPS; the same app then serves the landing
 page, dashboards and API together. `NEXT_PUBLIC_HOSTED_BY` works the same way there.

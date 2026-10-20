@@ -12,7 +12,7 @@ export default async function SuperAdminAuthPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="Auth" description="Account creation, sign-in accounts, sessions, and verification tokens." />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatTile className="rounded-xl" label="Accounts" value={accountsCount.toLocaleString()} />
         <StatTile className="rounded-xl" label="Sessions" value={sessionsCount.toLocaleString()} />
         <StatTile className="rounded-xl" label="Verification tokens" value={tokensCount.toLocaleString()} />

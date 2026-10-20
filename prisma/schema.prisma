@@ -244,6 +244,19 @@ model Organisation {
   members       Member[]
   terms         MembershipTerm[]
   counters      OrgCounter[]
+  paymentSettings OrgPaymentSettings?
+  taxSettings     OrgTaxSettings?
+  payments        Payment[]
+  refunds         Refund[]
+  taxDocuments    TaxDocument[]
+  documentCounters DocumentCounter[]
+  cardDesigns   CardDesign[]
+  memberCards   MemberCard[]
+  cardExports   CardExportJob[]
+  page          OrganisationPage?
+  erasureRequests ErasureRequest[]
+  dailyStats    OrgDailyStats[]
+  statsDirtyDays OrgStatsDirtyDay[]
 
   @@index([status, createdAt])
   @@index([visibility, status])
@@ -298,6 +311,8 @@ model TeamMember {
   role           TeamRole
   /// Set to limit this person to one unit's subtree (members, payments and reports there only).
   unitId         String?
+  /// Email this person a monthly summary of the organisation (their own unit when scoped).
+  reportDigest   Boolean  @default(true)
   createdAt      DateTime @default(now())
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -426,6 +441,7 @@ model OrgUnit {
   roles        MemberRole[]
   planUnits    PlanUnit[]
   teamMembers  TeamMember[]
+  dailyStats   OrgDailyStats[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, slug])
@@ -491,6 +507,9 @@ model MembershipPlan {
   units        PlanUnit[]
   terms        MembershipTerm[]
   invites      MemberInvite[]
+  cardDesigns  CardDesign[]
+  cards        MemberCard[]
+  dailyStats   OrgDailyStats[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, slug])
@@ -560,6 +579,9 @@ model Member {
   terms        MembershipTerm[]
   roles        MemberRoleAssignment[]
   consents     ConsentRecord[]
+  payments     Payment[]
+  cards        MemberCard[]
+  erasureRequests ErasureRequest[]
 
   @@unique([organisationId, id])
   @@unique([organisationId, email])
@@ -615,9 +637,11 @@ model MembershipTerm {
   renewals     MembershipTerm[]  @relation("Renewal")
   events       TermStatusEvent[]
   reminders    ReminderLog[]
+  payments     Payment[]
 
   @@unique([organisationId, id])
   @@index([organisationId, status, endsAt])
+  @@index([organisationId, createdAt])
   @@index([memberId, planId])
 }
 
@@ -697,4 +721,441 @@ model MemberInvite {
   plan MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
 
   @@index([organisationId, planId])
+}
+
+// ── Payments and tax documents (P7) ─────────────────────────────────────────
+
+enum GatewayProvider {
+  NONE
+  RAZORPAY
+  STRIPE
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  OFFLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  AWAITING_CONFIRMATION
+  PAID
+  WAIVED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentLineKind {
+  TERM_FEE
+  JOINING_FEE
+  REJOIN_FEE
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum TaxMode {
+  GST
+  SIMPLE
+  NONE
+}
+
+enum GstScheme {
+  REGULAR
+  COMPOSITION
+}
+
+/// How a GST-registered organisation treats plans priced in other currencies.
+enum ForeignCurrencyTax {
+  EXPORT_LUT
+  NO_TAX
+}
+
+enum TaxDocumentKind {
+  RECEIPT
+  TAX_INVOICE
+  BILL_OF_SUPPLY
+  CREDIT_NOTE
+}
+
+/// The organisation's payment gateway. Secrets are AES-GCM encrypted with PAYMENT_SECRETS_KEY.
+model OrgPaymentSettings {
+  organisationId         String          @id
+  provider               GatewayProvider @default(NONE)
+  /// Razorpay key id (public). Stripe needs only the secret key.
+  keyId                  String?
+  secretEncrypted        String?
+  webhookSecretEncrypted String?
+  /// Unguessable code in the webhook URL that identifies the organisation.
+  webhookPublicCode      String          @unique
+  testMode               Boolean         @default(true)
+  verifiedAt             DateTime?
+  upiVpa                 String?
+  upiPayeeName           String?
+  offlineInstructions    String          @default("")
+  updatedAt              DateTime        @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+model OrgTaxSettings {
+  organisationId     String             @id
+  mode               TaxMode            @default(NONE)
+  scheme             GstScheme          @default(REGULAR)
+  gstin              String?
+  legalName          String?
+  address            String?
+  /// Supplier state code; also the place-of-supply fallback.
+  stateCode          String?
+  sacCode            String             @default("999599")
+  rateBps            Int                @default(1800)
+  inclusive          Boolean            @default(true)
+  exempt             Boolean            @default(false)
+  foreignCurrencyTax ForeignCurrencyTax @default(NO_TAX)
+  lutNumber          String?
+  /// Name printed for SIMPLE mode, e.g. "VAT".
+  simpleTaxName      String             @default("Tax")
+  /// 0–4 uppercase letters or digits before every document number.
+  receiptPrefix      String             @default("")
+  updatedAt          DateTime           @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id               String          @id @default(cuid())
+  organisationId   String
+  memberId         String
+  termId           String?
+  status           PaymentStatus   @default(PENDING)
+  provider         PaymentProvider
+  /// upi, card, netbanking, wallet, cash, bank_transfer, cheque…
+  method           String?
+  currency         String
+  amountMinor      Int
+  /// Razorpay order id or Stripe Checkout Session id.
+  gatewayOrderId   String?
+  /// Razorpay payment id or Stripe PaymentIntent id.
+  gatewayPaymentId String?
+  settlementId     String?
+  utr              String?
+  reference        String?
+  note             String          @default("")
+  paidAt           DateTime?
+  recordedById     String?
+  confirmedById    String?
+  /// Set when a captured payment needs a manager's attention (late, mismatched, duplicate).
+  flaggedAt        DateTime?
+  flagReason       String?
+  /// The tax document waits for review (amount mismatch).
+  documentHeld     Boolean         @default(false)
+  capturedMinor    Int?
+  /// Tax configuration frozen when the payment was created.
+  taxSnapshot      Json
+  anonymisedAt     DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  member       Member          @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Restrict)
+  term         MembershipTerm? @relation(fields: [organisationId, termId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  lines        PaymentLine[]
+  refunds      Refund[]
+  documents    TaxDocument[]
+
+  @@unique([organisationId, id])
+  @@unique([provider, gatewayOrderId])
+  @@index([organisationId, status, createdAt])
+  @@index([organisationId, paidAt])
+  @@index([organisationId, memberId])
+  @@index([termId])
+}
+
+model PaymentLine {
+  id             String          @id @default(cuid())
+  organisationId String
+  paymentId      String
+  kind           PaymentLineKind
+  description    String
+  currency       String
+  amountMinor    Int
+  taxableMinor   Int
+  cgstMinor      Int             @default(0)
+  sgstMinor      Int             @default(0)
+  igstMinor      Int             @default(0)
+  otherTaxMinor  Int             @default(0)
+
+  payment Payment @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
+
+  @@index([paymentId])
+}
+
+/// Webhook idempotency: a provider event is applied once.
+model ProcessedWebhookEvent {
+  provider       PaymentProvider
+  eventId        String
+  organisationId String
+  receivedAt     DateTime        @default(now())
+
+  @@id([provider, eventId])
+  @@index([organisationId, receivedAt])
+}
+
+model Refund {
+  id              String       @id @default(cuid())
+  organisationId  String
+  paymentId       String
+  status          RefundStatus @default(PENDING)
+  currency        String
+  amountMinor     Int
+  reason          String       @default("")
+  gatewayRefundId String?      @unique
+  createdById     String?
+  failureReason   String?
+  createdAt       DateTime     @default(now())
+  processedAt     DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  payment      Payment      @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
+  document     TaxDocument?
+
+  @@unique([organisationId, id])
+  @@index([organisationId, createdAt])
+  @@index([paymentId])
+}
+
+/// Receipts, tax invoices, bills of supply and credit notes. The PDF is rendered from `snapshot`.
+model TaxDocument {
+  id              String          @id @default(cuid())
+  organisationId  String
+  paymentId       String?
+  refundId        String?         @unique
+  kind            TaxDocumentKind
+  /// "R" for payment documents, "C" for credit notes.
+  series          String
+  /// "2026-27" in the organisation's financial year.
+  financialYear   String
+  sequence        Int
+  number          String
+  currency        String
+  totalMinor      Int
+  taxableMinor    Int
+  cgstMinor       Int             @default(0)
+  sgstMinor       Int             @default(0)
+  igstMinor       Int             @default(0)
+  otherTaxMinor   Int             @default(0)
+  placeOfSupply   String?
+  sac             String?
+  snapshot        Json
+  templateVersion Int             @default(1)
+  issuedAt        DateTime        @default(now())
+  cancelledAt     DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  payment      Payment?     @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict, onUpdate: Restrict)
+  refund       Refund?      @relation(fields: [refundId], references: [id], onDelete: Restrict)
+
+  @@unique([organisationId, number])
+  @@unique([organisationId, series, financialYear, sequence])
+  @@index([organisationId, issuedAt])
+  @@index([paymentId])
+}
+
+/// Gapless document numbering per organisation, series and financial year.
+model DocumentCounter {
+  organisationId String
+  series         String
+  financialYear  String
+  next           Int    @default(1)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, series, financialYear])
+}
+
+// ─── Member cards ────────────────────────────────────────────────────────────
+
+/// A member card design: the organisation default (planId null) or one plan's own. `design` holds the
+/// front and back (lib/cards/design/presets.ts normalises it on every read).
+model CardDesign {
+  id             String   @id @default(cuid())
+  organisationId String
+  planId         String?
+  design         Json
+  /// Prefix of printed card numbers, e.g. "SWO" in SWO-0042. Read from the organisation default only.
+  numberPrefix   String
+  /// Watermark image (a managed upload) for designs that use one.
+  watermarkUrl   String?
+  updatedById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  plan         MembershipPlan? @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade)
+
+  @@unique([organisationId, id])
+  @@unique([organisationId, planId])
+}
+
+/// A member's card for one plan. The verify token sits in the QR and is unguessable; renewals keep the
+/// card and its QR, because /verify reads the membership live. Reissuing revokes the old card and issues
+/// a new token, so an old QR stops verifying.
+model MemberCard {
+  id             String    @id @default(cuid())
+  organisationId String
+  memberId       String
+  planId         String
+  cardNumber     String
+  /// 32 random bytes, base64url. Treat as a bearer value: never log it.
+  verifyToken    String    @unique
+  issuedAt       DateTime  @default(now())
+  issuedById     String?
+  revokedAt      DateTime?
+  revokedById    String?
+  /// REISSUED (replaced by a newer card), REVOKED (by a manager) or MEMBERSHIP_ENDED.
+  revokedReason  String?
+  lastEmailedAt  DateTime?
+
+  organisation Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  member       Member         @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+  plan         MembershipPlan @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Restrict)
+
+  @@unique([organisationId, id])
+  @@index([memberId, planId])
+  @@index([organisationId, issuedAt])
+}
+
+enum CardExportStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+/// A bulk card export (one PDF, or a ZIP of PDFs) built in the background and stored privately.
+model CardExportJob {
+  id             String           @id @default(cuid())
+  organisationId String
+  requestedById  String?
+  /// "sheet" (A4 sheets with crop marks), "cards" (one card per page) or "zip" (one PDF per member).
+  format         String
+  /// The member filter chosen on the members page, plus the requester's unit scope.
+  filter         Json
+  status         CardExportStatus @default(PENDING)
+  attempts       Int              @default(0)
+  cardCount      Int?
+  storageKey     String?
+  byteSize       Int?
+  error          String?
+  lockedAt       DateTime?
+  createdAt      DateTime         @default(now())
+  finishedAt     DateTime?
+  /// The file is deleted after this; the row stays as a record of the export.
+  expiresAt      DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([organisationId, createdAt])
+}
+
+// ─── Member portal and public page (P8) ─────────────────────────────────────
+
+/**
+ * The organisation's public page at /o/[slug]. The columns hold what is published; `draft` holds unpublished
+ * edits in the same shape (lib/publicPage/sections.ts). With no publishedAt the plain page shows.
+ */
+model OrganisationPage {
+  organisationId String    @id
+  tagline        String    @default("")
+  /// Storage key of the cover image (organisations/<id>/page-images/<uuid>.webp).
+  coverAssetKey  String?
+  /// Validated #RRGGBB; null uses the organisation's accent.
+  accentColor    String?
+  sections       Json      @default("[]")
+  publishedAt    DateTime?
+  draft          Json?
+  updatedById    String?
+  updatedAt      DateTime  @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+enum ErasureStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+/**
+ * A member asking an organisation to erase their details. A manager approves (the member is anonymised;
+ * money rows stay) or rejects with a note.
+ */
+model ErasureRequest {
+  id                String        @id @default(cuid())
+  organisationId    String
+  memberId          String
+  /// The account that asked; its email gets the decision.
+  requestedByUserId String?
+  status            ErasureStatus @default(PENDING)
+  reason            String        @default("")
+  decidedById       String?
+  decidedAt         DateTime?
+  decisionNote      String?
+  createdAt         DateTime      @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  member       Member       @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Cascade)
+
+  @@unique([organisationId, id])
+  @@index([organisationId, status, createdAt])
+  @@index([memberId])
+}
+
+// ─── Reports ─────────────────────────────────────────────────────────────────
+
+/// Daily membership numbers per organisation, unit and plan, written by the sweep (lib/reports/rollup.ts)
+/// and defined in docs/REPORTS.md. `day` is the organisation's local calendar day. `planId` null is the
+/// all-plans row (distinct members); `unitId` null is members without a unit. Every day is recomputable
+/// from source rows: the rollup deletes and rewrites a whole (organisation, day).
+model OrgDailyStats {
+  id             String   @id @default(cuid())
+  organisationId String
+  day            DateTime @db.Date
+  unitId         String?
+  planId         String?
+  /// Stocks at the end of the day.
+  active         Int      @default(0)
+  grace          Int      @default(0)
+  /// Flows during the day.
+  joined         Int      @default(0)
+  reactivated    Int      @default(0)
+  due            Int      @default(0)
+  renewed        Int      @default(0)
+  lapsed         Int      @default(0)
+  applications   Int      @default(0)
+  computedAt     DateTime @default(now())
+
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  unit         OrgUnit?        @relation(fields: [organisationId, unitId], references: [organisationId, id], onDelete: Cascade, onUpdate: Restrict)
+  plan         MembershipPlan? @relation(fields: [organisationId, planId], references: [organisationId, id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([organisationId, day])
+  @@index([day])
+}
+
+/// Days whose rollup must be rebuilt (a backdated change touched them). The next sweep rebuilds and clears them.
+model OrgStatsDirtyDay {
+  organisationId String
+  day            DateTime @db.Date
+  markedAt       DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, day])
 }

@@ -4,7 +4,7 @@ Space Works Organization follows the **Space Works brand** and **Space Works UX*
 [SpaceWorks-Design](https://github.com/SpaceWorks-HQ/SpaceWorks-Design):
 
 - **Brand:** `tokens/tokens.css` and `docs/ui-brand-spec.md` set colour, type, logo and voice.
-- **UX:** `docs/ux-spec.md` sets patterns P1–P30, layouts L1–L10 and the quality bar. Space Works UX was inspired by Yuyu.
+- **UX:** `docs/ux-spec.md` sets patterns P1–P30, layouts L1–L10 and the quality bar.
 
 ## Where things live
 
@@ -15,7 +15,7 @@ Space Works Organization follows the **Space Works brand** and **Space Works UX*
 | `app/globals.css` | The Tailwind 4 theme mapped onto the roles, fonts, type scale and motion. |
 | `public/brand/` | Fonts, logo masters and icons copied unaltered from the kit. `brand/SOURCE.json` records the commit. |
 | `components/ui/*` | Primitives: button, field, select, choice, dialog, menu, tabs, table, display. |
-| `components/brand/*` | Logo, loader and mood tiles. |
+| `components/brand/*` | Logo, loader, mood tiles and Patch (see "Patch, the mascot" below). |
 
 To update from the kit: `npm run design:sync` (it reads `../SpaceWorks-Design`, or a path you pass in), then
 run the tests.
@@ -59,6 +59,29 @@ run the tests.
 - **Copy.** Sentence case, en-GB, and buttons named after their action. No "Oops", and no exclamation marks
   on errors.
 
+## Member cards
+
+- **One drawing, three outputs.** `components/cards/CardCanvas.tsx` (browser) and `lib/cards/layout.ts` (PDF and
+  PNG) draw the same boxes, palette and template decor. Cards are CR80 (85.6 × 54 mm), landscape or portrait, with
+  four presets: Community, Corporate, Night and Student.
+- **Type on cards.** Gilroy Light and ExtraBold first, then OFL Noto Sans (extended Latin and ₹), Noto Sans
+  Malayalam and Noto Sans Devanagari. The browser loads the same files under one `"SWO Card"` family with
+  unicode ranges (`components/cards/cardFonts.tsx`). Long names shrink until they fit the room kept for them,
+  measured with real shaping on the server and with canvas metrics in the browser.
+- **Colour.** Card colours are brand keys plus the organisation's accent; every text colour keeps 4.5:1 against
+  what it sits on, and Workshop Orange is a fill only.
+- **The designer** (Settings → Cards) is three panes from 1280px: settings, the card to scale, and the selected
+  item's inspector. Below that they stack, card first. It autosaves; a sample switch shows Latin, Malayalam and
+  Devanagari names.
+- **Delight moment.** A card issued in the last two minutes rises into place on the member page and one Citron and
+  Sky Blue sweep crosses it, once per tab (`components/cards/cards.module.css`). With reduced motion the card
+  simply appears.
+- **The holographic card** tilts towards the pointer or the phone and flips to its back; with reduced motion it
+  stays flat and the flip is an instant swap.
+- **`/verify/[token]`** leads with the verdict (Current member, Renewal due, Not started yet, Not a current member,
+  Membership revoked), each a colour plus an icon plus words, then the name, plan, valid-until and card number.
+  It never shows contact details and is not indexed.
+
 ## Landing page (`/`)
 
 The marketing home follows one sample member, Shaan Shoukath of SpaceWorks, through a membership year,
@@ -78,3 +101,74 @@ April to March. It shares its vocabulary with the sister Space Works site:
   - The year ruler fills as the section scrolls.
   - The receipt prints once and the terminal caret blinks.
 - **Design brief:** `.impeccable/surfaces/app-page-tsx.md`.
+
+## Member portal (`/account`)
+
+- **Wallet first.** `/account` is the membership wallet: one card per organisation (logo, member number,
+  unit, role chips), one row per plan with a status chip, a single sentence on where it stands ("Valid until
+  31 Mar 2027 · 20 days left") and only the actions that apply now. Pay is the accent button; Renew is
+  primary; Cancel renewal is ghost; Leave is a quiet danger link behind a confirmation.
+- **Tabs.** Memberships, Profile, Data and privacy, Organisations (team roles), Security. Each membership's
+  page (history, details, receipts) and the pay page sit under Memberships.
+- **History** reads as a timeline per term: dates and amount, then each change in plain words
+  ("Active · Payment received").
+- **Irreversible steps** (leaving, erasure) always confirm, say what stays (payments) and what doesn't.
+  Approving an erasure asks the manager to type ERASE.
+- **Slots.** `components/portal/Slots.tsx` reserves the card (P6) and receipts (P7) spots, so they plug in
+  without a layout change.
+
+## Public page editor (Settings → Public page)
+
+- **Two columns** from 1280px: the form on the left, a sticky live preview on the right (inert, rendered by
+  the same `PageSections` component as `/o/[slug]`, inside the page's own accent scope). Below that width
+  the preview follows the form.
+- **Sections** are collapsible rows with a show/hide switch, move up and down buttons and remove; one is
+  open at a time. Errors from the server mark the row "Needs attention".
+- **Draft and publish.** A sticky bar holds Publish, Save draft, Discard changes and Unpublish, with status
+  chips for published, unsaved changes and unpublished draft.
+- **Accent check.** Presets plus the custom picker; the line under it gives the button contrast against the
+  light page and the label contrast, and warns below 3:1.
+- **On the public page** the tagline is the layout's one Unbounded phrase. FAQs use native
+  `<details>`, so they work without script.
+
+## Patch, the mascot
+
+Patch is the Space Works painted wolf from SpaceWorks-Design `mascot/` (read its README before changing any of
+this). The box symbol stays the logo everywhere; Patch is never put inside or beside it.
+
+- **Files.** `public/brand/patch/` holds `patch.webp` (the hero pose) and `patch-poses.webp` (the eight
+  sneeze-loop frames side by side), both made by `node scripts/sync-patch.mjs [path-to-SpaceWorks-Design]` from
+  `mascot/original/`, which only reads the design repo. The walk sheets `patch-walk-right.webp` and the
+  approved left-facing `patch-walk-left.webp` are copied unchanged from SpaceWorks-Events. Patch is never
+  recoloured, mirrored, stretched, outlined or shown past its native size.
+- **Component.** `components/brand/Patch.tsx` with three poses, drawn by `app/styles/patch.css`:
+  - `idle` breathes, blinks and twitches each ear (frames 1–4 on the kit's seven-second timing, no sneeze);
+  - `sneeze` plays the sneeze (frames 5–8) once, then idles;
+  - `walk` trots in place on the walk cycle.
+  Patch carries clear space of a quarter of its badge as padding, is decorative (`aria-hidden`) unless given a
+  `label`, and rests on its first frame under reduced motion.
+- **Where Patch appears, and why.**
+  - **404** (`app/not-found.tsx`): the interactive pet, the page's one bold moment.
+  - **First-time empty lists** (`EmptyState patch`): no organisations yet (dashboard), no plans yet, no
+    members yet, no payments yet, and no public organisations yet (directory). Filtered or searched empty
+    lists keep the Sleepy mood tile, so Patch only greets a list that has never had anything in it.
+  - **Loading** (`BrandPageLoader`, dashboard routes): Patch walks in place above the hopping dots. In dark
+    mode it sits on a Warm Cream disc, because its dark outline disappears on Deep Ink.
+  - **The sneeze vote**, saved for moments when the community decides together: an organisation's application
+    approved (`/dashboard/[org]/application` once it is active), and a manager approving a member's
+    application (the member page's Memberships panel). Each sneezes once.
+  - Not on organisation-branded public pages (`/o/…`), which carry the organisation's brand, not ours.
+- **Bold moments.** Patch counts as a layout's one bold moment, so a screen with Patch has no Unbounded phrase
+  and no Workshop Orange flap. None of the screens above has either.
+
+## Easter eggs
+
+All decorative: hidden from assistive technology, never blocking a control, and still under reduced motion.
+
+| Egg | Where | Trigger |
+|---|---|---|
+| **Patch on the 404** (`components/feedback/NotFoundPet.tsx`, rules in `lib/patch/pet.ts`) | Any missing page | Patch trots to the pointer (or a tap) and hops, leaves fading paw prints, wanders after 4.5 s alone and naps after 15 s. Click Patch to pat it: eyes closed happily and three orange hearts. Reduced motion: Patch sits still near the right edge. |
+| **Hopping loader** (`components/brand/BrandLoader.tsx`) | Dashboard route loading | Three brand dots hop in turn under the walking Patch. |
+| **Mood-tile wiggle** (`MoodTile`, `.sw-wiggle` in `app/styles/patch.css`) | Empty states, the invite panel | Hover a mood tile, or a `.group` card around one: the icon gives one quick wiggle. Mouse only. |
+| **Colour-mode change event** (`components/providers.tsx`) | Everywhere | Switching light or dark dispatches `swo:theme-change` on `window` in the same frame the tokens change, so anything can follow along; the new mode is revealed as a soft circle from the toggle. |
+| **The team's note** (`components/about/*`, `app/styles/eggs.css`) | `/about`, linked from the footer | Click the airmail envelope: the Workshop Orange seal cracks and tumbles, the flap swings back on its teal lining, the letter slides out and opens into a note from the team, signed by all six of us. "Skip to the letter" and reduced motion go straight to the letter. Its Unbounded title and orange seal are that page's one bold moment. |

@@ -59,10 +59,10 @@ describe("what an organisation's status allows", () => {
     }
   });
 
-  it("keeps only finance and viewing open while suspended or archived", () => {
+  it("keeps only finance, viewing and erasure decisions open while suspended or archived", () => {
     for (const status of ["SUSPENDED", "ARCHIVED"] as const) {
       expect(capabilities.filter((capability) => organisationAllows(status, capability)).sort()).toEqual(
-        ["members.export", "org.view", "payments.manage", "payments.view", "reports.finance"],
+        ["erasure.decide", "members.export", "members.view", "org.view", "payments.manage", "payments.view", "reports.finance"],
       );
     }
   });

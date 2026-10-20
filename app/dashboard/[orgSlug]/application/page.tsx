@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { loadOrgApplicationView } from "@/lib/views/app__dashboard__orgSlug__application__page";
 import { STATUS_EXPLANATIONS } from "@/lib/organisationLifecycle";
+import { Patch } from "@/components/brand/Patch";
 import { indianStateName } from "@/lib/indianStates";
 import { OrganisationStatusChip } from "@/components/org/OrganisationStatusChip";
 import { ReviewHistory } from "@/components/super-admin/ReviewHistory";
@@ -32,14 +33,19 @@ export default async function OrgApplicationPage({ params }: { params: Promise<{
         description={`${organisation.name} · applied ${organisation.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`}
       />
 
-      <Callout
-        tone={TONES[organisation.status]}
-        title={explanation.title}
-        role="status"
-        action={organisation.status === "ACTIVE" ? <Link href={`/dashboard/${organisation.slug}`} className={buttonClasses({ variant: "secondary", size: "sm" })}>Open dashboard</Link> : undefined}
-      >
-        {explanation.body}
-      </Callout>
+      {/* Approval is the platform letting a new pack in, so Patch sneezes its vote once. */}
+      <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center">
+        {organisation.status === "ACTIVE" ? <Patch pose="sneeze" size={96} className="-my-3 -ml-3" /> : null}
+        <Callout
+          tone={TONES[organisation.status]}
+          title={explanation.title}
+          role="status"
+          className="w-full min-w-0 flex-1"
+          action={organisation.status === "ACTIVE" ? <Link href={`/dashboard/${organisation.slug}`} className={buttonClasses({ variant: "secondary", size: "sm" })}>Open dashboard</Link> : undefined}
+        >
+          {explanation.body}
+        </Callout>
+      </div>
 
       {showNote ? (
         <Card as="section" className="rounded-xl">

@@ -20,7 +20,10 @@ export type Bucket =
   | "verifyCard"
   | "apiRead"
   | "apiWrite"
-  | "dataExport";
+  | "dataExport"
+  | "reportExport"
+  | "documentView"
+  | "cardRender";
 
 const limits: Record<Bucket, { max: number; windowMs: number; }> = {
   global: { max: 300, windowMs: 60_000 },
@@ -45,7 +48,14 @@ const limits: Record<Bucket, { max: number; windowMs: number; }> = {
   verifyCard: { max: 120, windowMs: 60_000 },
   apiRead: { max: 600, windowMs: 60_000 },
   apiWrite: { max: 60, windowMs: 60_000 },
+  // A person's own data export: heavy and rarely needed.
   dataExport: { max: 5, windowMs: 60 * 60_000 },
+  // Report CSVs, GSTR-1 and the member register: a month-end run is several in a row.
+  reportExport: { max: 60, windowMs: 60 * 60_000 },
+  // Receipt and credit-note PDFs, opened one by one from lists.
+  documentView: { max: 300, windowMs: 60 * 60_000 },
+  // Member card PDF/PNG renders: CPU-heavy, so per person per hour.
+  cardRender: { max: 60, windowMs: 60 * 60_000 },
 };
 
 // Local fallback store

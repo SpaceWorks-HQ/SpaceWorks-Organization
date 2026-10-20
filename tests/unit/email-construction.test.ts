@@ -48,9 +48,9 @@ describe("branded email construction", () => {
     expect(message.html).toContain("This email was sent by Space Works Organization.");
     expect(message.html).toMatch(/&copy; \d{4} Space Works\s*<\/div>/);
     expect(message.text).toContain("Open: https://members.test/dashboard");
-    // Workshop Orange is never text, and nothing of the old brand remains.
+    // Workshop Orange is never text, and nothing of the Events product leaks in.
     expect(message.html).not.toMatch(/color: #FF7447/i);
-    expect(`${message.html}${message.text}`).not.toMatch(/yuyu/i);
+    expect(`${message.html}${message.text}`).not.toMatch(/Space Works Events/i);
   });
 
   it("leaves the hosted lockup out instead of linking localhost when no public address is set", async () => {

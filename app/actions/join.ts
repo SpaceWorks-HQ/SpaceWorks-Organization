@@ -37,7 +37,7 @@ function inviteUsable(invite: { usedOut: boolean; revokedAt: Date | null; expire
  * Join an organisation on a plan. The account's verified email becomes the member's email, so one person
  * holds one member record per organisation and can see all of them from their account.
  */
-export async function submitJoin(input: unknown): Promise<ActionResult<{ status: string }>> {
+export async function submitJoin(input: unknown): Promise<ActionResult<{ status: string; termId: string }>> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, error: "Sign in to join." };
@@ -92,7 +92,7 @@ export async function submitJoin(input: unknown): Promise<ActionResult<{ status:
       return opened;
     });
     revalidatePath(`/dashboard/${org.slug}/members`);
-    return { ok: true, data: { status: term.status } };
+    return { ok: true, data: { status: term.status, termId: term.id } };
   } catch (error) {
     if (error instanceof MembershipError) return { ok: false, error: error.message };
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { ok: false, error: "You already have an application or unpaid membership on this plan. See your account." };

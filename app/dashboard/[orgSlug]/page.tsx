@@ -5,6 +5,7 @@ import { loadOrgOverviewView } from "@/lib/views/app__dashboard__orgSlug__page";
 import { ROLE_LABELS } from "@/lib/permissionRoles";
 import { STATUS_EXPLANATIONS } from "@/lib/organisationLifecycle";
 import { OrgPageHeader } from "@/components/dashboard/org/OrgPageHeader";
+import { DigestToggle } from "@/components/dashboard/org/DigestToggle";
 import { buttonClasses } from "@/components/ui/button";
 import { Callout, Card, CardHeader, StatTile } from "@/components/ui/display";
 import { cn } from "@/lib/cn";
@@ -12,7 +13,7 @@ import { cn } from "@/lib/cn";
 export const metadata: Metadata = { title: "Overview", robots: { index: false, follow: false } };
 
 export default async function OrgOverviewPage({ params }: { params: Promise<{ orgSlug: string }> }) {
-  const { organisation, role, teamCount, openInvites, members, steps } = await loadOrgOverviewView({ params });
+  const { organisation, role, teamCount, openInvites, members, steps, digest } = await loadOrgOverviewView({ params });
   const remaining = steps.filter((step) => !step.done).length;
   const base = `/dashboard/${organisation.slug}`;
   return (
@@ -71,6 +72,7 @@ export default async function OrgOverviewPage({ params }: { params: Promise<{ or
           </ol>
         </Card>
       ) : null}
+      {digest !== null ? <DigestToggle slug={organisation.slug} initial={digest} /> : null}
     </div>
   );
 }

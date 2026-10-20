@@ -43,7 +43,7 @@ export default async function SuperAdminUserDetailPage({ params }: Props) {
 
       <PlatformAdminToggle userId={user.id} isAdmin={user.isSuperAdmin} isSelf={user.id === viewerId} emailVerified={Boolean(user.emailVerified)} />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <AdminPanel title="Summary">
           <MetricRows
             rows={[

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await runOutboxScheduler();
+    const result = await runOutboxScheduler({ awaitExports: true });
     return NextResponse.json({ ok: true, ...result }, { headers: privateHeaders });
   } catch {
     return NextResponse.json({ ok: false, error: "Scheduler run failed." }, { status: 500, headers: privateHeaders });

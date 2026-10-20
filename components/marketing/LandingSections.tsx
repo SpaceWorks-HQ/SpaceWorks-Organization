@@ -133,7 +133,7 @@ export function ScaleSection() {
         Run a single club, or a state body with district units and city chapters. Each committee sees its own members and numbers; the head office sees them all.
       </SectionHeading>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <figure className="sr-up flex flex-col gap-4 rounded-[20px] border border-line bg-panel p-6">
           <figcaption className="text-label font-semibold text-ink">Units</figcaption>
           <ul className="flex flex-col">

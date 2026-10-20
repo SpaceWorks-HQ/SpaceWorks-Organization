@@ -13,7 +13,7 @@ type Question = { key: string; label: string; helpText: string; type: string; re
 
 const OUTCOME: Record<string, { title: string; body: string }> = {
   PENDING_APPROVAL: { title: "Application sent", body: "The team will review it and email you their decision." },
-  PENDING_PAYMENT: { title: "Almost there", body: "Your membership starts once it's paid. We've emailed you how to pay, and it's in your account too." },
+  PENDING_PAYMENT: { title: "Almost there", body: "Your membership starts once it's paid. Pay now, or later from the link we've emailed you." },
   ACTIVE: { title: "You're a member", body: "Your membership has started. See it any time in your account." },
   UPCOMING: { title: "You're all set", body: "Your membership starts soon." },
 };
@@ -29,6 +29,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<string | null>(null);
+  const [termId, setTermId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const set = (key: keyof typeof values, value: string | boolean) => setValues((current) => ({ ...current, [key]: value }));
 
@@ -38,7 +39,13 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       <div className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-6">
         <h2 className="text-h2 text-ink">{copy.title}</h2>
         <p className="text-body-ui text-ink-secondary">{copy.body}</p>
-        <div><Link href="/account" className={buttonClasses({ variant: "accent" })}>Go to your account</Link></div>
+        <div>
+          {outcome === "PENDING_PAYMENT" && termId ? (
+            <a href={`/account/pay/${termId}`} className={buttonClasses({ variant: "accent" })}>Pay now</a>
+          ) : (
+            <Link href="/account" className={buttonClasses({ variant: "accent" })}>Go to your account</Link>
+          )}
+        </div>
       </div>
     );
   }
@@ -51,7 +58,10 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
         setError(null);
         startTransition(async () => {
           const result = await submitJoin({ organisationSlug: orgSlug, planSlug, inviteToken, consent, profile: { ...values, unitId: values.unitId || null, stateCode: values.stateCode || null, fieldValues: answers } });
-          if (result.ok) setOutcome(result.data?.status ?? "ACTIVE");
+          if (result.ok) {
+            setOutcome(result.data?.status ?? "ACTIVE");
+            setTermId(result.data?.termId ?? null);
+          }
           else {
             setErrors(result.fieldErrors ?? {});
             setError(result.error);
@@ -60,7 +70,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       }}
     >
       {error ? <Callout tone="danger" role="alert">{error}</Callout> : null}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" required error={errors.name?.[0]}><Input value={values.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" maxLength={120} /></Field>
         <Field label="Email" helperText="From your account."><ReadOnlyValue value={user.email} /></Field>
         <Field label="Phone" optional error={errors.phone?.[0]}><Input type="tel" value={values.phone} onChange={(e) => set("phone", e.target.value)} autoComplete="tel" maxLength={32} /></Field>
@@ -92,7 +102,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
       })}
       <CheckboxField checked={values.isMinor} onCheckedChange={(c) => set("isMinor", c === true)} label="I'm under 18" description="A parent or guardian needs to agree too." />
       {values.isMinor ? (
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Guardian's name" required error={errors.guardianName?.[0]}><Input value={values.guardianName} onChange={(e) => set("guardianName", e.target.value)} /></Field>
           <Field label="Guardian's email" required error={errors.guardianEmail?.[0]}><Input type="email" value={values.guardianEmail} onChange={(e) => set("guardianEmail", e.target.value)} /></Field>
           <Field label="Guardian's phone" optional><Input type="tel" value={values.guardianPhone} onChange={(e) => set("guardianPhone", e.target.value)} /></Field>

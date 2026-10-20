@@ -21,6 +21,7 @@ export const CAPABILITIES = {
   "reports.membership": ["OWNER", "ADMIN", "TREASURER", "VIEWER"],
   "reports.finance": ["OWNER", "ADMIN", "TREASURER"],
   "audit.view": ["OWNER", "ADMIN"],
+  "erasure.decide": ["OWNER", "ADMIN"],
 } as const satisfies Record<string, readonly TeamRole[]>;
 
 export type Capability = keyof typeof CAPABILITIES;
@@ -31,9 +32,10 @@ export function can(role: TeamRole | null | undefined, capability: Capability): 
 
 /**
  * Capabilities a suspended or archived organisation keeps: money already received must still be
- * confirmed, refunded and receipted, and finance records exported. Everything else waits.
+ * confirmed, refunded and receipted, finance records exported, members read, and people's erasure
+ * requests decided (a legal right that doesn't pause). Everything else waits.
  */
-export const SUSPENDED_CAPABILITIES: ReadonlySet<Capability> = new Set<Capability>(["org.view", "payments.view", "payments.manage", "reports.finance", "members.export"]);
+export const SUSPENDED_CAPABILITIES: ReadonlySet<Capability> = new Set<Capability>(["org.view", "members.view", "payments.view", "payments.manage", "reports.finance", "members.export", "erasure.decide"]);
 
 /** Whether an organisation in this status may use a capability at all. Before approval: none. */
 export function organisationAllows(status: OrganisationStatus, capability: Capability): boolean {

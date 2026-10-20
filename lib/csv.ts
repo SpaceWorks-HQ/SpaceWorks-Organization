@@ -48,7 +48,8 @@ export function parseCsv(input: string, maxRows = 10_000): string[][] {
 /** Neutralise spreadsheet formulas so an exported cell can never run as one when opened. */
 function safeCell(value: unknown): string {
   const text = value === null || value === undefined ? "" : String(value);
-  const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  const numeric = typeof value === "number" || /^-?\d+(\.\d+)?$/.test(text);
+  const guarded = !numeric && /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
   return /[",\n\r]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded;
 }
 

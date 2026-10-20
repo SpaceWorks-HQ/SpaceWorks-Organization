@@ -63,7 +63,7 @@ export default async function SuperAdminMonitoringPage() {
                 ))}
               </TBody>
             </Table>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {snapshot.routes.map((r) => (
                 <Histogram
                   key={`${r.routeId}:hist`}

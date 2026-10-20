@@ -7,5 +7,3 @@ export const NEW_ISSUE_URL = `${GITHUB_URL}/issues/new`;
 export const DISCUSSIONS_URL = `${GITHUB_URL}/discussions`;
 export const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
 export const LICENSE_URL = `${GITHUB_URL}/blob/main/LICENSE`;
-/** The UX inspiration for Space Works (credited once, on the About page and in NOTICE). */
-export const UPSTREAM_URL = "https://github.com/twilighty-abhi/yuyu";

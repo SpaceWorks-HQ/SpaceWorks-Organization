@@ -1,6 +1,6 @@
 {
   "name": "spaceworks-organization",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "engines": {
@@ -13,6 +13,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "db:seed-demo": "node scripts/seed-demo.mjs",
+    "db:seed-reports": "node scripts/seed-reports.mjs",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
@@ -35,6 +36,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "2.11.3",
     "@aws-sdk/client-s3": "3.1152.0",
+    "@pdf-lib/fontkit": "1.1.1",
     "@prisma/client": "6.19.3",
     "@radix-ui/react-accordion": "1.2.20",
     "@radix-ui/react-checkbox": "1.3.11",
@@ -51,6 +53,7 @@
     "@radix-ui/react-tooltip": "1.2.16",
     "bcryptjs": "3.0.3",
     "clsx": "2.1.1",
+    "fontkit": "2.0.4",
     "ioredis": "6.0.0",
     "jose": "6.2.12",
     "lucide-react": "1.59.0",
@@ -58,6 +61,7 @@
     "next-auth": "5.0.0-beta.32",
     "nodemailer": "10.1.7",
     "otpauth": "9.5.2",
+    "pdf-lib": "1.17.1",
     "qrcode": "1.5.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -69,6 +73,7 @@
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
+    "@types/fontkit": "2.0.8",
     "@types/node": "22.20.5",
     "@types/nodemailer": "8.0.2",
     "@types/qrcode": "1.5.6",

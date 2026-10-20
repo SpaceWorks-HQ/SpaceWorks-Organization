@@ -28,12 +28,12 @@ export default async function DashboardPage() {
       />
 
       {teams.length === 0 ? (
-        <EmptyState mood="sleepy" title="No organisations yet" action={apply}>
+        <EmptyState patch title="No organisations yet" action={apply}>
           Apply to run your organisation&rsquo;s memberships here. A platform admin reviews every application, or ask an
           organisation owner to invite you to their team.
         </EmptyState>
       ) : (
-        <section aria-label="Your organisations" className="grid gap-4 sm:grid-cols-2">
+        <section aria-label="Your organisations" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {teams.map((team) => (
             <Link
               key={team.slug}

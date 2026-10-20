@@ -58,7 +58,7 @@ describe.sequential("joining", () => {
   it("joins an open free plan with the account's own email, consent recorded", async () => {
     signIn("shaan");
     const result = await submitJoin({ organisationSlug: slug, planSlug: "open", consent: true, profile: profile("Shaan Shoukath", { email: "spoofed@example.test" }) });
-    expect(result).toEqual({ ok: true, data: { status: "ACTIVE" } });
+    expect(result).toMatchObject({ ok: true, data: { status: "ACTIVE", termId: expect.any(String) } });
     const member = await prisma.member.findFirstOrThrow({ where: { organisationId: orgId, userId: people.shaan.id }, include: { consents: true } });
     expect(member.email).toBe(people.shaan.email);
     expect(member.consents).toHaveLength(1);
@@ -85,7 +85,7 @@ describe.sequential("joining", () => {
     signIn("stranger");
     expect(await submitJoin({ organisationSlug: slug, planSlug: "invite", inviteToken: token, consent: true, profile: profile("Stranger") })).toMatchObject({ ok: false });
     signIn("abhiram");
-    expect(await submitJoin({ organisationSlug: slug, planSlug: "invite", inviteToken: token, consent: true, profile: profile("Abhiram NJ") })).toEqual({ ok: true, data: { status: "PENDING_PAYMENT" } });
+    expect(await submitJoin({ organisationSlug: slug, planSlug: "invite", inviteToken: token, consent: true, profile: profile("Abhiram NJ") })).toMatchObject({ ok: true, data: { status: "PENDING_PAYMENT", termId: expect.any(String) } });
     expect((await prisma.memberInvite.findUniqueOrThrow({ where: { token } })).uses).toBe(1);
   });
 });

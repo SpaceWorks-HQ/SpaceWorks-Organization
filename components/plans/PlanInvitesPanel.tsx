@@ -61,7 +61,7 @@ export function PlanInvitesPanel({ slug, planId, planSlug, joinUrlBase, invites,
         <CopyButton text={joinUrl} label="Copy join link" />
       </div>
 
-      <form className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_minmax(0,12rem)_auto] sm:items-end" onSubmit={(event) => { event.preventDefault(); create(); }}>
+      <form className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_minmax(0,12rem)_auto] sm:items-end" onSubmit={(event) => { event.preventDefault(); create(); }}>
         <Field label="Invite by email" optional helperText="Leave empty for a shared link.">
           <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="off" />
         </Field>

@@ -7,6 +7,7 @@ import { formatCalendarDate, lastValidDay } from "@/lib/membership/periods";
 import { OrgPageHeader } from "@/components/dashboard/org/OrgPageHeader";
 import { MemberFilters } from "@/components/members/MemberFilters";
 import { MembersTable } from "@/components/members/MembersTable";
+import { CardExportButton } from "@/components/cards/CardExportButton";
 import { buttonClasses } from "@/components/ui/button";
 import { Callout, EmptyState } from "@/components/ui/display";
 import { cn } from "@/lib/cn";
@@ -23,7 +24,7 @@ const FILTER_LABELS: Record<MemberFilter, string> = {
   expiring: "Ending in 30 days",
 };
 
-type Props = { params: Promise<{ orgSlug: string }>; searchParams: Promise<{ status?: string; q?: string; plan?: string; unit?: string; role?: string; page?: string }> };
+type Props = { params: Promise<{ orgSlug: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function OrgMembersDirectoryPage({ params, searchParams }: Props) {
   const view = await loadOrgMembersDirectory({ params, searchParams });
@@ -31,7 +32,7 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
   const base = `/dashboard/${org.slug}/members`;
   const query = (patch: Record<string, string | number>) => {
     const next = new URLSearchParams();
-    const merged = { status: filter === "all" ? "" : filter, q: view.q, plan: view.selected.plan, unit: view.selected.unit, role: view.selected.role, ...patch };
+    const merged = { ...view.drill?.params, status: filter === "all" ? "" : filter, q: view.q, plan: view.selected.plan, unit: view.selected.unit, role: view.selected.role, ...patch };
     for (const [key, value] of Object.entries(merged)) if (value) next.set(key, String(value));
     const text = next.toString();
     return text ? `${base}?${text}` : base;
@@ -51,6 +52,13 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
                 <Download aria-hidden className="size-4" />
                 Export
               </a>
+            ) : null}
+            {view.canManageCards ? (
+              <CardExportButton
+                slug={org.slug}
+                filter={{ status: filter, planId: view.selected.plan || null, unitId: view.selected.unit || null, roleId: view.selected.role || null, q: view.q }}
+                description={filter === "all" && !view.q && !view.selected.plan && !view.selected.unit && !view.selected.role ? "every member with a card" : "the members this filter shows"}
+              />
             ) : null}
             {view.canManage ? (
               <>
@@ -85,6 +93,12 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
         ))}
       </nav>
 
+      {view.drill ? (
+        <Callout tone="info" action={<Link href={base} className={buttonClasses({ variant: "secondary", size: "sm" })}>Show everyone</Link>}>
+          From reports: <span className="font-semibold">{view.drill.label}</span>. {total.toLocaleString("en-IN")} {total === 1 ? "member" : "members"}.
+        </Callout>
+      ) : null}
+
       <MemberFilters plans={view.plans} units={view.units} roles={view.roles} initial={{ q: view.q, ...view.selected }} />
 
       {counts.approval > 0 && filter !== "approval" && view.canManage ? (
@@ -94,7 +108,7 @@ export default async function OrgMembersDirectoryPage({ params, searchParams }: 
       ) : null}
 
       {rows.length === 0 ? (
-        <EmptyState mood="sleepy" title={total === 0 && filter === "all" && !view.q ? "No members yet" : "Nobody matches"}>
+        <EmptyState {...(total === 0 && filter === "all" && !view.q ? { patch: true } : { mood: "sleepy" as const })} title={total === 0 && filter === "all" && !view.q ? "No members yet" : "Nobody matches"}>
           {total === 0 && filter === "all" && !view.q ? "Share a plan's join link, add people by hand, or import a spreadsheet." : "Try another filter or search."}
         </EmptyState>
       ) : (

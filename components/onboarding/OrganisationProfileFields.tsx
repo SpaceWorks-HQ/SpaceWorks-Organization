@@ -80,7 +80,7 @@ export function ContactFields(props: Props) {
   const error = (key: keyof ProfileValues) => props.errors?.[key]?.[0];
   return (
     <>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Contact email" required error={error("contactEmail")} helperText="Shown to members on receipts and your public page.">
           <Input {...field("contactEmail")} type="email" autoComplete="email" inputMode="email" maxLength={320} />
         </Field>
@@ -94,7 +94,7 @@ export function ContactFields(props: Props) {
       <Field label="Address" optional error={error("addressLine")}>
         <Input {...field("addressLine")} autoComplete="street-address" maxLength={200} />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-[1fr_1fr_9rem]">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_1fr_9rem]">
         <Field label="City or town" required error={error("city")}>
           <Input {...field("city")} autoComplete="address-level2" maxLength={80} />
         </Field>

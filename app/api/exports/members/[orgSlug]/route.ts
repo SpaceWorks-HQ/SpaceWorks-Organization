@@ -29,7 +29,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ org
   const membership = org ? await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: org.id } } }) : null;
   if (!org || !membership) return refuse(404, "Not found.");
   if (!organisationAllows(org.status, "members.export") || !can(membership.role, "members.export")) return refuse(403, "Your role can't export members.");
-  if (!(await checkRateLimitById("dataExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
+  if (!(await checkRateLimitById("reportExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
 
   const scope = await teamScope(org.id, membership.unitId);
   const plans = await prisma.membershipPlan.findMany({ where: { organisationId: org.id }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } });

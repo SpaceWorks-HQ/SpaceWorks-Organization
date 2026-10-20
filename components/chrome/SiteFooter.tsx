@@ -11,6 +11,7 @@ const publicLinks = [
   { label: "Organisations", href: "/organisations" },
   { label: "Self-host", href: "/#self-host" },
   { label: "Apply", href: "/start" },
+  { label: "About", href: "/about" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
 ];

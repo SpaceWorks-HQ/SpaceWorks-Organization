@@ -14,6 +14,7 @@ import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } fr
 const sections = [
   { label: "Overview", href: "/super-admin" },
   { label: "Organisations", href: "/super-admin/orgs" },
+  { label: "Reports", href: "/super-admin/reports" },
   { label: "Users", href: "/super-admin/users" },
   { label: "Email", href: "/super-admin/email" },
   { label: "Audit log", href: "/super-admin/audit" },

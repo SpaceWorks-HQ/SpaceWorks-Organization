@@ -6,14 +6,39 @@
       "id": "app__account__layout:loadAccountShell"
     },
     {
+      "module": "lib/views/app__account__memberships__orgSlug__page",
+      "name": "loadMembershipDetailView",
+      "id": "app__account__memberships__orgSlug__page:loadMembershipDetailView"
+    },
+    {
       "module": "lib/views/app__account__organisations__page",
       "name": "loadAccountOrganisationsView",
       "id": "app__account__organisations__page:loadAccountOrganisationsView"
     },
     {
       "module": "lib/views/app__account__page",
-      "name": "loadAccountView",
-      "id": "app__account__page:loadAccountView"
+      "name": "loadAccountWalletView",
+      "id": "app__account__page:loadAccountWalletView"
+    },
+    {
+      "module": "lib/views/app__account__pay__termId__page",
+      "name": "loadPayView",
+      "id": "app__account__pay__termId__page:loadPayView"
+    },
+    {
+      "module": "lib/views/app__account__payments__page",
+      "name": "loadAccountPaymentsView",
+      "id": "app__account__payments__page:loadAccountPaymentsView"
+    },
+    {
+      "module": "lib/views/app__account__privacy__page",
+      "name": "loadAccountPrivacyView",
+      "id": "app__account__privacy__page:loadAccountPrivacyView"
+    },
+    {
+      "module": "lib/views/app__account__profile__page",
+      "name": "loadAccountProfileView",
+      "id": "app__account__profile__page:loadAccountProfileView"
     },
     {
       "module": "lib/views/app__account__security__page",
@@ -46,6 +71,11 @@
       "id": "app__dashboard__orgSlug__members__memberId__page:loadMemberView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__members__memberId__payments",
+      "name": "loadMemberPayments",
+      "id": "app__dashboard__orgSlug__members__memberId__payments:loadMemberPayments"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__members__new__page",
       "name": "loadAddMembersView",
       "id": "app__dashboard__orgSlug__members__new__page:loadAddMembersView"
@@ -59,6 +89,16 @@
       "module": "lib/views/app__dashboard__orgSlug__page",
       "name": "loadOrgOverviewView",
       "id": "app__dashboard__orgSlug__page:loadOrgOverviewView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__payments__page",
+      "name": "loadPaymentsDirectory",
+      "id": "app__dashboard__orgSlug__payments__page:loadPaymentsDirectory"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__payments__paymentId__page",
+      "name": "loadPaymentView",
+      "id": "app__dashboard__orgSlug__payments__paymentId__page:loadPaymentView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__plans__page",
@@ -76,6 +116,46 @@
       "id": "app__dashboard__orgSlug__plans__planId__page:loadPlanView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__reports__activity__page",
+      "name": "loadOrgReportsActivity",
+      "id": "app__dashboard__orgSlug__reports__activity__page:loadOrgReportsActivity"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__applications__page",
+      "name": "loadOrgReportsApplications",
+      "id": "app__dashboard__orgSlug__reports__applications__page:loadOrgReportsApplications"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__members__page",
+      "name": "loadOrgReportsMembers",
+      "id": "app__dashboard__orgSlug__reports__members__page:loadOrgReportsMembers"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__money__page",
+      "name": "loadOrgReportsMoney",
+      "id": "app__dashboard__orgSlug__reports__money__page:loadOrgReportsMoney"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__page",
+      "name": "loadOrgReportsOverview",
+      "id": "app__dashboard__orgSlug__reports__page:loadOrgReportsOverview"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__renewals__page",
+      "name": "loadOrgReportsRenewals",
+      "id": "app__dashboard__orgSlug__reports__renewals__page:loadOrgReportsRenewals"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__tax__page",
+      "name": "loadOrgReportsTax",
+      "id": "app__dashboard__orgSlug__reports__tax__page:loadOrgReportsTax"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__cards__page",
+      "name": "loadOrgCardSettingsView",
+      "id": "app__dashboard__orgSlug__settings__cards__page:loadOrgCardSettingsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__settings__money__page",
       "name": "loadOrgMoneySettingsView",
       "id": "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView"
@@ -84,6 +164,16 @@
       "module": "lib/views/app__dashboard__orgSlug__settings__page",
       "name": "loadOrgSettingsView",
       "id": "app__dashboard__orgSlug__settings__page:loadOrgSettingsView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__payments__page",
+      "name": "loadPaymentSettingsView",
+      "id": "app__dashboard__orgSlug__settings__payments__page:loadPaymentSettingsView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__public-page__page",
+      "name": "loadPublicPageEditorView",
+      "id": "app__dashboard__orgSlug__settings__public-page__page:loadPublicPageEditorView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__settings__structure__page",
@@ -191,6 +281,11 @@
       "id": "app__super-admin__page:loadSuperAdminOverviewView"
     },
     {
+      "module": "lib/views/app__super-admin__reports__page",
+      "name": "loadSuperAdminReportsView",
+      "id": "app__super-admin__reports__page:loadSuperAdminReportsView"
+    },
+    {
       "module": "lib/views/app__super-admin__security__page",
       "name": "loadSuperAdminSecurityView",
       "id": "app__super-admin__security__page:loadSuperAdminSecurityView"
@@ -214,6 +309,11 @@
       "module": "lib/views/app__super-admin__users__userId__page",
       "name": "loadSuperAdminUserDetailView",
       "id": "app__super-admin__users__userId__page:loadSuperAdminUserDetailView"
+    },
+    {
+      "module": "lib/views/app__verify__token__page",
+      "name": "loadVerifyView",
+      "id": "app__verify__token__page:loadVerifyView"
     }
   ],
   "actions": [
@@ -246,6 +346,51 @@
       "module": "app/actions/auth",
       "name": "resendEmailVerification",
       "id": "auth:resendEmailVerification"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "saveCardDesign",
+      "id": "card-design:saveCardDesign"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "revertToOrganisationCardDesign",
+      "id": "card-design:revertToOrganisationCardDesign"
+    },
+    {
+      "module": "app/actions/card-design",
+      "name": "uploadCardWatermark",
+      "id": "card-design:uploadCardWatermark"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "issueMemberCard",
+      "id": "cards:issueMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "reissueMemberCard",
+      "id": "cards:reissueMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "revokeMemberCard",
+      "id": "cards:revokeMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "emailMemberCard",
+      "id": "cards:emailMemberCard"
+    },
+    {
+      "module": "app/actions/cards",
+      "name": "requestCardExport",
+      "id": "cards:requestCardExport"
+    },
+    {
+      "module": "app/actions/erasure",
+      "name": "decideErasureRequest",
+      "id": "erasure:decideErasureRequest"
     },
     {
       "module": "app/actions/instance-settings",
@@ -323,6 +468,26 @@
       "id": "member-import:commitMemberImport"
     },
     {
+      "module": "app/actions/member-payments",
+      "name": "startMemberCheckout",
+      "id": "member-payments:startMemberCheckout"
+    },
+    {
+      "module": "app/actions/member-payments",
+      "name": "confirmMemberRazorpay",
+      "id": "member-payments:confirmMemberRazorpay"
+    },
+    {
+      "module": "app/actions/member-payments",
+      "name": "submitPaymentClaim",
+      "id": "member-payments:submitPaymentClaim"
+    },
+    {
+      "module": "app/actions/member-photo",
+      "name": "setMemberPhoto",
+      "id": "member-photo:setMemberPhoto"
+    },
+    {
       "module": "app/actions/members",
       "name": "addMember",
       "id": "members:addMember"
@@ -393,6 +558,61 @@
       "id": "password-reset:confirmPasswordReset"
     },
     {
+      "module": "app/actions/payment-settings",
+      "name": "savePaymentGateway",
+      "id": "payment-settings:savePaymentGateway"
+    },
+    {
+      "module": "app/actions/payment-settings",
+      "name": "testPaymentGateway",
+      "id": "payment-settings:testPaymentGateway"
+    },
+    {
+      "module": "app/actions/payment-settings",
+      "name": "saveTaxSettings",
+      "id": "payment-settings:saveTaxSettings"
+    },
+    {
+      "module": "app/actions/payment-settings",
+      "name": "saveOfflinePaymentSettings",
+      "id": "payment-settings:saveOfflinePaymentSettings"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "recordPayment",
+      "id": "payments:recordPayment"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "confirmPayment",
+      "id": "payments:confirmPayment"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "rejectPayment",
+      "id": "payments:rejectPayment"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "cancelOpenPayment",
+      "id": "payments:cancelOpenPayment"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "waiveFee",
+      "id": "payments:waiveFee"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "releaseDocument",
+      "id": "payments:releaseDocument"
+    },
+    {
+      "module": "app/actions/payments",
+      "name": "clearFlag",
+      "id": "payments:clearFlag"
+    },
+    {
       "module": "app/actions/plans",
       "name": "createPlan",
       "id": "plans:createPlan"
@@ -411,6 +631,81 @@
       "module": "app/actions/plans",
       "name": "savePlanFields",
       "id": "plans:savePlanFields"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "renewMembership",
+      "id": "portal:renewMembership"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawTerm",
+      "id": "portal:withdrawTerm"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "leaveMembership",
+      "id": "portal:leaveMembership"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "updateMemberProfile",
+      "id": "portal:updateMemberProfile"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawConsent",
+      "id": "portal:withdrawConsent"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "requestDataErasure",
+      "id": "portal:requestDataErasure"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawDataErasure",
+      "id": "portal:withdrawDataErasure"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "savePublicPageDraft",
+      "id": "public-page:savePublicPageDraft"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "publishPublicPage",
+      "id": "public-page:publishPublicPage"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "discardPublicPageDraft",
+      "id": "public-page:discardPublicPageDraft"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "unpublishPublicPage",
+      "id": "public-page:unpublishPublicPage"
+    },
+    {
+      "module": "app/actions/public-page",
+      "name": "uploadPublicPageImage",
+      "id": "public-page:uploadPublicPageImage"
+    },
+    {
+      "module": "app/actions/refunds",
+      "name": "refundPayment",
+      "id": "refunds:refundPayment"
+    },
+    {
+      "module": "app/actions/report-digest",
+      "name": "setReportDigest",
+      "id": "report-digest:setReportDigest"
+    },
+    {
+      "module": "app/actions/reports",
+      "name": "sendRenewalReminders",
+      "id": "reports:sendRenewalReminders"
     },
     {
       "module": "app/actions/security",

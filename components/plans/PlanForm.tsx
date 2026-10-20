@@ -82,7 +82,7 @@ export function PlanForm({
 
       <Section title="About this plan">
         <div className="flex flex-col gap-5">
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Plan name" required error={errors.name?.[0]}>
               <Input
                 value={values.name}

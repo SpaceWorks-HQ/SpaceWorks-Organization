@@ -18,7 +18,7 @@ export default async function OrgStructurePage({ params }: { params: Promise<{ o
       <SettingsTabs slug={org.slug} />
       {!canEdit ? <Callout tone="info">You manage one unit, so the organisation&apos;s structure is read-only for you.</Callout> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Card as="section" className="h-fit rounded-xl">
           <CardHeader title="Levels" description="Name each level of your structure, top first. Leave empty if you don't use units." />
           <UnitLevelsEditor slug={org.slug} initial={org.unitLevels} disabled={!canEdit} />

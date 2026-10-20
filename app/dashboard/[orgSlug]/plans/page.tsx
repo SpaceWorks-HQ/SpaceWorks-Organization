@@ -29,14 +29,14 @@ export default async function OrgPlansPage({ params }: { params: Promise<{ orgSl
 
       {plans.length === 0 ? (
         <EmptyState
-          mood="sleepy"
+          patch
           title="No plans yet"
           action={canManage ? <Link href={`${base}/new`} className={buttonClasses({ variant: "primary" })}>Create your first plan</Link> : undefined}
         >
           A plan is what people join: for example an annual membership, a student plan or a lifetime membership.
         </EmptyState>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
             const { price, extras } = describePrice(plan, org.locale);
             return (

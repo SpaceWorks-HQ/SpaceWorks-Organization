@@ -52,7 +52,7 @@ export function ImportWizard({ slug, plans, fields }: { slug: string; plans: Arr
     return (
       <Card as="section" className="rounded-xl">
         <CardHeader title="Import finished" />
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <StatTile label="New members" value={result.created} />
           <StatTile label="Updated" value={result.updated} />
           <StatTile label="Skipped" value={result.skipped.length} tone={result.skipped.length ? "attention" : "default"} />
@@ -92,7 +92,7 @@ export function ImportWizard({ slug, plans, fields }: { slug: string; plans: Arr
               }} />
             </Field>
           )}
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Plan" optional helperText="Its questions become columns you can map.">
               <Dropdown value={planId} onChange={(event) => { setPlanId(event.target.value); setPreview(null); }}>
                 <option value="">No plan</option>

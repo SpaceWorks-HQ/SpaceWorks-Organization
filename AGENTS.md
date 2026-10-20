@@ -32,7 +32,11 @@ them, or reviews the ones that sign up. There are **no events** in this product.
   - **Buttons and controls:** pill-shaped (`--radius-control: 9999px`).
   - **Fonts:** only the free Gilroy weights (Light 300 for text, ExtraBold 800 for headings), plus Unbounded for
     one accent phrase per layout.
-- **Operations:** releases, Actions, installer and compose layout mirror the main SpaceWorks repo.
+  - **Patch (mascot):** `components/brand/Patch.tsx` (idle, sneeze, walk), artwork from SpaceWorks-Design via
+    `scripts/sync-patch.mjs`. Never recolour, mirror or resize it past native size, never beside the box logo, and
+    it counts as a layout's one bold moment. Where it appears and every easter egg are in `docs/DESIGN.md`.
+- **Operations:** releases, Actions, installer and compose layout mirror the main SpaceWorks repo (see
+  "Operations" below and `docs/DEPLOYMENT_VPS.md`).
 
 ## Commands
 
@@ -47,6 +51,18 @@ npm run test:e2e       # Playwright
 npm run build          # production build (standalone output)
 npm run db:migrate     # create/apply a migration in development
 npm run db:deploy      # apply migrations
+```
+
+Operations (bash; see `docs/DEPLOYMENT_VPS.md`, `docs/DEPLOYMENT_CLOUD.md`, `docs/CONFIGURATION.md`):
+
+```bash
+bash setup.sh [--build]                                  # guided install from a checkout (setup.ps1 on Windows)
+scripts/spaceworks-compose.sh bundled up -d              # the only way to run docker-compose.prod.yml
+scripts/spaceworks-compose.sh bundled run --rm ops       # operator checks
+scripts/spaceworks-compose.sh cloud up -d                # docker-compose.cloud.yml with /etc/spaceworks-organization/cloud.env
+bash scripts/update.sh --force [--version V | --rollback]
+bash scripts/backup.sh && bash scripts/restore.sh backups/<dump>.sql.gz [--with-storage]
+SWO_COMPOSE_BUILD_LAYER=1 bash scripts/compose-smoke.sh  # bundled stack end to end (disposable)
 ```
 
 Run one unit test file:
@@ -65,6 +81,35 @@ npx vitest run tests/unit/health.test.ts
   - Amounts are integer paise.
   - Receipt numbers are gapless per organisation per financial year (April–March, in the organisation's timezone).
   - Paid rows are never edited or deleted; reverse them with credit notes.
+  - Payments live in `lib/payments/*` (see `docs/PAYMENTS.md` and `docs/GST.md`). Settle money only through
+    `settlePayment` (lock order payment → term → counter); triggers in migration 0005 enforce immutability.
+    Gateway secrets need `PAYMENT_SECRETS_KEY`.
+- **Member cards** (`lib/cards/*`):
+  - One live card per member and plan. The verify token (in the QR) is 32 random bytes; reissuing revokes the old card. Renewals keep the card, because `/verify` reads `deriveStatus` live.
+  - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.
+  - Card text is shaped with fontkit (Gilroy, then Noto for extended Latin, ₹, Malayalam and Devanagari) and drawn as outlines in both the PDF and the PNG. Never draw card text with pdf-lib's `drawText`.
+  - Bulk exports are `CardExportJob` rows run by the scheduler pass and stored privately through `lib/storage/private.ts`.
+- **Member portal (`/account`):**
+  - A person's member records are found only by their account's verified email, lowercased, matched to
+    `Member.email` (`lib/portal/member.ts`). Never by a member id alone. Anonymised records never match.
+  - Members change memberships only through `lib/membership/service.ts` (`startRenewal`, `decideTerm` with
+    the `withdraw` action), so every change writes a status event and an audit row.
+  - Erasure anonymises in one place, `anonymiseMember` in `lib/portal/erasure.ts`; money rows are never deleted.
+- **User content on public pages** is rendered from parsed trees as React text (`lib/publicPage/markdown.ts`),
+  never as HTML strings. Links must pass `isSafeLink`; page images must be this organisation's
+  `page-images` uploads. The page document schema lives in `lib/publicPage/sections.ts`.
+- **Reports:** definitions live in `docs/REPORTS.md`; the engine in `lib/reports/*` is pure over rows and unit-tested. Finance reports read only `lib/reports/finance/source.ts`. Never add money across currencies.
+- **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
+- **Operations:**
+  - Two images from one `Dockerfile`: `spaceworks-organization-backend` (`runner`; every backend role through
+    `scripts/docker-entrypoint.sh --role backend|migrate|scheduler|ops`) and `spaceworks-organization-frontend`
+    (`frontend`). Public origins are placeholders replaced at start; never bake an installation's key or origin.
+  - Periodic work belongs in `runOutboxScheduler` (`lib/outboxWorker.ts`); Compose stacks run it from the
+    `scheduler` role (`SCHEDULER_MODE=external`).
+  - Every new environment variable goes into `.env.example`, `.env.production.example`, the compose
+    `x-app-env` blocks and `docs/CONFIGURATION.md`.
+  - Shell scripts are bash or POSIX sh, LF, and pass `shellcheck -S warning -x`. Host files an update must
+    replace are listed in `scripts/install-host-bundle.sh`.
 - **Copy:** sentence case, en-GB, buttons named after their action, and no "Oops" or exclamation marks on errors.
 - **Line endings:** LF everywhere (see `.gitattributes`). Never commit `.env*` files except the `*.example` ones.
 - **Commit trailers:**

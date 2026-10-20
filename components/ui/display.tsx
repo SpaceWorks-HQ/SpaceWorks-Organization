@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { MoodTile, type Mood } from "@/components/brand/MoodTile";
+import { Patch } from "@/components/brand/Patch";
 
 /* ---------- Status pills (docs/DESIGN.md §4.5) ---------- */
 
@@ -103,12 +104,13 @@ export function Callout({ tone = "info", title, children, action, className, rol
 /**
  * Empty, success or error message in a card. On Space Works Organization' own screens pass a dot
  * face `mood` (Sleepy for empty lists, Sad for errors); organisation-branded public pages
- * leave it out.
+ * leave it out. For a list that has never had anything in it (no members yet, no payments yet), pass
+ * `patch` instead to show Patch idling; never on a screen that already has a bold moment.
  */
-export function EmptyState({ title, children, action, className, icon, mood }: { title?: ReactNode; children?: ReactNode; action?: ReactNode; className?: string; icon?: ReactNode; mood?: Mood }) {
+export function EmptyState({ title, children, action, className, icon, mood, patch }: { title?: ReactNode; children?: ReactNode; action?: ReactNode; className?: string; icon?: ReactNode; mood?: Mood; patch?: boolean }) {
   return (
     <div className={cn("flex flex-col items-center gap-2 rounded-xl border border-line bg-panel px-6 py-7 text-center", className)}>
-      {mood ? <MoodTile mood={mood} size={48} className="sw-face mb-1" /> : null}
+      {patch ? <Patch size={88} className="-my-3" /> : mood ? <MoodTile mood={mood} size={48} className="sw-face mb-1" /> : null}
       {icon ? <span aria-hidden className="text-ink-muted [&_svg]:size-7">{icon}</span> : null}
       {title ? <p className="text-label text-ink">{title}</p> : null}
       {children ? <div className="max-w-md text-body-ui text-ink-muted">{children}</div> : null}

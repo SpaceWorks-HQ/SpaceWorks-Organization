@@ -22,7 +22,7 @@ function moneyHelp(currency: string) {
 export function PriceSection({ values, set, errors, disabled, currencyLocked }: SectionProps & { currencyLocked: boolean }) {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Currency" helperText={currencyLocked ? "Fixed once members join." : undefined} error={errors.currency?.[0]}>
           <Dropdown value={values.currency} disabled={disabled || currencyLocked} onChange={(event) => set("currency", event.target.value)}>
             {CURRENCY_CODES.map((code) => <option key={code} value={code}>{`${code} · ${CURRENCIES[code].name}`}</option>)}
@@ -39,7 +39,7 @@ export function PriceSection({ values, set, errors, disabled, currencyLocked }: 
         </Field>
       </div>
       {values.joiningFee && values.joiningFee !== "0" ? (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="When someone rejoins" error={errors.rejoinFeeRule?.[0]}>
             <Dropdown value={values.rejoinFeeRule} disabled={disabled} onChange={(event) => set("rejoinFeeRule", event.target.value as PlanFormValues["rejoinFeeRule"])}>
               <option value="NEVER">Never charge the joining fee again</option>
@@ -61,7 +61,7 @@ export function PriceSection({ values, set, errors, disabled, currencyLocked }: 
 export function LengthSection({ values, set, errors, disabled }: SectionProps) {
   return (
     <div className="flex flex-col gap-5">
-      <RadioGroup value={values.durationType} onValueChange={(value) => set("durationType", value as PlanFormValues["durationType"])} className="grid gap-3 sm:grid-cols-2" aria-label="How long a membership lasts" disabled={disabled}>
+      <RadioGroup value={values.durationType} onValueChange={(value) => set("durationType", value as PlanFormValues["durationType"])} className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="How long a membership lasts" disabled={disabled}>
         {(Object.keys(DURATION_LABELS) as Array<keyof typeof DURATION_LABELS>).map((key) => (
           <RadioCard key={key} value={key} label={DURATION_LABELS[key].label} description={DURATION_LABELS[key].description} className={cardClass} />
         ))}
@@ -84,13 +84,13 @@ export function JoiningSection({ values, set, disabled }: SectionProps) {
   const priced = Boolean(values.priceNew && values.priceNew !== "0") || Boolean(values.joiningFee && values.joiningFee !== "0");
   return (
     <div className="flex flex-col gap-5">
-      <RadioGroup value={values.joinMode} onValueChange={(value) => set("joinMode", value as PlanFormValues["joinMode"])} className="grid gap-3 sm:grid-cols-2" aria-label="How people join" disabled={disabled}>
+      <RadioGroup value={values.joinMode} onValueChange={(value) => set("joinMode", value as PlanFormValues["joinMode"])} className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="How people join" disabled={disabled}>
         {(Object.keys(JOIN_MODE_LABELS) as Array<keyof typeof JOIN_MODE_LABELS>).map((key) => (
           <RadioCard key={key} value={key} label={JOIN_MODE_LABELS[key].label} description={JOIN_MODE_LABELS[key].description} className={cardClass} />
         ))}
       </RadioGroup>
       {priced ? (
-        <RadioGroup value={values.paymentTiming} onValueChange={(value) => set("paymentTiming", value as PlanFormValues["paymentTiming"])} className="grid gap-3 sm:grid-cols-2" aria-label="When membership starts" disabled={disabled}>
+        <RadioGroup value={values.paymentTiming} onValueChange={(value) => set("paymentTiming", value as PlanFormValues["paymentTiming"])} className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="When membership starts" disabled={disabled}>
           <RadioCard value="PAY_THEN_ACTIVATE" label="Starts when paid" description="Approved members pay first; the membership starts on payment." className={cardClass} />
           <RadioCard value="ACTIVATE_THEN_CHARGE" label="Starts now, pay later" description="The membership starts at once and the fee stays due." className={cardClass} />
         </RadioGroup>
@@ -103,7 +103,7 @@ export function RenewalSection({ values, set, errors, disabled }: SectionProps) 
   const number = (key: "graceDays" | "renewalWindowDays") => (event: React.ChangeEvent<HTMLInputElement>) => set(key, event.target.value.replace(/\D/g, ""));
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Renewal opens (days before the end)" error={errors.renewalWindowDays?.[0]}>
           <Input inputMode="numeric" value={values.renewalWindowDays} disabled={disabled} onChange={number("renewalWindowDays")} />
         </Field>

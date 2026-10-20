@@ -55,6 +55,7 @@ export const envSchema = z.object({
   HEALTHCHECK_SECRET: secret.optional(),
   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: serverActionsKey.optional(),
   MFA_ENCRYPTION_KEY: mfaEncryptionKey.optional(),
+  PAYMENT_SECRETS_KEY: mfaEncryptionKey.optional(),
   S3_BUCKET: z.string().min(1).optional(),
   S3_REGION: z.string().min(1).optional(),
   S3_ENDPOINT: z.string().url().optional(),
@@ -70,6 +71,10 @@ export const envSchema = z.object({
   BACKUP_LAST_SUCCESS_AT: z.preprocess((value) => value === "" ? undefined : value, z.string().datetime().optional()),
   BACKUP_RETENTION_DAYS: z.coerce.number().int().positive().max(3650).optional(),
   OUTBOX_RETENTION_DAYS: z.coerce.number().int().positive().max(365).optional(),
+  // external: a scheduler container or cron calls POST /api/internal/outbox instead of the in-process worker.
+  SCHEDULER_MODE: z.enum(["in-process", "external"]).optional(),
+  // 1 allows an http:// public origin, for a LAN or trial install behind plain HTTP. Never on the internet.
+  ALLOW_PLAIN_HTTP: z.enum(["0", "1"]).optional(),
 });
 
 // Optional display-only configuration for server-rendered operations pages.
@@ -84,7 +89,7 @@ function issueMessages(error: z.ZodError) {
 export function validateRuntimeEnvironment() {
   if (process.env.NODE_ENV !== "production") return;
   const parsed = envSchema.safeParse(process.env);
-  const missing = ["AUTH_URL", "NEXT_PUBLIC_BASE_URL", "REDIS_URL", "CRON_SECRET", "HEALTHCHECK_SECRET", "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY", "MFA_ENCRYPTION_KEY", "TRUSTED_PROXY_IP_HEADER", "S3_BUCKET", "S3_REGION"]
+  const missing = ["AUTH_URL", "NEXT_PUBLIC_BASE_URL", "REDIS_URL", "CRON_SECRET", "HEALTHCHECK_SECRET", "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY", "MFA_ENCRYPTION_KEY", "PAYMENT_SECRETS_KEY", "TRUSTED_PROXY_IP_HEADER", "S3_BUCKET", "S3_REGION"]
     .filter((key) => !process.env[key]?.trim());
   if (Boolean(process.env.S3_ACCESS_KEY_ID) !== Boolean(process.env.S3_SECRET_ACCESS_KEY)) {
     missing.push("both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither when using an IAM role");
@@ -97,7 +102,8 @@ export function validateRuntimeEnvironment() {
   const baseUrl = new URL(process.env.NEXT_PUBLIC_BASE_URL!);
   const authUrl = new URL(process.env.AUTH_URL!);
   const insecureCiTest = process.env.CI === "true" && process.env.ALLOW_INSECURE_PRODUCTION_TESTS === "1";
-  if ((!insecureCiTest && (baseUrl.protocol !== "https:" || authUrl.protocol !== "https:")) || baseUrl.origin !== authUrl.origin) {
+  const httpAllowed = insecureCiTest || process.env.ALLOW_PLAIN_HTTP === "1";
+  if ((!httpAllowed && (baseUrl.protocol !== "https:" || authUrl.protocol !== "https:")) || baseUrl.origin !== authUrl.origin) {
     throw new Error("AUTH_URL and NEXT_PUBLIC_BASE_URL must be the same HTTPS origin in production.");
   }
   for (const key of ["DATABASE_URL", "DIRECT_URL"] as const) {

@@ -77,6 +77,7 @@ export async function updateAccountProfile(
     targetId: session.user.id,
   });
   revalidatePath("/account");
+  revalidatePath("/account/profile");
 
   return { ok: true, data: { name, profileImageUrl: savedProfileImageUrl } };
 }
