@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Prisma resolves datasource URLs while validating and generating, even
+      # though these steps never connect to a database.
+      DATABASE_URL: postgresql://build:build@localhost:5432/sworg
+      DIRECT_URL: postgresql://build:build@localhost:5432/sworg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma validate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high

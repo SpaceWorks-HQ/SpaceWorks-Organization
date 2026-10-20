@@ -1,44 +1,16 @@
 {
-  "name": "community-id",
+  "name": "spaceworks-organization-frontend",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:watch": "nodemon --watch vite.config.js --watch .env --exec \"vite\"",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "node ../scripts/generate-frontend-catalog.mjs --check && node ../scripts/prepare-frontend.mjs && next build && node ../scripts/check-frontend-build.mjs",
+    "dev": "node ../scripts/prepare-frontend.mjs && next dev --port 3100",
+    "start": "next start --port 3100",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.95.3",
-    "@tailwindcss/vite": "^4.1.18",
-    "blob-stream": "^0.1.3",
-    "file-saver": "^2.0.5",
-    "gsap": "^3.14.2",
-    "html5-qrcode": "^2.3.8",
-    "jszip": "^3.10.1",
-    "pdfkit": "^0.18.0",
-    "qrcode": "^1.5.4",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.0",
-    "tailwindcss": "^4.1.18",
-    "three": "^0.184.0",
-    "vite-plugin-node-polyfills": "^0.25.0",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "nodemon": "^3.1.11",
-    "vite": "^7.3.1"
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   }
 }
