@@ -95,12 +95,35 @@ describe("charges and credit notes", () => {
   });
 });
 
+describe("credit notes across several partial refunds", () => {
+  const lines = chargeLines({ renewal: false, rejoining: false, priceMinor: 1_180, joiningFeeMinor: 0, planName: "Tiny" }, gst(), "KL");
+
+  it("keeps CGST and SGST equal on every credit note", () => {
+    for (const amount of [1, 6, 7, 59, 590, 1_179]) {
+      for (const line of creditNoteLines(lines, amount)) expect(line.cgstMinor).toBe(line.sgstMinor);
+    }
+  });
+
+  it("adds up to the invoice however the refund is split", () => {
+    const steps = [6, 7, 300, 867];
+    let credited = 0;
+    const notes = steps.map((amount) => {
+      const note = creditNoteLines(lines, amount, credited);
+      credited += amount;
+      return sumSplits(note);
+    });
+    expect(sumSplits(notes)).toEqual(sumSplits(lines));
+  });
+});
+
 describe("document numbers", () => {
   it("formats payment documents and credit notes within 16 characters", () => {
     expect(formatDocumentNumber("SWO", "R", "2026-27", 42)).toBe("SWO-2627-00042");
     expect(formatDocumentNumber("SWOR", "C", "2026-27", 99_999)).toBe("SWOR-2627-C99999");
     expect(formatDocumentNumber("", "R", "2026", 1)).toBe("2026-00001");
     expect(formatDocumentNumber("SWOR", "C", "2026-27", 1).length).toBeLessThanOrEqual(16);
+    expect(formatDocumentNumber("SWOR", "C", "2026-27", 100_000)).toBe("SWOR2627-C100000");
+    expect(formatDocumentNumber("SWOR", "C", "2026-27", 1_000_000).length).toBeLessThanOrEqual(16);
   });
 
   it("limits prefixes to four letters or digits", () => {

@@ -4,8 +4,8 @@ import type { Prisma } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
-import { markTermPaid } from "@/lib/membership/service";
-import { lockPayment, type OrgForPayments } from "./charges";
+import { markTermPaid, MembershipError } from "@/lib/membership/service";
+import { lockPayment, PaymentError, type OrgForPayments } from "./charges";
 import { issuePaymentDocument } from "./documents";
 
 type Tx = Prisma.TransactionClient;
@@ -25,6 +25,14 @@ async function documentPrefix(tx: Tx, organisationId: string) {
  */
 export async function settlePayment(tx: Tx, args: { org: OrgForPayments; paymentId: string; capture?: Capture; confirmedById?: string | null; now?: Date }) {
   const now = args.now ?? new Date();
+  // Lock order everywhere: the term's payments (by id), then the term, then the document counter. Taking the
+  // term lock before reading anything also serialises concurrent settlements of the same membership.
+  const link = await tx.payment.findFirst({ where: { id: args.paymentId, organisationId: args.org.id }, select: { termId: true } });
+  if (!link) throw new PaymentError("Payment not found.");
+  if (link.termId) {
+    await tx.$queryRaw`SELECT "id" FROM "Payment" WHERE "organisationId" = ${args.org.id} AND ("id" = ${args.paymentId} OR ("termId" = ${link.termId} AND "status" IN ('PENDING', 'AWAITING_CONFIRMATION'))) ORDER BY "id" FOR UPDATE`;
+    await tx.$queryRaw`SELECT "id" FROM "MembershipTerm" WHERE "id" = ${link.termId} AND "organisationId" = ${args.org.id} FOR UPDATE`;
+  }
   const payment = await lockPayment(tx, args.org.id, args.paymentId);
   if (payment.status === "PAID" || payment.status === "WAIVED") return { payment, flagged: payment.flagReason, alreadySettled: true };
 
@@ -44,7 +52,13 @@ export async function settlePayment(tx: Tx, args: { org: OrgForPayments; payment
       if (term.plan.archivedAt) flags.push("The plan was archived when this was paid.");
       const before = statusAt(term, now);
       if (canTransition("markPaid", before)) {
-        await markTermPaid(tx, { org: args.org, termId: term.id, actorUserId: args.confirmedById ?? null, now });
+        try {
+          await markTermPaid(tx, { org: args.org, termId: term.id, actorUserId: args.confirmedById ?? null, now });
+        } catch (error) {
+          // E.g. a fixed-end plan that ended before the money arrived. The money is still receipted.
+          if (!(error instanceof MembershipError)) throw error;
+          flags.push(`The membership couldn't start: ${error.message} Reinstate it or refund.`);
+        }
       } else if (!(term.plan.paymentTiming === "ACTIVATE_THEN_CHARGE" && ["UPCOMING", "ACTIVE", "GRACE", "ENDED", "LAPSED"].includes(before))) {
         flags.push(`The membership was ${before.toLowerCase().replace("_", " ")} when this was paid. Reinstate it or refund.`);
       }

@@ -91,6 +91,19 @@ describe.sequential("gateway webhooks", () => {
     expect(await prisma.taxDocument.count({ where: { paymentId: first.payment.id } })).toBe(1);
   });
 
+  it("receipts and flags money for a membership that can no longer start, instead of failing the webhook", async () => {
+    const ended = await prisma.membershipPlan.create({ data: { organisationId: org.id, name: "Season", slug: `season-${org.id.slice(-6)}`, currency: "INR", priceNewMinor: 118_000, joinMode: "OPEN", durationType: "FIXED_END", fixedEndDate: at("2026-07-31T18:30:00Z") } });
+    const term = await unpaidTerm(org, ended, "late-season", now);
+    const payment = await prisma.$transaction((tx) => createTermPayment(tx, { org, termId: term.id, provider: "RAZORPAY", status: "PENDING", now }));
+    await prisma.payment.update({ where: { id: payment.id }, data: { gatewayOrderId: `order_${payment.id.slice(-8)}` } });
+    // The capture is only processed after the season has ended.
+    const { settlePayment } = await import("@/lib/payments/settle");
+    const settled = await prisma.$transaction((tx) => settlePayment(tx, { org, paymentId: payment.id, capture: { gatewayPaymentId: "pay_late", amountMinor: 118_000, currency: "INR", method: "upi" }, now: at("2026-08-02T06:00:00Z") }));
+    expect(settled.payment.status).toBe("PAID");
+    expect(settled.flagged).toMatch(/couldn't start/);
+    expect(await prisma.taxDocument.count({ where: { paymentId: payment.id } })).toBe(1);
+  });
+
   it("fails an open attempt and acknowledges unknown events", async () => {
     const { payment, orderId } = await gatewayPayment("failure");
     const failed = JSON.stringify({ event: "payment.failed", payload: { payment: { entity: { id: "pay_f", order_id: orderId, notes: { paymentId: payment.id }, error_description: "Bank declined" } } } });

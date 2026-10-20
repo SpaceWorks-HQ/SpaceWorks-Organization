@@ -21,7 +21,7 @@ const HELD = ["UPCOMING", "ACTIVE", "GRACE", "ENDED", "LAPSED", "REVOKED"] as co
 
 /** Lock every open payment of a term, then the term itself (lock order: payment, term, counter). */
 export async function lockTermForPayment(tx: Tx, organisationId: string, termId: string) {
-  await tx.$queryRaw`SELECT "id" FROM "Payment" WHERE "termId" = ${termId} AND "organisationId" = ${organisationId} AND "status" IN ('PENDING', 'AWAITING_CONFIRMATION') FOR UPDATE`;
+  await tx.$queryRaw`SELECT "id" FROM "Payment" WHERE "termId" = ${termId} AND "organisationId" = ${organisationId} AND "status" IN ('PENDING', 'AWAITING_CONFIRMATION') ORDER BY "id" FOR UPDATE`;
   const rows = await tx.$queryRaw<Array<{ id: string }>>`SELECT "id" FROM "MembershipTerm" WHERE "id" = ${termId} AND "organisationId" = ${organisationId} FOR UPDATE`;
   if (rows.length === 0) throw new PaymentError("Membership not found.");
   return tx.membershipTerm.findUniqueOrThrow({

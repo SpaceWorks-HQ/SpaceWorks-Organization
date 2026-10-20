@@ -135,17 +135,40 @@ export function apportion(amount: number, weights: number[]): number[] {
   return parts;
 }
 
-const COMPONENTS = ["taxableMinor", "cgstMinor", "sgstMinor", "igstMinor", "otherTaxMinor"] as const;
+/** A line's share of an amount, split like the line itself: taxable against tax, GST halves kept equal. */
+function shareOf(line: TaxSplit, share: number): TaxSplit {
+  const tax = line.cgstMinor + line.sgstMinor + line.igstMinor + line.otherTaxMinor;
+  let [taxable, taxPart] = apportion(share, [line.taxableMinor, tax]);
+  if (tax === 0) [taxable, taxPart] = [share, 0];
+  const zero = { cgstMinor: 0, sgstMinor: 0, igstMinor: 0, otherTaxMinor: 0 };
+  if (line.cgstMinor + line.sgstMinor > 0) {
+    if (taxPart % 2 === 1) {
+      taxable += 1;
+      taxPart -= 1;
+    }
+    return { amountMinor: share, taxableMinor: taxable, ...zero, cgstMinor: taxPart / 2, sgstMinor: taxPart / 2 };
+  }
+  return { amountMinor: share, taxableMinor: taxable, ...zero, ...(line.igstMinor > 0 ? { igstMinor: taxPart } : { otherTaxMinor: taxPart }) };
+}
+
+function creditSplit(lines: TaxSplit[], amount: number): TaxSplit[] {
+  const shares = apportion(amount, lines.map((line) => line.amountMinor));
+  return lines.map((line, index) => shareOf(line, shares[index]));
+}
+
+const KEYS = ["amountMinor", "taxableMinor", "cgstMinor", "sgstMinor", "igstMinor", "otherTaxMinor"] as const;
 
 /**
  * A credit note for a (partial) refund: the refund is shared across the payment's lines by amount, and
- * each line's share across its taxable value and taxes pro rata. A full refund reverses every line exactly.
+ * each line's share across taxable value and tax the way the invoice did (equal CGST and SGST halves).
+ * It is worked out cumulatively, as everything credited so far minus what earlier credit notes took, so
+ * several partial refunds always add up to the invoice. A full refund reverses every line exactly.
+ * Also used to re-apportion an accepted mismatched capture (`refundMinor` is then the amount received).
  */
-export function creditNoteLines<T extends TaxSplit & { kind: PaymentLineKind; description: string }>(lines: T[], refundMinor: number): ChargeLine[] {
-  const shares = apportion(refundMinor, lines.map((line) => line.amountMinor));
-  return lines.map((line, index) => {
-    const parts = apportion(shares[index], COMPONENTS.map((key) => line[key]));
-    const split = Object.fromEntries(COMPONENTS.map((key, at) => [key, parts[at]])) as Omit<TaxSplit, "amountMinor">;
-    return { kind: line.kind, description: line.description, amountMinor: shares[index], ...split };
-  }).filter((line) => line.amountMinor > 0);
+export function creditNoteLines<T extends TaxSplit & { kind: PaymentLineKind; description: string }>(lines: T[], refundMinor: number, alreadyCreditedMinor = 0): ChargeLine[] {
+  const before = creditSplit(lines, alreadyCreditedMinor);
+  const after = creditSplit(lines, alreadyCreditedMinor + refundMinor);
+  return lines
+    .map((line, index) => ({ kind: line.kind, description: line.description, ...(Object.fromEntries(KEYS.map((key) => [key, after[index][key] - before[index][key]])) as TaxSplit) }))
+    .filter((line) => line.amountMinor > 0);
 }

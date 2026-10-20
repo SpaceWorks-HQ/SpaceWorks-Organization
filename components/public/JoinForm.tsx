@@ -41,7 +41,7 @@ export function JoinForm({ orgSlug, planSlug, inviteToken, user, units, unitLabe
         <p className="text-body-ui text-ink-secondary">{copy.body}</p>
         <div>
           {outcome === "PENDING_PAYMENT" && termId ? (
-            <Link href={`/account/pay/${termId}`} className={buttonClasses({ variant: "accent" })}>Pay now</Link>
+            <a href={`/account/pay/${termId}`} className={buttonClasses({ variant: "accent" })}>Pay now</a>
           ) : (
             <Link href="/account" className={buttonClasses({ variant: "accent" })}>Go to your account</Link>
           )}

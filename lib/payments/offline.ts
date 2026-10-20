@@ -5,8 +5,9 @@ import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
 import { markTermPaid } from "@/lib/membership/service";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
-import { amountDue, createTermPayment, lockPayment, lockTermForPayment, PaymentError, payable, type OrgForPayments } from "./charges";
+import { createTermPayment, lockPayment, lockTermForPayment, PaymentError, payable, type OrgForPayments } from "./charges";
 import { settlePayment } from "./settle";
+import { chargeLines, placeOfSupply, resolveTaxSnapshot, sumSplits } from "./tax";
 import type { OfflineMethod } from "./offline-methods";
 
 export { OFFLINE_METHODS, OFFLINE_METHOD_LABELS, type OfflineMethod } from "./offline-methods";
@@ -86,6 +87,9 @@ export async function waiveTermFee(tx: Tx, args: { org: OrgForPayments; termId: 
   if (!payable(term, now)) throw new PaymentError("Nothing is due on this membership.");
   const open = term.payments.filter((payment) => payment.status === "PENDING" || payment.status === "AWAITING_CONFIRMATION");
   if (open.length) await tx.payment.updateMany({ where: { id: { in: open.map((payment) => payment.id) } }, data: { status: "CANCELLED", note: "Closed: the fee was waived." } });
+  // The forgiven amount is what the member would have paid, tax included.
+  const snapshot = resolveTaxSnapshot(await tx.orgTaxSettings.findUnique({ where: { organisationId: args.org.id } }), term.currency);
+  const forgiven = sumSplits(chargeLines({ renewal: term.kind === "RENEWAL", rejoining: false, priceMinor: term.priceMinor, joiningFeeMinor: term.joiningFeeMinor, planName: term.plan.name }, snapshot, placeOfSupply(term.member.stateCode, snapshot))).amountMinor;
   const payment = await tx.payment.create({
     data: {
       organisationId: args.org.id,
@@ -95,7 +99,7 @@ export async function waiveTermFee(tx: Tx, args: { org: OrgForPayments; termId: 
       provider: "OFFLINE",
       method: "waiver",
       currency: term.currency,
-      amountMinor: amountDue(term),
+      amountMinor: forgiven,
       paidAt: now,
       note: args.reason.slice(0, 300),
       recordedById: args.actorUserId,

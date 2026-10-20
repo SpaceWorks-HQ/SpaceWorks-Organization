@@ -118,7 +118,8 @@ export async function issueCreditNote(tx: Tx, org: OrgForDocs, refundId: string,
   const payment = await tx.payment.findUniqueOrThrow({ where: { organisationId_id: { organisationId: org.id, id: refund.paymentId } }, include: { ...paymentForDocument, documents: { where: { kind: { not: "CREDIT_NOTE" } } } } });
   const original = payment.documents[0];
   const tax = payment.taxSnapshot as unknown as TaxSnapshot;
-  const lines = creditNoteLines(payment.lines, refund.amountMinor);
+  const earlier = await tx.refund.aggregate({ where: { paymentId: payment.id, status: "PROCESSED", id: { not: refund.id } }, _sum: { amountMinor: true } });
+  const lines = creditNoteLines(payment.lines, refund.amountMinor, earlier._sum.amountMinor ?? 0);
   const totals = sumSplits(lines);
   const financialYear = financialYearLabel(localDate(now, org.timezone), org.financialYearStartMonth);
   const sequence = await allocate(tx, org.id, "C", financialYear);
