@@ -2,6 +2,7 @@
 @import "./styles/tokens.css";
 @import "./styles/semantic.css";
 @import "./styles/motion.css";
+@import "./styles/charts.css";
 
 /* Dark utilities follow the class on <html> (set on the server from the swo.theme cookie). */
 @custom-variant dark (&:where(.dark, .dark *));

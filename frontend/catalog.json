@@ -76,6 +76,41 @@
       "id": "app__dashboard__orgSlug__plans__planId__page:loadPlanView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__reports__activity__page",
+      "name": "loadOrgReportsActivity",
+      "id": "app__dashboard__orgSlug__reports__activity__page:loadOrgReportsActivity"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__applications__page",
+      "name": "loadOrgReportsApplications",
+      "id": "app__dashboard__orgSlug__reports__applications__page:loadOrgReportsApplications"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__members__page",
+      "name": "loadOrgReportsMembers",
+      "id": "app__dashboard__orgSlug__reports__members__page:loadOrgReportsMembers"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__money__page",
+      "name": "loadOrgReportsMoney",
+      "id": "app__dashboard__orgSlug__reports__money__page:loadOrgReportsMoney"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__page",
+      "name": "loadOrgReportsOverview",
+      "id": "app__dashboard__orgSlug__reports__page:loadOrgReportsOverview"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__renewals__page",
+      "name": "loadOrgReportsRenewals",
+      "id": "app__dashboard__orgSlug__reports__renewals__page:loadOrgReportsRenewals"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__reports__tax__page",
+      "name": "loadOrgReportsTax",
+      "id": "app__dashboard__orgSlug__reports__tax__page:loadOrgReportsTax"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__settings__money__page",
       "name": "loadOrgMoneySettingsView",
       "id": "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView"
@@ -189,6 +224,11 @@
       "module": "lib/views/app__super-admin__page",
       "name": "loadSuperAdminOverviewView",
       "id": "app__super-admin__page:loadSuperAdminOverviewView"
+    },
+    {
+      "module": "lib/views/app__super-admin__reports__page",
+      "name": "loadSuperAdminReportsView",
+      "id": "app__super-admin__reports__page:loadSuperAdminReportsView"
     },
     {
       "module": "lib/views/app__super-admin__security__page",
@@ -411,6 +451,11 @@
       "module": "app/actions/plans",
       "name": "savePlanFields",
       "id": "plans:savePlanFields"
+    },
+    {
+      "module": "app/actions/reports",
+      "name": "sendRenewalReminders",
+      "id": "reports:sendRenewalReminders"
     },
     {
       "module": "app/actions/security",

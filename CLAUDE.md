@@ -65,6 +65,7 @@ npx vitest run tests/unit/health.test.ts
   - Amounts are integer paise.
   - Receipt numbers are gapless per organisation per financial year (April–March, in the organisation's timezone).
   - Paid rows are never edited or deleted; reverse them with credit notes.
+- **Reports:** definitions live in `docs/REPORTS.md`; the engine in `lib/reports/*` is pure over rows and unit-tested. Finance reports read only `lib/reports/finance/source.ts`. Never add money across currencies.
 - **File size:** no source file over 300 lines (owner rule). Split by responsibility; `tests/unit/file-length.test.ts` enforces it, skipping generated files.
 - **Copy:** sentence case, en-GB, buttons named after their action, and no "Oops" or exclamation marks on errors.
 - **Line endings:** LF everywhere (see `.gitattributes`). Never commit `.env*` files except the `*.example` ones.
