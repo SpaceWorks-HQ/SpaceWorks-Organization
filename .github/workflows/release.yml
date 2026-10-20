@@ -177,7 +177,8 @@ jobs:
 
   promote-latest:
     permissions:
-      contents: read
+      # write: marks the GitHub Release as latest (softprops/action-gh-release make_latest)
+      contents: write
       packages: write
     needs:
       - prepare
