@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/permissions";
 import { statusAt } from "@/lib/membership/lifecycle";
 import { findOwnMember } from "@/lib/portal/member";
 import { walletState } from "@/lib/portal/walletStatus";
+import { termTotalMinor } from "@/lib/payments/tax";
 
 /**
  * One organisation's membership, seen by the member: each plan's standing and history (terms and their
@@ -17,7 +18,7 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
   const org = member.organisation;
   const now = new Date();
 
-  const [terms, unit, roles, units] = await Promise.all([
+  const [terms, unit, roles, units, payments, taxSettings] = await Promise.all([
     prisma.membershipTerm.findMany({
       where: { organisationId: org.id, memberId: member.id },
       orderBy: { createdAt: "asc" },
@@ -29,6 +30,13 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
     member.unitId ? prisma.orgUnit.findFirst({ where: { organisationId: org.id, id: member.unitId }, select: { name: true } }) : null,
     prisma.memberRoleAssignment.findMany({ where: { organisationId: org.id, memberId: member.id, role: { archivedAt: null } }, orderBy: { isPrimary: "desc" }, select: { isPrimary: true, role: { select: { name: true, color: true } } } }),
     prisma.orgUnit.count({ where: { organisationId: org.id, archivedAt: null } }),
+    prisma.payment.findMany({
+      where: { organisationId: org.id, memberId: member.id, status: { in: ["PAID", "WAIVED", "AWAITING_CONFIRMATION"] } },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: { id: true, status: true, provider: true, method: true, currency: true, amountMinor: true, paidAt: true, createdAt: true, term: { select: { plan: { select: { name: true } } } }, documents: { orderBy: { issuedAt: "asc" }, select: { id: true, number: true, kind: true } } },
+    }),
+    prisma.orgTaxSettings.findUnique({ where: { organisationId: org.id } }),
   ]);
   const planIds = [...new Set(terms.map((term) => term.planId))];
   const fields = (await prisma.planField.findMany({
@@ -46,7 +54,7 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
     return {
       plan: { id: plan.id, name: plan.name, slug: plan.slug },
       state,
-      due: unpaid ? { minor: unpaid.priceMinor + unpaid.joiningFeeMinor, currency: unpaid.currency } : null,
+      due: unpaid ? { minor: termTotalMinor(unpaid, taxSettings, unpaid.currency, member.stateCode), currency: unpaid.currency } : null,
       terms: [...chain].reverse().map((term) => ({
         id: term.id, kind: term.kind, status: statusAt(term, now, successors.has(term.id)), startsAt: term.startsAt, endsAt: term.endsAt,
         createdAt: term.createdAt, currency: term.currency, amountMinor: term.priceMinor + term.joiningFeeMinor, reason: term.reason,
@@ -67,5 +75,6 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
     roles: roles.map((assignment) => ({ ...assignment.role, isPrimary: assignment.isPrimary })),
     fields,
     memberships,
+    receipts: payments.map((payment) => ({ id: payment.id, status: payment.status, provider: payment.provider, method: payment.method, currency: payment.currency, amountMinor: payment.amountMinor, when: payment.paidAt ?? payment.createdAt, planName: payment.term?.plan.name ?? null, documents: payment.documents })),
   };
 }

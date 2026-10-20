@@ -1,29 +1,77 @@
-/**
- * Extension points other phases fill in after their branches merge. Each renders nothing until then, so
- * the portal ships without them and gains them without a layout change.
- */
+import { FileText } from "lucide-react";
+import { WalletCard as CardViewer } from "@/components/cards/WalletCard";
+import { PaymentStatusChip } from "@/components/payments/PaymentStatusChip";
+import { Card, CardHeader } from "@/components/ui/display";
+import { money } from "@/lib/membership/describe";
+import { formatCalendarDate, localDate } from "@/lib/membership/periods";
+import { methodLabel, PROVIDER_LABELS, type PaymentStatusName } from "@/lib/payments/labels";
+import { DOCUMENT_KIND_LABELS } from "@/lib/payments/numbering";
+import type { WalletCard as MemberCardData } from "@/lib/cards/wallet";
 
 /**
- * P6 (ID cards): the member's card for this plan, shown inside each wallet entry. Replace the body with
- * the card wallet component (view, download PDF/PNG); keep the props, which are enough to list the
- * member's live MemberCard for the (member, plan) pair.
+ * The card and receipts parts of the member portal: the member's card inside each wallet entry, and their
+ * payments with downloadable documents on the membership page.
  */
-export function CardSlot(props: { organisationSlug: string; memberId: string; planId: string }) {
-  void props;
-  return null;
+
+/** The member's card for one plan, folded away until opened so the wallet stays scannable. */
+export function CardSlot({ card }: { card: MemberCardData | null }) {
+  if (!card) return null;
+  return (
+    <details className="group rounded-xl border border-line bg-subtle">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 text-label font-semibold text-ink">
+        <span>Your card <span className="font-normal tabular-nums text-ink-muted">· {card.cardNumber}</span></span>
+        <span aria-hidden className="text-ink-muted transition-transform group-open:rotate-90">›</span>
+      </summary>
+      <div className="px-4 pb-4">
+        <CardViewer design={card.design} holder={card.holder} branding={card.branding} label={`${card.organisation.name} membership card`} downloads={card.downloads} verifyPath={card.verifyPath} />
+      </div>
+    </details>
+  );
 }
 
-/**
- * P7 (payments): the member's payments and downloadable receipts for this organisation, shown on the
- * membership detail page under the history. Replace the body with the receipts list (each receipt links
- * to /api/documents/[id]); `termIds` are the member's terms in this organisation, newest first.
- */
-export function ReceiptsSlot(props: { organisationSlug: string; memberId: string; termIds: string[] }) {
-  void props;
-  return null;
+export type ReceiptRow = {
+  id: string;
+  status: PaymentStatusName;
+  provider: "RAZORPAY" | "STRIPE" | "OFFLINE";
+  method: string | null;
+  currency: string;
+  amountMinor: number;
+  when: Date;
+  planName: string | null;
+  documents: Array<{ id: string; number: string; kind: keyof typeof DOCUMENT_KIND_LABELS }>;
+};
+
+/** Payments and receipts with this organisation. Each document opens as a PDF. */
+export function ReceiptsSlot({ receipts, timeZone, locale }: { receipts: ReceiptRow[]; timeZone: string; locale: string | null }) {
+  if (receipts.length === 0) return null;
+  return (
+    <Card as="section" className="rounded-xl">
+      <CardHeader title="Payments and receipts" />
+      <ul className="flex flex-col divide-y divide-line">
+        {receipts.map((receipt) => (
+          <li key={receipt.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-label tabular-nums text-ink">{money(receipt.amountMinor, receipt.currency, locale)}</span>
+              <span className="text-caption text-ink-muted">
+                {[receipt.planName, receipt.provider === "OFFLINE" ? methodLabel(receipt.method) : PROVIDER_LABELS[receipt.provider], formatCalendarDate(localDate(receipt.when, timeZone))].filter(Boolean).join(" · ")}
+              </span>
+            </span>
+            <PaymentStatusChip status={receipt.status} />
+            {receipt.documents.map((document) => (
+              <a key={document.id} href={`/api/documents/${document.id}`} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-1 text-caption font-semibold tabular-nums text-ink underline-offset-4 hover:underline">
+                <FileText aria-hidden className="size-3.5" />
+                <span className="sr-only">{DOCUMENT_KIND_LABELS[document.kind]} </span>
+                {document.number}
+              </a>
+            ))}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
 }
 
-/** P7's pay page for an unpaid term (PENDING_PAYMENT). The wallet and detail page link here. */
+/** The pay page for an unpaid term (PENDING_PAYMENT). The wallet and detail page link here. */
 export function payHref(termId: string) {
   return `/account/pay/${termId}`;
 }

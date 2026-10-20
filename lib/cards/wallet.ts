@@ -16,6 +16,8 @@ import type { CardBranding, CardHolder } from "./types";
 
 export type WalletCard = {
   cardId: string;
+  memberId: string;
+  planId: string;
   cardNumber: string;
   issuedAt: Date;
   organisation: { id: string; name: string; slug: string };
@@ -57,6 +59,8 @@ export async function listCardsForUser(userId: string, now = new Date()): Promis
     const { design, branding } = designFor(ctx, card.plan);
     out.push({
       cardId: card.id,
+      memberId: card.memberId,
+      planId: card.planId,
       cardNumber: card.cardNumber,
       issuedAt: card.issuedAt,
       organisation: { id: ctx.organisation.id, name: ctx.organisation.name, slug: ctx.organisation.slug },

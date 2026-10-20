@@ -8,7 +8,7 @@ import { Callout, EmptyState, SectionHeading } from "@/components/ui/display";
 export const metadata: Metadata = { title: "Your memberships" };
 
 export default async function AccountWalletPage() {
-  const { wallet, emailVerified } = await loadAccountWalletView();
+  const { wallet, emailVerified, cards } = await loadAccountWalletView();
   return (
     <div className="flex flex-col gap-6">
       <SectionHeading title="Your memberships" description="Every organisation you belong to, in one place." />
@@ -30,7 +30,7 @@ export default async function AccountWalletPage() {
         </EmptyState>
       ) : (
         <div className="flex flex-col gap-5">
-          {wallet.map((entry) => <WalletCard key={entry.memberId} entry={entry} />)}
+          {wallet.map((entry) => <WalletCard key={entry.memberId} entry={entry} cards={cards.filter((card) => card.memberId === entry.memberId)} />)}
         </div>
       )}
     </div>

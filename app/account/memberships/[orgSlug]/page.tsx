@@ -16,9 +16,8 @@ import { Card, CardHeader, OrgLogo } from "@/components/ui/display";
 export const metadata: Metadata = { title: "Membership", robots: { index: false, follow: false } };
 
 export default async function MembershipDetailPage({ params }: { params: Promise<{ orgSlug: string }> }) {
-  const { org, member, roles, fields, memberships } = await loadMembershipDetailView({ params });
+  const { org, member, roles, fields, memberships, receipts } = await loadMembershipDetailView({ params });
   const since = formatCalendarDate(localDate(member.createdAt, org.timezone));
-  const termIds = memberships.flatMap((membership) => membership.terms.map((term) => term.id));
 
   return (
     <div className="flex flex-col gap-6">
@@ -66,7 +65,7 @@ export default async function MembershipDetailPage({ params }: { params: Promise
               <MembershipHistory terms={membership.terms} timeZone={org.timezone} locale={org.locale} />
             </Card>
           ))}
-          <ReceiptsSlot organisationSlug={org.slug} memberId={member.id} termIds={termIds} />
+          <ReceiptsSlot receipts={receipts} timeZone={org.timezone} locale={org.locale} />
         </div>
         <Card as="section" className="h-fit rounded-xl">
           <CardHeader title="Your details" description={`What ${org.name} knows about you. Keep it up to date.`} />

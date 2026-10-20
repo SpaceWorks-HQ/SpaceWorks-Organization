@@ -172,3 +172,12 @@ export function creditNoteLines<T extends TaxSplit & { kind: PaymentLineKind; de
     .map((line, index) => ({ kind: line.kind, description: line.description, ...(Object.fromEntries(KEYS.map((key) => [key, after[index][key] - before[index][key]])) as TaxSplit) }))
     .filter((line) => line.amountMinor > 0);
 }
+
+type TermForTotal = { kind: string; priceMinor: number; joiningFeeMinor: number };
+
+/** What a member pays for a term right now, tax included (differs from the plan price under exclusive pricing). */
+export function termTotalMinor(term: TermForTotal, settings: TaxSettings | null, currency: string, memberState: string | null) {
+  const snapshot = resolveTaxSnapshot(settings, currency);
+  const lines = chargeLines({ renewal: term.kind === "RENEWAL", rejoining: false, priceMinor: term.priceMinor, joiningFeeMinor: term.joiningFeeMinor, planName: "" }, snapshot, placeOfSupply(memberState, snapshot));
+  return sumSplits(lines).amountMinor;
+}

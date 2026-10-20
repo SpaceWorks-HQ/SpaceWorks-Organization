@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { termTotalMinor } from "@/lib/payments/tax";
 import { PORTAL_ORGANISATION_STATUSES, verifiedEmail } from "./member";
 import { walletState, type WalletState } from "./walletStatus";
 
@@ -45,7 +46,7 @@ export async function loadWallet(userId: string, now = new Date()): Promise<Wall
     orderBy: { createdAt: "asc" },
     take: 100,
     select: {
-      id: true, memberNumber: true, name: true, userId: true,
+      id: true, memberNumber: true, name: true, userId: true, stateCode: true,
       organisation: { select: { id: true, slug: true, name: true, logoUrl: true, accentColor: true, status: true, timezone: true, locale: true } },
       unit: { select: { name: true } },
       roles: { where: { role: { archivedAt: null } }, orderBy: { isPrimary: "desc" }, select: { isPrimary: true, role: { select: { name: true, color: true } } } },
@@ -53,6 +54,7 @@ export async function loadWallet(userId: string, now = new Date()): Promise<Wall
       erasureRequests: { where: { status: "PENDING" }, select: { id: true } },
     },
   });
+  const taxSettings = new Map((await prisma.orgTaxSettings.findMany({ where: { organisationId: { in: [...new Set(members.map((member) => member.organisation.id))] } } })).map((row) => [row.organisationId, row]));
   const unclaimed = members.filter((member) => !member.userId).map((member) => member.id);
   if (unclaimed.length) await prisma.member.updateMany({ where: { id: { in: unclaimed }, userId: null }, data: { userId } });
 
@@ -63,7 +65,7 @@ export async function loadWallet(userId: string, now = new Date()): Promise<Wall
       const plan = chain[0].plan;
       const state = walletState(chain, plan, { now, timeZone: member.organisation.timezone, organisationActive: member.organisation.status === "ACTIVE" });
       const unpaid = state.actions.payTermId ? chain.find((term) => term.id === state.actions.payTermId) : null;
-      return { planId: plan.id, planName: plan.name, planSlug: plan.slug, state, due: unpaid ? { minor: unpaid.priceMinor + unpaid.joiningFeeMinor, currency: unpaid.currency } : null };
+      return { planId: plan.id, planName: plan.name, planSlug: plan.slug, state, due: unpaid ? { minor: termTotalMinor(unpaid, taxSettings.get(member.organisation.id) ?? null, unpaid.currency, member.stateCode), currency: unpaid.currency } : null };
     });
     memberships.sort((a, b) => (RANK[a.state.status] ?? 9) - (RANK[b.state.status] ?? 9));
     return {

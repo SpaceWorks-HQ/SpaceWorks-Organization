@@ -7,6 +7,7 @@ import { TermStatusChip } from "@/components/members/TermStatusChip";
 import { RoleChip } from "@/components/members/RoleChip";
 import { MembershipActions } from "@/components/portal/MembershipActions";
 import { CardSlot } from "@/components/portal/Slots";
+import type { WalletCard as MemberCardData } from "@/lib/cards/wallet";
 import { Callout, OrgLogo } from "@/components/ui/display";
 
 /** One line on where a membership stands, in words: validity, grace, renewal timing or the next step. */
@@ -47,7 +48,7 @@ export function standingLine(membership: Pick<WalletMembership, "state">, organi
 }
 
 /** One organisation in the wallet: who you are there and each membership with what you can do next. */
-export function WalletCard({ entry }: { entry: WalletEntry }) {
+export function WalletCard({ entry, cards = [] }: { entry: WalletEntry; cards?: MemberCardData[] }) {
   const org = entry.organisation;
   const detail = `/account/memberships/${org.slug}`;
   return (
@@ -92,7 +93,7 @@ export function WalletCard({ entry }: { entry: WalletEntry }) {
               actions={membership.state.actions}
               due={membership.due ? money(membership.due.minor, membership.due.currency, org.locale) : null}
             />
-            <CardSlot organisationSlug={org.slug} memberId={entry.memberId} planId={membership.planId} />
+            <CardSlot card={cards.find((card) => card.planId === membership.planId) ?? null} />
           </li>
         ))}
       </ul>
