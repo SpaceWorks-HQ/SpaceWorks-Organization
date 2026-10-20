@@ -299,7 +299,7 @@ if [[ "$ACTION" == fresh ]]; then
   for port in "${ports[@]}"; do
     port_in_use "$port" && die "TCP port $port is already in use. Free it before installing."
   done
-  say "Required TCP ports ${ports[*]} are free."
+  if ((${#ports[@]} == 1)); then say "Required TCP port ${ports[0]} is free."; else say "Required TCP ports ${ports[*]} are free."; fi
 fi
 install_linux_dependencies() {
   local runner_packages=()

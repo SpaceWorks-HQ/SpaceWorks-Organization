@@ -256,6 +256,8 @@ model Organisation {
   page          OrganisationPage?
   erasureRequests ErasureRequest[]
   dailyStats    OrgDailyStats[]
+  ledgerEntries LedgerEntry[]
+  openingBalances OpeningBalance[]
   statsDirtyDays OrgStatsDirtyDay[]
 
   @@index([status, createdAt])
@@ -1158,4 +1160,55 @@ model OrgStatsDirtyDay {
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@id([organisationId, day])
+}
+
+// ── Accounts: the organisation's own receipts and payments (owner, 2026-10-20) ──
+
+enum LedgerDirection {
+  RECEIPT
+  PAYMENT
+}
+
+/// Money in or out that isn't a member's payment: donations, grants, rent, equipment, GST paid and so on.
+/// Membership fees and refunds come from the payments tables. Entries are never deleted; a mistake is voided.
+model LedgerEntry {
+  id             String          @id @default(cuid())
+  organisationId String
+  direction      LedgerDirection
+  /// The day the money moved, as a calendar date in the organisation's timezone (stored at UTC midnight).
+  occurredOn     DateTime        @db.Date
+  category       String
+  /// Who paid it (receipts) or who was paid (payments).
+  party          String          @default("")
+  description    String          @default("")
+  currency       String
+  amountMinor    Int
+  /// cash, bank_transfer, upi, cheque, card or other: cash moves the cash balance, everything else the bank.
+  method         String
+  reference      String?
+  recordedById   String?
+  voidedAt       DateTime?
+  voidedById     String?
+  voidReason     String?
+  createdAt      DateTime        @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+
+  @@unique([organisationId, id])
+  @@index([organisationId, occurredOn])
+}
+
+/// Cash in hand and at the bank at the start of a financial year, per currency, as the accounts carried forward.
+model OpeningBalance {
+  organisationId String
+  financialYear  String
+  currency       String
+  cashMinor      Int      @default(0)
+  bankMinor      Int      @default(0)
+  updatedById    String?
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, financialYear, currency])
 }

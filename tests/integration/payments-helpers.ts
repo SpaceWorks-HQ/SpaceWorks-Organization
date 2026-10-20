@@ -40,6 +40,7 @@ export async function removePaymentsOrg(organisationId: string, userIds: string[
     await tx.$executeRaw`DELETE FROM "PaymentLine" WHERE "organisationId" = ${organisationId}`;
     await tx.$executeRaw`DELETE FROM "Payment" WHERE "organisationId" = ${organisationId}`;
     await tx.$executeRaw`DELETE FROM "ProcessedWebhookEvent" WHERE "organisationId" = ${organisationId}`;
+    await tx.$executeRaw`DELETE FROM "LedgerEntry" WHERE "organisationId" = ${organisationId}`;
   });
   await prisma.$executeRaw`DELETE FROM "OutboxMessage" WHERE "payload"->>'organisationId' = ${organisationId}`;
   await prisma.organisation.delete({ where: { id: organisationId } }).catch(() => undefined);

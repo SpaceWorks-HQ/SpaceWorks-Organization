@@ -1,9 +1,10 @@
 import { gstStateCode } from "@/lib/indianStates";
+import type { Table13Row } from "./documents";
 import type { CreditNoteRow, Gstr1, HsnRow, InvoiceRow } from "./gst";
 
 /**
  * GSTR-1 as JSON in the layout of the GST portal's offline tool (sections b2b, b2cl, b2cs, cdnr, cdnur,
- * nil and hsn). Amounts are rupees with two decimals, dates dd-mm-yyyy, places of supply the two-digit
+ * nil, hsn and doc_issue), with the offline tool's version and hash envelope. Amounts are rupees with two decimals, dates dd-mm-yyyy, places of supply the two-digit
  * GST state codes. Always open it in the current offline tool and validate before uploading: the portal
  * revises the schema from time to time. docs/REPORTS.md describes each section.
  */
@@ -35,8 +36,8 @@ function invoice(row: InvoiceRow, supplierState: string | null, timeZone: string
     inum: row.number,
     idt: gstDate(row.issuedAt, timeZone),
     val: rupees(row.value),
-    pos: pos(row.placeOfSupply, supplierState),
-    ...(b2b ? { rchrg: "N", inv_typ: "R" } : {}),
+    // B2CL carries the place of supply on its group, not on each invoice.
+    ...(b2b ? { pos: pos(row.placeOfSupply, supplierState), rchrg: "N", inv_typ: "R" } : {}),
     itms: [item(row, inter)],
   };
 }
@@ -61,11 +62,28 @@ function groupBy<T>(rows: T[], key: (row: T) => string) {
 const hsn = (rows: HsnRow[]) =>
   rows.map((row, index) => ({ num: index + 1, hsn_sc: row.sac, desc: "Membership services", uqc: "NA", qty: 0, rt: rate(row.rateBps), txval: rupees(row.taxable), iamt: rupees(row.igst), camt: rupees(row.cgst), samt: rupees(row.sgst), csamt: 0 }));
 
-export function gstr1Json(report: Gstr1, args: { gstin: string; period: string; supplierState: string | null; timeZone: string }) {
+/** Table 13 codes fixed by the portal. Membership receipts outside GST are not GST documents, so they stay out. */
+const DOC_NUM: Record<string, number> = { "Invoices for outward supply": 1, "Credit note": 5 };
+
+function docIssue(rows: Table13Row[]) {
+  const det = new Map<number, Table13Row[]>();
+  for (const row of rows) if (DOC_NUM[row.nature]) det.set(DOC_NUM[row.nature], [...(det.get(DOC_NUM[row.nature]) ?? []), row]);
+  return {
+    doc_det: [...det.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([doc_num, docs]) => ({ doc_num, docs: docs.map((row, index) => ({ num: index + 1, from: row.from, to: row.to, totnum: row.total, cancel: row.cancelled, net_issue: row.netIssued })) })),
+  };
+}
+
+export const GSTR1_OFFLINE_VERSION = "GST3.2.4";
+
+export function gstr1Json(report: Gstr1, args: { gstin: string; period: string; supplierState: string | null; timeZone: string; documents: Table13Row[] }) {
   const { supplierState, timeZone } = args;
   return {
     gstin: args.gstin,
     fp: args.period,
+    version: GSTR1_OFFLINE_VERSION,
+    hash: "hash",
     b2b: groupBy(report.b2b, (row) => row.gstin ?? "").map(([ctin, rows]) => ({ ctin, inv: rows.map((row) => invoice(row, supplierState, timeZone, true)) })),
     b2cl: groupBy(report.b2cl, (row) => pos(row.placeOfSupply, supplierState)).map(([place, rows]) => ({ pos: place, inv: rows.map((row) => invoice(row, supplierState, timeZone, false)) })),
     b2cs: report.b2cs.map((row) => ({ sply_ty: row.supplyType, pos: pos(row.placeOfSupply, supplierState), typ: "OE", rt: rate(row.rateBps), txval: rupees(row.taxable), ...(row.supplyType === "INTER" ? { iamt: rupees(row.igst) } : { camt: rupees(row.cgst), samt: rupees(row.sgst) }), csamt: 0 })),
@@ -73,5 +91,6 @@ export function gstr1Json(report: Gstr1, args: { gstin: string; period: string; 
     cdnur: report.cdnur.map((row) => ({ typ: "B2CL", ...note(row, supplierState, timeZone) })),
     nil: { inv: [{ sply_ty: "INTRB2C", expt_amt: rupees(report.nilExempt.inter), nil_amt: 0, ngsup_amt: 0 }, { sply_ty: "INTRAB2C", expt_amt: rupees(report.nilExempt.intra), nil_amt: 0, ngsup_amt: 0 }] },
     hsn: { hsn_b2b: hsn(report.hsnB2b), hsn_b2c: hsn(report.hsnB2c) },
+    doc_issue: docIssue(args.documents),
   };
 }

@@ -8,9 +8,6 @@ later version. See the LICENSE file for the full text.
 
 Source code: https://github.com/SpaceWorks-HQ/SpaceWorks-Organization
 
-SpaceWorks-Organization continues Aarannu, a community digital ID platform by
-Shaan Shoukath.
-
 Parts of the platform layer and the ID-card engine are derived from
 SpaceWorks-Events (https://github.com/SpaceWorks-HQ/SpaceWorks-Events, AGPL-3.0-or-later),
 forked at commit 03186e0.

@@ -16,11 +16,27 @@ const report: Gstr1 = {
 };
 
 describe("GSTR-1 JSON", () => {
-  const json = gstr1Json(report, { gstin: "32ABCDE1234F1Z5", period: gstPeriod({ year: 2026, month: 4 }), supplierState: "KL", timeZone: "Asia/Kolkata" });
+  const documents = [
+    { nature: "Invoices for outward supply", series: "R", from: "KRC-2627-00001", to: "KRC-2627-00009", total: 9, cancelled: 1, netIssued: 8 },
+    { nature: "Receipt voucher", series: "N", from: "KRC-2627-N00001", to: "KRC-2627-N00002", total: 2, cancelled: 0, netIssued: 2 },
+    { nature: "Credit note", series: "C", from: "KRC-2627-C00001", to: "KRC-2627-C00001", total: 1, cancelled: 0, netIssued: 1 },
+  ];
+  const json = gstr1Json(report, { gstin: "32ABCDE1234F1Z5", period: gstPeriod({ year: 2026, month: 4 }), supplierState: "KL", timeZone: "Asia/Kolkata", documents });
 
-  it("names the registration and period", () => {
-    expect(json.gstin).toBe("32ABCDE1234F1Z5");
-    expect(json.fp).toBe("042026");
+  it("names the registration and period in the offline tool's envelope", () => {
+    expect(json).toMatchObject({ gstin: "32ABCDE1234F1Z5", fp: "042026", version: "GST3.2.4", hash: "hash" });
+  });
+
+  it("keeps the B2CL place of supply on the group only", () => {
+    const b2cl = gstr1Json({ ...report, b2cl: [{ ...report.b2b[0], gstin: null, value: 11_800_000, taxable: 10_000_000, igst: 1_800_000 }] }, { gstin: "32ABCDE1234F1Z5", period: "042026", supplierState: "KL", timeZone: "Asia/Kolkata", documents: [] }).b2cl;
+    expect(b2cl).toEqual([{ pos: "29", inv: [{ inum: "KRC-2627-00003", idt: "10-04-2026", val: 118000, itms: [{ num: 1801, itm_det: { txval: 100000, rt: 18, iamt: 18000, csamt: 0 } }] }] }]);
+  });
+
+  it("lists Table 13 under the portal's document codes, leaving out non-GST receipts", () => {
+    expect(json.doc_issue).toEqual({ doc_det: [
+      { doc_num: 1, docs: [{ num: 1, from: "KRC-2627-00001", to: "KRC-2627-00009", totnum: 9, cancel: 1, net_issue: 8 }] },
+      { doc_num: 5, docs: [{ num: 1, from: "KRC-2627-C00001", to: "KRC-2627-C00001", totnum: 1, cancel: 0, net_issue: 1 }] },
+    ] });
   });
 
   it("groups B2B invoices by buyer with rupee amounts, GST state codes and dd-mm-yyyy dates", () => {

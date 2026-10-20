@@ -292,17 +292,25 @@ Once wired, P7 also calls `markStatsDirty` (`lib/reports/rollup.ts`) inside back
   memberships count when received. Taxable values only, net of processed refunds, per currency. The identity
   holds to the paisa (`lib/reports/finance/subscriptionIncome.ts`, tested).
 - **GSTR-1 JSON** (Tax tab, organisation-wide finance roles only, audited): the month's B2B, B2CL, B2CS,
-  credit notes, nil/exempt and SAC summary in the GST offline tool's layout, rupees with two decimals,
-  dd-mm-yyyy dates and two-digit GST state codes (`lib/reports/finance/gstr1Json.ts`). Validate it in the
-  current offline tool before uploading; the portal revises the schema from time to time.
+  credit notes, nil/exempt, SAC summary (Table 12, B2B and B2C) and documents issued (Table 13, codes 1
+  and 5) in the GST offline tool's layout (`version` GST3.2.4, `hash`), rupees with two decimals,
+  dd-mm-yyyy dates and two-digit GST state codes; B2CL carries its place of supply on the group only
+  (`lib/reports/finance/gstr1Json.ts`). Checked against the offline tool's published format in October 2026,
+  not GSTN's schema file, which is not public; validate in the current offline tool before uploading.
 - **Cohort retention by financial year** (Renewals tab): the share of each joining year still active at the
   end of that year and the four after it.
 - **Monthly summary email**: on the first scheduler pass of each month, every owner, manager and treasurer
   gets last month's members, renewals, money (finance roles only) and waiting applications, for what they
   can see. Each person switches it off on the organisation overview. One claim per organisation and month.
 
+- **Receipts and payments account** (Accounts, organisation-wide finance roles): one statement per currency
+  and financial year, cash basis, split into cash and bank. Receipts are membership fees, joining fees and
+  tax collected (from paid payments, by `paidAt`) plus recorded receipts; payments are processed refunds (by
+  `processedAt`) plus recorded expenses. Opening balance plus receipts less payments is the closing balance.
+  Offline payments taken in cash count as cash; everything else as bank. Expenses and other receipts are
+  `LedgerEntry` rows: never deleted, only voided once with a reason, guarded by a trigger in migration 0009.
+  Opening balances are entered per year and currency. The statement is pure (`lib/accounts/statement.ts`, tested).
+
 ## Not applicable
 
-- **A receipts and payments account** needs the organisation's expenses too; this product records only
-  membership income, so the income side is the subscription schedule above and the revenue export.
 - **Table 11 advances**: receipts are issued when money arrives, so no advance without a document arises.

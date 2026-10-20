@@ -56,6 +56,11 @@
       "id": "app__dashboard__layout:loadDashboardShell"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__accounts__page",
+      "name": "loadAccountsView",
+      "id": "app__dashboard__orgSlug__accounts__page:loadAccountsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__application__page",
       "name": "loadOrgApplicationView",
       "id": "app__dashboard__orgSlug__application__page:loadOrgApplicationView"
@@ -331,6 +336,21 @@
       "module": "app/actions/account",
       "name": "updateAccountPassword",
       "id": "account:updateAccountPassword"
+    },
+    {
+      "module": "app/actions/accounts",
+      "name": "addLedgerEntry",
+      "id": "accounts:addLedgerEntry"
+    },
+    {
+      "module": "app/actions/accounts",
+      "name": "voidLedgerEntry",
+      "id": "accounts:voidLedgerEntry"
+    },
+    {
+      "module": "app/actions/accounts",
+      "name": "setOpeningBalance",
+      "id": "accounts:setOpeningBalance"
     },
     {
       "module": "app/actions/auth",

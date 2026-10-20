@@ -8,6 +8,7 @@ import { buildReportContext } from "@/lib/reports/context";
 import { periodBuckets } from "@/lib/reports/period";
 import { loadRefunds, loadTaxDocuments } from "@/lib/reports/finance/source";
 import { gstr1 } from "@/lib/reports/finance/gst";
+import { table13 } from "@/lib/reports/finance/documents";
 import { gstPeriod, gstr1Json } from "@/lib/reports/finance/gstr1Json";
 
 export const dynamic = "force-dynamic";
@@ -41,9 +42,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ orgS
   const whole = { ...ctx.scope, unitPath: null, unitId: null, planId: null, memberId: undefined };
   const [documents, refunds] = await Promise.all([loadTaxDocuments(whole), loadRefunds(whole)]);
   const supplierState = tax.stateCode ?? ctx.org.stateCode;
-  const report = gstr1(documents, refunds, { from: month.from, to: month.to }, supplierState);
+  const range = { from: month.from, to: month.to };
+  const report = gstr1(documents, refunds, range, supplierState);
   const period = gstPeriod(localDate(month.from, ctx.org.timezone));
-  const body = JSON.stringify(gstr1Json(report, { gstin: tax.gstin, period, supplierState, timeZone: ctx.org.timezone }), null, 2);
+  const body = JSON.stringify(gstr1Json(report, { gstin: tax.gstin, period, supplierState, timeZone: ctx.org.timezone, documents: table13(documents, range) }), null, 2);
 
   await recordAuditEvent({ action: "FINANCE_REPORT_EXPORTED", actorUserId: userId, organisationId: org.id, targetType: "Organisation", targetId: org.id, metadata: { report: "gstr1-json", month: month.key, invoices: report.b2b.length + report.b2cl.length, creditNotes: report.cdnr.length + report.cdnur.length } });
   return new Response(body, {

@@ -22,6 +22,7 @@ const ORG_NAV: Array<{ path: string; label: string; capability: Capability; exac
   { path: "/members", label: "Members", capability: "members.view" },
   { path: "/plans", label: "Membership plans", capability: "members.view" },
   { path: "/payments", label: "Payments", capability: "payments.view" },
+  { path: "/accounts", label: "Accounts", capability: "payments.view" },
   { path: "/reports", label: "Reports", capability: "reports.membership" },
   { path: "/team", label: "Team", capability: "org.view" },
   { path: "/settings", label: "Settings", capability: "org.settings" },

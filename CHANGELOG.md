@@ -4,6 +4,16 @@ Releases are published from `main` and titled **`Space Works Organization <versi
 file selects the series; each build is tagged `v<series>-main.<run>.<sha>`, which is what a deployment pins
 to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
+## Unreleased
+
+- **Accounts.** Managers record other receipts (donations, grants, sponsorship) and expenses, set opening
+  balances, and get a receipts and payments account per financial year, split into cash and bank, built from
+  membership payments, refunds and those entries. Entries are never deleted, only voided with a reason.
+- **GSTR-1 JSON** now carries the offline tool's `version` and `hash`, Table 13 (`doc_issue`), and keeps the
+  B2CL place of supply on the group only.
+- Profile pictures no longer fall back to Gravatar, so no member email hash leaves the server.
+- The installer no longer offers an invalid default sender for `localhost` or IP addresses.
+
 ## 0.5.0 (2026-10-20)
 
 The first release of the rebuilt platform.
