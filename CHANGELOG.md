@@ -4,17 +4,18 @@ Releases are published from `main` and titled **`Space Works Organization <versi
 file selects the series; each build is tagged `v<series>-main.<run>.<sha>`, which is what a deployment pins
 to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
-## Unreleased
+## 0.6.0 (2026-10-21)
 
+Money in and out, refunds members can ask for, and a release pipeline that tests everything.
+
+- **Accounts.** Managers record other receipts (donations, grants, sponsorship) and expenses, set opening
+  balances, and get a receipts and payments account per financial year, split into cash and bank, built from
+  membership payments, refunds and those entries. Entries are never deleted, only voided with a reason.
 - **Refunds.** A refund policy per organisation (none, full, or the unused share of the membership fee, within a
   set number of days). Members can cancel and request a refund from their account; managers approve (refund and
   end the membership) or decline with a note from a new Refund requests queue, and both sides are emailed.
   Managers refunding by hand can end the membership too. The scheduler follows up refunds still pending at
   Razorpay or Stripe. Receipt lines no longer say "membership" twice for plans named "… membership".
-
-- **Accounts.** Managers record other receipts (donations, grants, sponsorship) and expenses, set opening
-  balances, and get a receipts and payments account per financial year, split into cash and bank, built from
-  membership payments, refunds and those entries. Entries are never deleted, only voided with a reason.
 - **GSTR-1 JSON** now carries the offline tool's `version` and `hash`, Table 13 (`doc_issue`), and keeps the
   B2CL place of supply on the group only.
 - Profile pictures no longer fall back to Gravatar, so no member email hash leaves the server.
@@ -23,6 +24,8 @@ to. Pushes to `dev` publish staging images tagged `dev` without a release.
   sign-in, accounts, roles, member portal) against real PostgreSQL and Redis. Stripe webhooks and the
   webhook route's size and signature checks gained integration tests. GSTR-1 JSON was checked against
   GSTN's "Save GSTR1" schemas v4.1 and v5.0.
+- **Images.** amd64 and arm64 images are built on native runners and joined into one multi-platform image, so
+  arm64 builds no longer run under emulation.
 
 ## 0.5.0 (2026-10-20)
 
