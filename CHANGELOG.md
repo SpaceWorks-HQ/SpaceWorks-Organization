@@ -4,7 +4,9 @@ Releases are published from `main` and titled **`Space Works Organization <versi
 file selects the series; each build is tagged `v<series>-main.<run>.<sha>`, which is what a deployment pins
 to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
-## Unreleased
+## 0.7.0 (2026-10-21)
+
+Safer sign-in, organisations in their own voice, and the option to keep records without member accounts.
 
 - **Super admins on the server only.** The installer creates the super admin with a password; afterwards
   `bash scripts/admin.sh` creates, revokes and sets passwords. Super admins sign in with email and password only:

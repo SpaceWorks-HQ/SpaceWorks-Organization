@@ -114,7 +114,7 @@ the existing `SUPER_ADMIN_EMAIL` account is kept as super admin automatically. W
 
 ```bash
 bash scripts/update.sh --force                                   # newest main release
-bash scripts/update.sh --force --version 0.6.0-main.42.a1b2c3d4e5f6
+bash scripts/update.sh --force --version 0.7.0-main.42.a1b2c3d4e5f6
 bash scripts/update.sh --rollback                                # the release before the last update
 ```
 

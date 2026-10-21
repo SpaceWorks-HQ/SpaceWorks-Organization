@@ -257,7 +257,7 @@ bash "$SWO_DIR/scripts/update.sh" --force --version <that release>
 ```bash
 bash scripts/update.sh --force
 # Or deploy an exact published main release:
-bash scripts/update.sh --force --version 0.6.0-main.42.a1b2c3d4e5f6
+bash scripts/update.sh --force --version 0.7.0-main.42.a1b2c3d4e5f6
 # Return to the release that ran before the last update:
 bash scripts/update.sh --rollback
 ```
