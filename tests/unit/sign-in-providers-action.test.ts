@@ -2,14 +2,14 @@ import { generateKeyPairSync } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  requireSuperAdminMfa: vi.fn(),
+  requireSuperAdmin: vi.fn(),
   rateLimit: vi.fn(),
   findSetting: vi.fn(),
   upsertSetting: vi.fn(),
   audit: vi.fn(),
 }));
 
-vi.mock("@/lib/permissions", () => ({ requireSuperAdminMfa: mocks.requireSuperAdminMfa }));
+vi.mock("@/lib/permissions", () => ({ requireSuperAdmin: mocks.requireSuperAdmin }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: mocks.rateLimit }));
 vi.mock("@/lib/db", () => ({ prisma: { instanceSetting: { findUnique: mocks.findSetting, upsert: mocks.upsertSetting } } }));
 vi.mock("@/lib/instanceConfigSecrets", () => ({ encryptInstanceConfigSecret: (value: string) => `encrypted:${value.length}` }));
@@ -22,7 +22,7 @@ const appleKey = generateKeyPairSync("ec", { namedCurve: "P-256" }).privateKey.e
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.requireSuperAdminMfa.mockResolvedValue({ user: { id: "admin_1" } });
+  mocks.requireSuperAdmin.mockResolvedValue({ user: { id: "admin_1" } });
   mocks.rateLimit.mockResolvedValue(false);
   mocks.findSetting.mockResolvedValue(null);
 });

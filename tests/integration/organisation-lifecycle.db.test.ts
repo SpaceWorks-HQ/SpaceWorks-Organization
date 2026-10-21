@@ -7,13 +7,13 @@ vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: async () => false
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/permissions", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/permissions")>()),
-  // The MFA cookie proof is covered elsewhere; here the platform admin is whoever is signed in.
-  requireSuperAdminMfa: async () => ({ user: identity.current }),
+  // Here the platform admin is whoever is signed in.
+  requireSuperAdmin: async () => ({ user: identity.current }),
 }));
 
 import { prisma } from "@/lib/db";
 import { resubmitOrganisationApplication, submitOrganisationApplication } from "@/app/actions/organisation-application";
-import { createOrganisationForOwner, reviewOrganisation, setPlatformAdmin } from "@/app/actions/super-admin-organisations";
+import { createOrganisationForOwner, reviewOrganisation } from "@/app/actions/super-admin-organisations";
 import { createOrgInvite } from "@/app/actions/org-invites";
 import { acceptOrganisationInviteToken } from "@/lib/inviteAcceptance";
 
@@ -48,7 +48,7 @@ async function outboxFor(organisationId: string) {
 beforeAll(async () => {
   for (const [key, user] of Object.entries(users)) {
     const created = await prisma.user.create({
-      data: { email: user.email, emailVerified: key === "unverified" ? null : new Date(), isSuperAdmin: key === "admin" },
+      data: { email: user.email, emailVerified: key === "unverified" ? null : new Date(), isSuperAdmin: key === "admin", mfaEnabledAt: new Date() },
     });
     user.id = created.id;
   }
@@ -187,16 +187,4 @@ describe.sequential("platform admin tools", () => {
     expect(await prisma.teamMember.findFirst({ where: { organisationId, userId: users.owner.id } })).toMatchObject({ role: "OWNER" });
   });
 
-  it("grants and removes platform admin, never on oneself, and signs out a removed admin", async () => {
-    signIn(users.admin);
-    expect(await setPlatformAdmin({ userId: users.admin.id, grant: false })).toMatchObject({ ok: false });
-    expect(await setPlatformAdmin({ userId: users.unverified.id, grant: true })).toMatchObject({ ok: false });
-    expect(await setPlatformAdmin({ userId: users.owner.id, grant: true })).toEqual({ ok: true });
-    const before = await prisma.user.findUniqueOrThrow({ where: { id: users.owner.id } });
-    expect(before.isSuperAdmin).toBe(true);
-    expect(await setPlatformAdmin({ userId: users.owner.id, grant: false })).toEqual({ ok: true });
-    const after = await prisma.user.findUniqueOrThrow({ where: { id: users.owner.id } });
-    expect(after.isSuperAdmin).toBe(false);
-    expect(after.sessionVersion).toBe(before.sessionVersion + 1);
-  });
 });

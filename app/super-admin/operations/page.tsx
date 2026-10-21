@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminOperationsView } from "@/lib/views/app__super-admin__operations__page";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { OutboxStatus } from "@prisma/client";
@@ -26,7 +26,7 @@ function safeErrorSummary(value: string | null) {
 }
 
 export default async function SuperAdminOperationsPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { prerequisites, backupProvider, backupFresh, backupRetentionDays, reportedBackupAt, lastRestoreDrill, outbox, failedCount, expiredTokens, schedulerFresh, schedulerHeartbeat, oldestPending, failedMessages } = await loadSuperAdminOperationsView();
   return (
     <div className="flex flex-col gap-6">

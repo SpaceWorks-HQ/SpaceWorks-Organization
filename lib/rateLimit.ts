@@ -69,7 +69,7 @@ function allowTestMemoryFallback() {
   return process.env.CI === "true" && process.env.ALLOW_INSECURE_PRODUCTION_TESTS === "1";
 }
 
-function getRedisClient(): Redis | null {
+export function getRedisClient(): Redis | null {
   if (isRedisDisabled) return null;
   if (redisClient) return redisClient;
 

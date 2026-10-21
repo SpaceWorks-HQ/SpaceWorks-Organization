@@ -81,6 +81,13 @@ say "Checking the running stack..."
 ${COMPOSE[@]+"${COMPOSE[@]}"} run --rm ops || die "Operator checks failed. Inspect with: ${COMPOSE[*]} ps"
 
 if [ "$FIRST_RUN" = 1 ]; then
+  if [[ -n "${SUPER_ADMIN_PASSWORD:-}" ]]; then
+    say "Creating the super-admin account..."
+    printf '%s' "$SUPER_ADMIN_PASSWORD" | ${COMPOSE[@]+"${COMPOSE[@]}"} run --rm -T ops --role ops node docker/ops/admin.mjs \
+      create --email "$(repository_env_value SUPER_ADMIN_EMAIL)" --password-stdin \
+      || die "Creating the super admin failed. Retry with: bash scripts/admin.sh create --email $(repository_env_value SUPER_ADMIN_EMAIL)"
+    unset SUPER_ADMIN_PASSWORD
+  fi
   if [[ "${INSTALL_RUNNER:-N}" =~ ^[Yy] ]]; then
     bash "$ROOT/scripts/install-runner.sh" \
       || die 'Runner installation failed. Retry with bash scripts/install-runner.sh.'
@@ -94,8 +101,9 @@ echo "  Website: $base_url"
 echo "  Super admin: $(repository_env_value SUPER_ADMIN_EMAIL)"
 echo "  Settings and secrets: ${SWO_STATIC_ENV_FILE:-$ROOT/.env} and $TLS_DIR (keep an encrypted off-server copy)"
 echo
-echo "Next: open $base_url/login, create the account for the super-admin email, verify it, turn on"
-echo "two-step sign-in, then open /super-admin to check email and create your first organisation."
+echo "Next: open $base_url/login, sign in as the super admin with the password you chose, then open"
+echo "/super-admin to check email and create your first organisation."
+echo "Change the super-admin password only on this server: bash scripts/admin.sh set-password --email <address>"
 if [[ "$(repository_env_value DEPLOYMENT_MODE)" == backend ]]; then
   echo "Then deploy the website on Netlify (docs/DEPLOYMENT_NETLIFY.md) with the FRONTEND_GATEWAY_SECRET from .env."
 fi

@@ -12,8 +12,8 @@ function pages(dir: string): string[] {
 
 describe("super-admin pages", () => {
   // The layout's check does not re-run on client navigation (partial
-  // rendering), so each page must verify super-admin + MFA itself.
-  it.each(pages("app/super-admin"))("%s checks super-admin MFA itself", (file) => {
-    expect(readFileSync(file, "utf8")).toMatch(/await requireSuperAdminMfa\(\)/);
+  // rendering), so each page must verify super-admin access itself.
+  it.each(pages("app/super-admin"))("%s checks super-admin access itself", (file) => {
+    expect(readFileSync(file, "utf8")).toMatch(/await requireSuperAdmin\(\)/);
   });
 });

@@ -1,6 +1,6 @@
 import { isOrganisationApplicationsEnabled } from "@/lib/instanceSettings";
 import { OrganisationStatus, type Prisma } from "@prisma/client";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 
 type Props = {
@@ -14,7 +14,7 @@ function parseStatus(value: string | undefined): OrganisationStatus | null {
 }
 
 export async function loadSuperAdminOrgsView({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const status = parseStatus(sp.status);

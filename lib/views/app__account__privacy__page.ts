@@ -8,7 +8,7 @@ export async function loadAccountPrivacyView() {
   const email = await verifiedEmail(session.user.id);
   if (!email) return { emailVerified: false, organisations: [] };
   const members = await prisma.member.findMany({
-    where: { email, anonymisedAt: null, organisation: { status: { in: [...PORTAL_ORGANISATION_STATUSES] } } },
+    where: { email, anonymisedAt: null, organisation: { status: { in: [...PORTAL_ORGANISATION_STATUSES] }, memberPortal: true } },
     orderBy: { createdAt: "asc" },
     take: 100,
     select: {

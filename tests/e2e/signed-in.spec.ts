@@ -1,19 +1,27 @@
 import { expect, test, type Page } from "@playwright/test";
+import { nextTotp } from "./totp";
 
 // Signed-in journeys over the demo data from `npm run db:seed-demo` (plus `db:seed-reports`).
-// The demo password comes from DEMO_PASSWORD; without it these tests are skipped.
+// The demo password comes from DEMO_PASSWORD and the staff authenticator from DEMO_MFA_SECRET; without them
+// these tests are skipped.
 const password = process.env.DEMO_PASSWORD;
-test.skip(!password, "DEMO_PASSWORD is not set; seed the demo data to run signed-in journeys.");
+const mfaSecret = process.env.DEMO_MFA_SECRET;
+test.skip(!password || !mfaSecret, "DEMO_PASSWORD and DEMO_MFA_SECRET must be set; seed the demo data to run signed-in journeys.");
 
 async function signIn(page: Page, email: string) {
   // Type only after hydration, or React resets the controlled fields.
   await page.goto("/login", { waitUntil: "networkidle" });
   await page.fill('input[autocomplete="email"]', email);
   await page.fill('input[autocomplete="current-password"]', password!);
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 60_000 }),
-    page.getByRole("button", { name: "Sign in", exact: true }).click(),
-  ]);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  // Staff have an authenticator; members (just verified by the seed) go straight in.
+  const code = page.getByLabel("Authenticator or recovery code");
+  await Promise.race([code.waitFor({ timeout: 30_000 }), page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 30_000 })]);
+  if (await code.isVisible()) {
+    await code.fill(await nextTotp(mfaSecret!));
+    await page.getByRole("button", { name: "Verify and sign in" }).click();
+  }
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 60_000 });
 }
 
 test("an owner records an expense, sees it in the accounts and voids it", async ({ page }) => {
@@ -61,4 +69,13 @@ test("a member's portal lists their organisations", async ({ page }) => {
   await page.goto("/account/organisations");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByText(/Ideologists|Kunj/).first()).toBeVisible();
+});
+
+test("an owner reaches the email and chat notification settings", async ({ page }) => {
+  await signIn(page, "owner@demo.test");
+  await page.goto("/dashboard/spaceworks/settings/email");
+  await expect(page.getByRole("heading", { name: "Your own email" })).toBeVisible();
+  await page.goto("/dashboard/spaceworks/settings/notifications");
+  await expect(page.getByRole("heading", { name: "Chat alerts" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add channel" })).toBeVisible();
 });

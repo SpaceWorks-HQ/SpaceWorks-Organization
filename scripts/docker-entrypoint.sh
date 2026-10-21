@@ -30,6 +30,9 @@ migrate() {
   direct=${DIRECT_URL:-${DATABASE_URL:-}}
   DIRECT_URL="$direct" DATABASE_URL="${DATABASE_URL:-$direct}" CHECKPOINT_DISABLE=1 \
     node /opt/prisma-cli/node_modules/prisma/build/index.js migrate deploy --schema /app/prisma/schema.prisma
+  # Upgrades keep an existing SUPER_ADMIN_EMAIL account as super admin, once (docker/ops/admin.mjs).
+  DATABASE_URL="${DATABASE_URL:-$direct}" node /app/docker/ops/admin.mjs promote-bootstrap \
+    || echo "[entrypoint] Could not check the super-admin account; run scripts/admin.sh list." >&2
 }
 
 if [ "${1:-}" != --role ] || [ -z "${2:-}" ]; then

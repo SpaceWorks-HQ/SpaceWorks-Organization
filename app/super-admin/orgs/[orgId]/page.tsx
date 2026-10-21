@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminOrgDetailView } from "@/lib/views/app__super-admin__orgs__orgId__page";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default async function SuperAdminOrgDetailPage({ params }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { org, reviews, members, invites, assetStats, auditEvents, now } = await loadSuperAdminOrgDetailView({ params });
   const address = [org.addressLine, org.city, indianStateName(org.stateCode), org.postalCode].filter(Boolean).join(", ");
   const hasOwner = members.some((m) => m.role === "OWNER");

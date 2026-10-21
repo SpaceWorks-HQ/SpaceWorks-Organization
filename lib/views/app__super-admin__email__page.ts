@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { OutboxStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { loadDailyEmail } from "@/lib/superAdminData";
@@ -10,7 +10,7 @@ const STUCK_AFTER_MS = 15 * 60_000;
 
 
 export async function loadSuperAdminEmailView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const now = new Date();
   const since = windowStart(WINDOW_DAYS, now);
   const [kindGroups, dailyRows, stuckPending, stuckProcessing] = await Promise.all([

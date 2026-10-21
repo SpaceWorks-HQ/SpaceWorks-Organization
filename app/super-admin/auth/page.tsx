@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminAuthView } from "@/lib/views/app__super-admin__auth__page";
 import { AccountCreationControl } from "@/components/super-admin/AccountCreationControl";
 import { AdminPanel } from "@/components/super-admin/AdminPanel";
@@ -6,7 +6,7 @@ import { PageHeader, StatTile } from "@/components/ui/display";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 export default async function SuperAdminAuthPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { accountsCount, sessionsCount, tokensCount, accountCreationEnabled, accounts, sessions, tokens } = await loadSuperAdminAuthView();
   return (
     <div className="flex flex-col gap-6">

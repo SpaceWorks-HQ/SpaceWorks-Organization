@@ -1,9 +1,9 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
 
 export async function loadSuperAdminAuthView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const [accountsCount, sessionsCount, tokensCount, accountCreationEnabled] = await Promise.all([
     prisma.account.count(),
     prisma.session.count(),

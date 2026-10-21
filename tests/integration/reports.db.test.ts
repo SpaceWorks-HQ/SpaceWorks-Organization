@@ -22,7 +22,8 @@ let other: { id: string };
 const ids: Record<string, string> = {};
 
 async function user(name: string) {
-  return prisma.user.create({ data: { email: `${name}-${suffix}@example.test`, name, emailVerified: new Date() } });
+  // Staff need an authenticator before dashboard actions and exports.
+  return prisma.user.create({ data: { email: `${name}-${suffix}@example.test`, name, emailVerified: new Date(), mfaEnabledAt: new Date() } });
 }
 
 beforeAll(async () => {

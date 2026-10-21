@@ -17,7 +17,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.SUPER_ADMIN_EMAIL = "admin@example.test";
   mocks.auth.mockResolvedValue({ user: { id: "user_1", email: "stale@example.test" } });
-  mocks.userFind.mockResolvedValue({ email: "admin@example.test", emailVerified: new Date(), isSuperAdmin: false });
+  mocks.userFind.mockResolvedValue({ email: "admin@example.test", emailVerified: new Date(), isSuperAdmin: true });
 });
 
 afterEach(() => {
@@ -55,6 +55,12 @@ describe("super-admin identity boundary", () => {
 
   it("rejects everyone without the flag when no bootstrap email is configured", async () => {
     delete process.env.SUPER_ADMIN_EMAIL;
+    mocks.userFind.mockResolvedValue({ email: "someone@example.test", emailVerified: new Date(), isSuperAdmin: false });
+    await expect(requireSuperAdmin()).rejects.toThrow("not-found");
+  });
+
+  it("never grants access by SUPER_ADMIN_EMAIL alone: super admins are made on the server", async () => {
+    mocks.userFind.mockResolvedValue({ email: "admin@example.test", emailVerified: new Date(), isSuperAdmin: false });
     await expect(requireSuperAdmin()).rejects.toThrow("not-found");
   });
 });

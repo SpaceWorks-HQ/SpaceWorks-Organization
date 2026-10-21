@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
 import { markTermPaid, MembershipError } from "@/lib/membership/service";
 import { lockPayment, PaymentError, type OrgForPayments } from "./charges";
@@ -83,6 +84,7 @@ export async function settlePayment(tx: Tx, args: { org: OrgForPayments; payment
   });
   if (!mismatch) await issuePaymentDocument(tx, args.org, payment.id, await documentPrefix(tx, args.org.id), now);
   await enqueueOutbox(tx, "payment-notice", { organisationId: args.org.id, paymentId: payment.id, notice: "paid" });
+  await queueChatAlerts(tx, args.org.id, "payment", { paymentId: payment.id });
   await recordAuditEvent({ action: "PAYMENT_PAID", actorUserId: args.confirmedById ?? null, organisationId: args.org.id, targetType: "Payment", targetId: payment.id, metadata: { provider: payment.provider, flagged: flags.length > 0 }, client: tx });
   return { payment: updated, flagged: updated.flagReason, alreadySettled: false };
 }

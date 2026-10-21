@@ -36,8 +36,9 @@ async function user(email, name, extra = {}) {
 
 const mfa = process.env.DEMO_MFA_SECRET ? { mfaSecretEncrypted: encryptMfaSecret(process.env.DEMO_MFA_SECRET), mfaEnabledAt: now } : {};
 const admin = await user("admin@demo.test", "Shaan Shoukath", { isSuperAdmin: true, ...mfa });
-const owner = await user("owner@demo.test", "Abhiram NJ");
-const treasurer = await user("treasurer@demo.test", "Abdul Samad MJ");
+// Staff need an authenticator before the dashboard opens; with DEMO_MFA_SECRET the demo staff share one.
+const owner = await user("owner@demo.test", "Abhiram NJ", mfa);
+const treasurer = await user("treasurer@demo.test", "Abdul Samad MJ", mfa);
 const applicant = await user("applicant@demo.test", "Midlaj C");
 
 const base = { country: "IN", timezone: "Asia/Kolkata", currency: "INR", stateCode: "KL" };

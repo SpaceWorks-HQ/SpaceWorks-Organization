@@ -161,9 +161,19 @@
       "id": "app__dashboard__orgSlug__settings__cards__page:loadOrgCardSettingsView"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__settings__email__page",
+      "name": "loadOrgEmailSettingsView",
+      "id": "app__dashboard__orgSlug__settings__email__page:loadOrgEmailSettingsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__settings__money__page",
       "name": "loadOrgMoneySettingsView",
       "id": "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView"
+    },
+    {
+      "module": "lib/views/app__dashboard__orgSlug__settings__notifications__page",
+      "name": "loadOrgNotificationsView",
+      "id": "app__dashboard__orgSlug__settings__notifications__page:loadOrgNotificationsView"
     },
     {
       "module": "lib/views/app__dashboard__orgSlug__settings__page",
@@ -221,6 +231,11 @@
       "id": "app__organisations__page:loadOrganisationsDirectory"
     },
     {
+      "module": "lib/views/app__pay__token__page",
+      "name": "loadPayLinkView",
+      "id": "app__pay__token__page:loadPayLinkView"
+    },
+    {
       "module": "lib/views/app__sitemap",
       "name": "loadSitemapOrganisations",
       "id": "app__sitemap:loadSitemapOrganisations"
@@ -229,11 +244,6 @@
       "module": "lib/views/app__start__page",
       "name": "loadStartView",
       "id": "app__start__page:loadStartView"
-    },
-    {
-      "module": "lib/views/app__super-admin-mfa__page",
-      "name": "loadSuperAdminMfaView",
-      "id": "app__super-admin-mfa__page:loadSuperAdminMfaView"
     },
     {
       "module": "lib/views/app__super-admin__audit__page",
@@ -408,6 +418,21 @@
       "id": "cards:requestCardExport"
     },
     {
+      "module": "app/actions/chat-channels",
+      "name": "saveChatChannel",
+      "id": "chat-channels:saveChatChannel"
+    },
+    {
+      "module": "app/actions/chat-channels",
+      "name": "deleteChatChannel",
+      "id": "chat-channels:deleteChatChannel"
+    },
+    {
+      "module": "app/actions/chat-channels",
+      "name": "testChatChannel",
+      "id": "chat-channels:testChatChannel"
+    },
+    {
       "module": "app/actions/erasure",
       "name": "decideErasureRequest",
       "id": "erasure:decideErasureRequest"
@@ -451,6 +476,11 @@
       "module": "app/actions/invite-acceptance",
       "name": "acceptOrganisationInvite",
       "id": "invite-acceptance:acceptOrganisationInvite"
+    },
+    {
+      "module": "app/actions/ip-blocks",
+      "name": "unblockAddress",
+      "id": "ip-blocks:unblockAddress"
     },
     {
       "module": "app/actions/join",
@@ -508,6 +538,11 @@
       "id": "member-photo:setMemberPhoto"
     },
     {
+      "module": "app/actions/member-portal",
+      "name": "setMemberPortal",
+      "id": "member-portal:setMemberPortal"
+    },
+    {
       "module": "app/actions/members",
       "name": "addMember",
       "id": "members:addMember"
@@ -536,6 +571,16 @@
       "module": "app/actions/members",
       "name": "assignMemberRoles",
       "id": "members:assignMemberRoles"
+    },
+    {
+      "module": "app/actions/org-email",
+      "name": "saveOrgEmailSettings",
+      "id": "org-email:saveOrgEmailSettings"
+    },
+    {
+      "module": "app/actions/org-email",
+      "name": "sendOrgTestEmail",
+      "id": "org-email:sendOrgTestEmail"
     },
     {
       "module": "app/actions/org-invites",
@@ -813,11 +858,6 @@
       "id": "structure:updateOrganisationPreferences"
     },
     {
-      "module": "app/actions/super-admin-mfa",
-      "name": "verifySuperAdminMfa",
-      "id": "super-admin-mfa:verifySuperAdminMfa"
-    },
-    {
       "module": "app/actions/super-admin-organisations",
       "name": "reviewOrganisation",
       "id": "super-admin-organisations:reviewOrganisation"
@@ -836,11 +876,6 @@
       "module": "app/actions/super-admin-organisations",
       "name": "resendOwnerInvite",
       "id": "super-admin-organisations:resendOwnerInvite"
-    },
-    {
-      "module": "app/actions/super-admin-organisations",
-      "name": "setPlatformAdmin",
-      "id": "super-admin-organisations:setPlatformAdmin"
     },
     {
       "module": "app/actions/super-admin-organisations",

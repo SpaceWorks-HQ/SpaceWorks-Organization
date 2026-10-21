@@ -62,3 +62,24 @@ public issue.
 - Rate limits on sign-in and sensitive actions (Redis), with the client address taken only from the header
   your edge overwrites (`TRUSTED_PROXY_IP_HEADER`).
 - Money rows are never edited or deleted; reversals use credit notes, and receipt numbers are gapless.
+
+### Sign-in
+
+- **Staff need an authenticator.** Anyone on an organisation's team (owner, manager, treasurer, viewer) must
+  turn on an authenticator app before the dashboard, its actions or its exports open (`hasAuthenticator` in
+  `lib/permissions.ts`). Members never need one.
+- **Super admins** sign in with email and password only. Their accounts and passwords are created and changed
+  only on the server (`scripts/admin.sh`); password-reset emails, in-app password changes and Google, GitHub or
+  Apple sign-in are refused for them.
+- **Unusual sign-ins.** Each browser that signs in is remembered by a long-lived random cookie, stored only as a
+  hash (`KnownDevice`). An account without an authenticator signing in from a new browser must enter a six-digit
+  code emailed to it (valid 10 minutes, single use), unless it verified its email in the last hour.
+- **New-device alerts.** Every first sign-in from a new device emails the account its browser, address and time.
+- **Automatic address blocking.** Twenty failed sign-ins (wrong password or code) from one address within
+  15 minutes block it from signing in, signing up and requesting password resets for an hour; again within a
+  week, for a day. Super admin, Security lists blocks and lifts them (`lib/ipBlock.ts`).
+- **Breached passwords.** New passwords (sign-up, change, reset, the server command) found in known breaches are
+  refused, via Have I Been Pwned with k-anonymity: only the first five characters of the SHA-1 hash leave the
+  server. `PWNED_PASSWORDS_CHECK=0` turns it off for offline installs.
+- **Organisation-entered hosts** (an organisation's SMTP relay, a self-hosted Mattermost) must resolve to public
+  addresses, checked when saved and again when used, so they can't reach the server's own network.

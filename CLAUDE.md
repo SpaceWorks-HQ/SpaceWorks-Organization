@@ -62,6 +62,7 @@ scripts/spaceworks-compose.sh bundled run --rm ops       # operator checks
 scripts/spaceworks-compose.sh cloud up -d                # docker-compose.cloud.yml with /etc/spaceworks-organization/cloud.env
 bash scripts/update.sh --force [--version V | --rollback]
 bash scripts/backup.sh && bash scripts/restore.sh backups/<dump>.sql.gz [--with-storage]
+bash scripts/admin.sh create|set-password|reset-mfa|revoke|list --email <address>   # super admins (server only)
 SWO_COMPOSE_BUILD_LAYER=1 bash scripts/compose-smoke.sh  # bundled stack end to end (disposable)
 ```
 
@@ -89,6 +90,24 @@ npx vitest run tests/unit/health.test.ts
     `reconcileGatewayRefunds` follows up pending gateway refunds from the scheduler.
   - Other receipts and expenses are `LedgerEntry` rows (`app/actions/accounts.ts`), voided once and never
     deleted (trigger in migration 0009). The receipts and payments account is pure in `lib/accounts/statement.ts`.
+- **Accounts and sign-in** (`docs/SECURITY.md`):
+  - Super admins sign in with email and password only, and are created, revoked and given passwords only on
+    the server (`docker/ops/admin.mjs` through `scripts/admin.sh`). Never add an in-app or emailed way to make
+    a super admin or reset their password; `requireSuperAdmin` checks only `User.isSuperAdmin`.
+  - Staff (any `TeamMember`) need an authenticator before the dashboard opens: `requireOrgTeam`,
+    `orgActionAccess` and the export and document routes check `hasAuthenticator`. Members never need one.
+  - New browsers: `lib/loginSecurity.ts` (known-device cookie, emailed code for accounts without an
+    authenticator, new-device alert). Failed sign-ins feed `lib/ipBlock.ts`. Every new password passes
+    `isBreachedPassword` (`lib/breachedPassword.ts`).
+- **Notifications** (`docs/NOTIFICATIONS.md`):
+  - Member-facing emails pass `organisationId` to `sendBrandedEmail`, which uses the organisation's own SMTP
+    (`OrgEmailSettings`) or the platform's in its name. Account emails never pass it.
+  - Team chat alerts (Slack, Discord, Mattermost, Telegram, WhatsApp) are queued with `queueChatAlerts` in the
+    event's transaction (`lib/chat/*`). Organisation secrets use `encryptOrgSecret`; hosts an organisation types
+    in must pass `assertPublicHost`.
+- **Member accounts switch:** `Organisation.memberPortal`. Off, portal queries skip the organisation, member
+  emails link to the public page or a signed pay link (`lib/payments/payLink.ts`, `/pay/<token>`), and `/verify`
+  is unaffected.
 - **Member cards** (`lib/cards/*`):
   - One live card per member and plan. The verify token (in the QR) is 32 random bytes; reissuing revokes the old card. Renewals keep the card, because `/verify` reads `deriveStatus` live.
   - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.

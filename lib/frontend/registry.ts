@@ -32,147 +32,154 @@ import { loadOrgReportsOverview as endpoint28 } from "@/lib/views/app__dashboard
 import { loadOrgReportsRenewals as endpoint29 } from "@/lib/views/app__dashboard__orgSlug__reports__renewals__page";
 import { loadOrgReportsTax as endpoint30 } from "@/lib/views/app__dashboard__orgSlug__reports__tax__page";
 import { loadOrgCardSettingsView as endpoint31 } from "@/lib/views/app__dashboard__orgSlug__settings__cards__page";
-import { loadOrgMoneySettingsView as endpoint32 } from "@/lib/views/app__dashboard__orgSlug__settings__money__page";
-import { loadOrgSettingsView as endpoint33 } from "@/lib/views/app__dashboard__orgSlug__settings__page";
-import { loadPaymentSettingsView as endpoint34 } from "@/lib/views/app__dashboard__orgSlug__settings__payments__page";
-import { loadPublicPageEditorView as endpoint35 } from "@/lib/views/app__dashboard__orgSlug__settings__public-page__page";
-import { loadOrgStructureView as endpoint36 } from "@/lib/views/app__dashboard__orgSlug__settings__structure__page";
-import { loadOrgMembersView as endpoint37 } from "@/lib/views/app__dashboard__orgSlug__team__page";
-import { loadDashboardView as endpoint38 } from "@/lib/views/app__dashboard__page";
-import { loadJoinOrganisationView as endpoint39 } from "@/lib/views/app__join__org__token__page";
-import { loadJoinView as endpoint40 } from "@/lib/views/app__o__orgSlug__join__planSlug__page";
-import { loadPublicOrgLayout as endpoint41 } from "@/lib/views/app__o__orgSlug__layout";
-import { loadPublicOrgPage as endpoint42 } from "@/lib/views/app__o__orgSlug__page";
-import { loadOrganisationsDirectory as endpoint43 } from "@/lib/views/app__organisations__page";
-import { loadSitemapOrganisations as endpoint44 } from "@/lib/views/app__sitemap";
-import { loadStartView as endpoint45 } from "@/lib/views/app__start__page";
-import { loadSuperAdminMfaView as endpoint46 } from "@/lib/views/app__super-admin-mfa__page";
-import { loadSuperAdminAuditView as endpoint47 } from "@/lib/views/app__super-admin__audit__page";
-import { loadSuperAdminAuthView as endpoint48 } from "@/lib/views/app__super-admin__auth__page";
-import { loadSuperAdminEmailView as endpoint49 } from "@/lib/views/app__super-admin__email__page";
-import { loadSuperAdminShell as endpoint50 } from "@/lib/views/app__super-admin__layout";
-import { loadSuperAdminMonitoringView as endpoint51 } from "@/lib/views/app__super-admin__monitoring__page";
-import { loadSuperAdminOperationsView as endpoint52 } from "@/lib/views/app__super-admin__operations__page";
-import { loadSuperAdminNewOrgView as endpoint53 } from "@/lib/views/app__super-admin__orgs__new__page";
-import { loadSuperAdminOrgDetailView as endpoint54 } from "@/lib/views/app__super-admin__orgs__orgId__page";
-import { loadSuperAdminOrgsView as endpoint55 } from "@/lib/views/app__super-admin__orgs__page";
-import { loadSuperAdminOverviewView as endpoint56 } from "@/lib/views/app__super-admin__page";
-import { loadSuperAdminReportsView as endpoint57 } from "@/lib/views/app__super-admin__reports__page";
-import { loadSuperAdminSecurityView as endpoint58 } from "@/lib/views/app__super-admin__security__page";
-import { loadSuperAdminSettingsView as endpoint59 } from "@/lib/views/app__super-admin__settings__page";
-import { loadSuperAdminStorageView as endpoint60 } from "@/lib/views/app__super-admin__storage__page";
-import { loadSuperAdminUsersView as endpoint61 } from "@/lib/views/app__super-admin__users__page";
-import { loadSuperAdminUserDetailView as endpoint62 } from "@/lib/views/app__super-admin__users__userId__page";
-import { loadVerifyView as endpoint63 } from "@/lib/views/app__verify__token__page";
-import { leaveOrganisation as endpoint64 } from "@/app/actions/account-organisations";
-import { updateAccountProfile as endpoint65 } from "@/app/actions/account";
-import { updateAccountPassword as endpoint66 } from "@/app/actions/account";
-import { addLedgerEntry as endpoint67 } from "@/app/actions/accounts";
-import { voidLedgerEntry as endpoint68 } from "@/app/actions/accounts";
-import { setOpeningBalance as endpoint69 } from "@/app/actions/accounts";
-import { signUpWithPassword as endpoint70 } from "@/app/actions/auth";
-import { confirmEmailVerification as endpoint71 } from "@/app/actions/auth";
-import { resendEmailVerification as endpoint72 } from "@/app/actions/auth";
-import { saveCardDesign as endpoint73 } from "@/app/actions/card-design";
-import { revertToOrganisationCardDesign as endpoint74 } from "@/app/actions/card-design";
-import { uploadCardWatermark as endpoint75 } from "@/app/actions/card-design";
-import { issueMemberCard as endpoint76 } from "@/app/actions/cards";
-import { reissueMemberCard as endpoint77 } from "@/app/actions/cards";
-import { revokeMemberCard as endpoint78 } from "@/app/actions/cards";
-import { emailMemberCard as endpoint79 } from "@/app/actions/cards";
-import { requestCardExport as endpoint80 } from "@/app/actions/cards";
-import { decideErasureRequest as endpoint81 } from "@/app/actions/erasure";
-import { setNewUserRegistrationEnabled as endpoint82 } from "@/app/actions/instance-settings";
-import { setOrganisationApplicationsEnabled as endpoint83 } from "@/app/actions/instance-settings";
-import { saveInstanceServiceSettings as endpoint84 } from "@/app/actions/instance-settings";
-import { deliverInstanceOutbox as endpoint85 } from "@/app/actions/instance";
-import { purgeExpiredVerificationTokens as endpoint86 } from "@/app/actions/instance";
-import { retryFailedOutboxMessages as endpoint87 } from "@/app/actions/instance";
-import { recordBackupRestoreVerification as endpoint88 } from "@/app/actions/instance";
-import { acceptOrganisationInvite as endpoint89 } from "@/app/actions/invite-acceptance";
-import { submitJoin as endpoint90 } from "@/app/actions/join";
-import { createMemberInvite as endpoint91 } from "@/app/actions/join";
-import { revokeMemberInvite as endpoint92 } from "@/app/actions/join";
-import { uploadOrganisationLogo as endpoint93 } from "@/app/actions/media";
-import { uploadAccountProfileImage as endpoint94 } from "@/app/actions/media";
-import { previewMemberImport as endpoint95 } from "@/app/actions/member-import";
-import { commitMemberImport as endpoint96 } from "@/app/actions/member-import";
-import { startMemberCheckout as endpoint97 } from "@/app/actions/member-payments";
-import { confirmMemberRazorpay as endpoint98 } from "@/app/actions/member-payments";
-import { submitPaymentClaim as endpoint99 } from "@/app/actions/member-payments";
-import { setMemberPhoto as endpoint100 } from "@/app/actions/member-photo";
-import { addMember as endpoint101 } from "@/app/actions/members";
-import { updateMember as endpoint102 } from "@/app/actions/members";
-import { decideMemberships as endpoint103 } from "@/app/actions/members";
-import { renewMember as endpoint104 } from "@/app/actions/members";
-import { extendMembership as endpoint105 } from "@/app/actions/members";
-import { assignMemberRoles as endpoint106 } from "@/app/actions/members";
-import { createOrgInvite as endpoint107 } from "@/app/actions/org-invites";
-import { revokeOrgInvite as endpoint108 } from "@/app/actions/org-invites";
-import { updateOrganisation as endpoint109 } from "@/app/actions/org";
-import { checkOrganisationSlug as endpoint110 } from "@/app/actions/organisation-application";
-import { submitOrganisationApplication as endpoint111 } from "@/app/actions/organisation-application";
-import { resubmitOrganisationApplication as endpoint112 } from "@/app/actions/organisation-application";
-import { requestPasswordReset as endpoint113 } from "@/app/actions/password-reset";
-import { confirmPasswordReset as endpoint114 } from "@/app/actions/password-reset";
-import { savePaymentGateway as endpoint115 } from "@/app/actions/payment-settings";
-import { testPaymentGateway as endpoint116 } from "@/app/actions/payment-settings";
-import { saveTaxSettings as endpoint117 } from "@/app/actions/payment-settings";
-import { saveOfflinePaymentSettings as endpoint118 } from "@/app/actions/payment-settings";
-import { saveRefundPolicy as endpoint119 } from "@/app/actions/payment-settings";
-import { recordPayment as endpoint120 } from "@/app/actions/payments";
-import { confirmPayment as endpoint121 } from "@/app/actions/payments";
-import { rejectPayment as endpoint122 } from "@/app/actions/payments";
-import { cancelOpenPayment as endpoint123 } from "@/app/actions/payments";
-import { waiveFee as endpoint124 } from "@/app/actions/payments";
-import { releaseDocument as endpoint125 } from "@/app/actions/payments";
-import { clearFlag as endpoint126 } from "@/app/actions/payments";
-import { createPlan as endpoint127 } from "@/app/actions/plans";
-import { updatePlan as endpoint128 } from "@/app/actions/plans";
-import { setPlanArchived as endpoint129 } from "@/app/actions/plans";
-import { savePlanFields as endpoint130 } from "@/app/actions/plans";
-import { renewMembership as endpoint131 } from "@/app/actions/portal";
-import { withdrawTerm as endpoint132 } from "@/app/actions/portal";
-import { leaveMembership as endpoint133 } from "@/app/actions/portal";
-import { requestMembershipRefund as endpoint134 } from "@/app/actions/portal";
-import { withdrawMembershipRefund as endpoint135 } from "@/app/actions/portal";
-import { updateMemberProfile as endpoint136 } from "@/app/actions/portal";
-import { withdrawConsent as endpoint137 } from "@/app/actions/portal";
-import { requestDataErasure as endpoint138 } from "@/app/actions/portal";
-import { withdrawDataErasure as endpoint139 } from "@/app/actions/portal";
-import { savePublicPageDraft as endpoint140 } from "@/app/actions/public-page";
-import { publishPublicPage as endpoint141 } from "@/app/actions/public-page";
-import { discardPublicPageDraft as endpoint142 } from "@/app/actions/public-page";
-import { unpublishPublicPage as endpoint143 } from "@/app/actions/public-page";
-import { uploadPublicPageImage as endpoint144 } from "@/app/actions/public-page";
-import { refundPayment as endpoint145 } from "@/app/actions/refunds";
-import { approveRefund as endpoint146 } from "@/app/actions/refunds";
-import { declineRefund as endpoint147 } from "@/app/actions/refunds";
-import { setReportDigest as endpoint148 } from "@/app/actions/report-digest";
-import { sendRenewalReminders as endpoint149 } from "@/app/actions/reports";
-import { beginMfaEnrollment as endpoint150 } from "@/app/actions/security";
-import { confirmMfaEnrollment as endpoint151 } from "@/app/actions/security";
-import { disableMfa as endpoint152 } from "@/app/actions/security";
-import { revokeAllSessions as endpoint153 } from "@/app/actions/security";
-import { saveSignInProviders as endpoint154 } from "@/app/actions/sign-in-providers";
-import { setUnitLevels as endpoint155 } from "@/app/actions/structure";
-import { createUnit as endpoint156 } from "@/app/actions/structure";
-import { renameUnit as endpoint157 } from "@/app/actions/structure";
-import { setUnitArchived as endpoint158 } from "@/app/actions/structure";
-import { createMemberRole as endpoint159 } from "@/app/actions/structure";
-import { updateMemberRole as endpoint160 } from "@/app/actions/structure";
-import { updateOrganisationPreferences as endpoint161 } from "@/app/actions/structure";
-import { verifySuperAdminMfa as endpoint162 } from "@/app/actions/super-admin-mfa";
-import { reviewOrganisation as endpoint163 } from "@/app/actions/super-admin-organisations";
-import { setOrganisationLimits as endpoint164 } from "@/app/actions/super-admin-organisations";
-import { createOrganisationForOwner as endpoint165 } from "@/app/actions/super-admin-organisations";
-import { resendOwnerInvite as endpoint166 } from "@/app/actions/super-admin-organisations";
-import { setPlatformAdmin as endpoint167 } from "@/app/actions/super-admin-organisations";
-import { setOrganisationVisibility as endpoint168 } from "@/app/actions/super-admin-organisations";
-import { updateTeamRole as endpoint169 } from "@/app/actions/team";
-import { removeTeamMember as endpoint170 } from "@/app/actions/team";
-import { deleteOrganisation as endpoint171 } from "@/app/actions/team";
-import { setTeamMemberUnit as endpoint172 } from "@/app/actions/team";
+import { loadOrgEmailSettingsView as endpoint32 } from "@/lib/views/app__dashboard__orgSlug__settings__email__page";
+import { loadOrgMoneySettingsView as endpoint33 } from "@/lib/views/app__dashboard__orgSlug__settings__money__page";
+import { loadOrgNotificationsView as endpoint34 } from "@/lib/views/app__dashboard__orgSlug__settings__notifications__page";
+import { loadOrgSettingsView as endpoint35 } from "@/lib/views/app__dashboard__orgSlug__settings__page";
+import { loadPaymentSettingsView as endpoint36 } from "@/lib/views/app__dashboard__orgSlug__settings__payments__page";
+import { loadPublicPageEditorView as endpoint37 } from "@/lib/views/app__dashboard__orgSlug__settings__public-page__page";
+import { loadOrgStructureView as endpoint38 } from "@/lib/views/app__dashboard__orgSlug__settings__structure__page";
+import { loadOrgMembersView as endpoint39 } from "@/lib/views/app__dashboard__orgSlug__team__page";
+import { loadDashboardView as endpoint40 } from "@/lib/views/app__dashboard__page";
+import { loadJoinOrganisationView as endpoint41 } from "@/lib/views/app__join__org__token__page";
+import { loadJoinView as endpoint42 } from "@/lib/views/app__o__orgSlug__join__planSlug__page";
+import { loadPublicOrgLayout as endpoint43 } from "@/lib/views/app__o__orgSlug__layout";
+import { loadPublicOrgPage as endpoint44 } from "@/lib/views/app__o__orgSlug__page";
+import { loadOrganisationsDirectory as endpoint45 } from "@/lib/views/app__organisations__page";
+import { loadPayLinkView as endpoint46 } from "@/lib/views/app__pay__token__page";
+import { loadSitemapOrganisations as endpoint47 } from "@/lib/views/app__sitemap";
+import { loadStartView as endpoint48 } from "@/lib/views/app__start__page";
+import { loadSuperAdminAuditView as endpoint49 } from "@/lib/views/app__super-admin__audit__page";
+import { loadSuperAdminAuthView as endpoint50 } from "@/lib/views/app__super-admin__auth__page";
+import { loadSuperAdminEmailView as endpoint51 } from "@/lib/views/app__super-admin__email__page";
+import { loadSuperAdminShell as endpoint52 } from "@/lib/views/app__super-admin__layout";
+import { loadSuperAdminMonitoringView as endpoint53 } from "@/lib/views/app__super-admin__monitoring__page";
+import { loadSuperAdminOperationsView as endpoint54 } from "@/lib/views/app__super-admin__operations__page";
+import { loadSuperAdminNewOrgView as endpoint55 } from "@/lib/views/app__super-admin__orgs__new__page";
+import { loadSuperAdminOrgDetailView as endpoint56 } from "@/lib/views/app__super-admin__orgs__orgId__page";
+import { loadSuperAdminOrgsView as endpoint57 } from "@/lib/views/app__super-admin__orgs__page";
+import { loadSuperAdminOverviewView as endpoint58 } from "@/lib/views/app__super-admin__page";
+import { loadSuperAdminReportsView as endpoint59 } from "@/lib/views/app__super-admin__reports__page";
+import { loadSuperAdminSecurityView as endpoint60 } from "@/lib/views/app__super-admin__security__page";
+import { loadSuperAdminSettingsView as endpoint61 } from "@/lib/views/app__super-admin__settings__page";
+import { loadSuperAdminStorageView as endpoint62 } from "@/lib/views/app__super-admin__storage__page";
+import { loadSuperAdminUsersView as endpoint63 } from "@/lib/views/app__super-admin__users__page";
+import { loadSuperAdminUserDetailView as endpoint64 } from "@/lib/views/app__super-admin__users__userId__page";
+import { loadVerifyView as endpoint65 } from "@/lib/views/app__verify__token__page";
+import { leaveOrganisation as endpoint66 } from "@/app/actions/account-organisations";
+import { updateAccountProfile as endpoint67 } from "@/app/actions/account";
+import { updateAccountPassword as endpoint68 } from "@/app/actions/account";
+import { addLedgerEntry as endpoint69 } from "@/app/actions/accounts";
+import { voidLedgerEntry as endpoint70 } from "@/app/actions/accounts";
+import { setOpeningBalance as endpoint71 } from "@/app/actions/accounts";
+import { signUpWithPassword as endpoint72 } from "@/app/actions/auth";
+import { confirmEmailVerification as endpoint73 } from "@/app/actions/auth";
+import { resendEmailVerification as endpoint74 } from "@/app/actions/auth";
+import { saveCardDesign as endpoint75 } from "@/app/actions/card-design";
+import { revertToOrganisationCardDesign as endpoint76 } from "@/app/actions/card-design";
+import { uploadCardWatermark as endpoint77 } from "@/app/actions/card-design";
+import { issueMemberCard as endpoint78 } from "@/app/actions/cards";
+import { reissueMemberCard as endpoint79 } from "@/app/actions/cards";
+import { revokeMemberCard as endpoint80 } from "@/app/actions/cards";
+import { emailMemberCard as endpoint81 } from "@/app/actions/cards";
+import { requestCardExport as endpoint82 } from "@/app/actions/cards";
+import { saveChatChannel as endpoint83 } from "@/app/actions/chat-channels";
+import { deleteChatChannel as endpoint84 } from "@/app/actions/chat-channels";
+import { testChatChannel as endpoint85 } from "@/app/actions/chat-channels";
+import { decideErasureRequest as endpoint86 } from "@/app/actions/erasure";
+import { setNewUserRegistrationEnabled as endpoint87 } from "@/app/actions/instance-settings";
+import { setOrganisationApplicationsEnabled as endpoint88 } from "@/app/actions/instance-settings";
+import { saveInstanceServiceSettings as endpoint89 } from "@/app/actions/instance-settings";
+import { deliverInstanceOutbox as endpoint90 } from "@/app/actions/instance";
+import { purgeExpiredVerificationTokens as endpoint91 } from "@/app/actions/instance";
+import { retryFailedOutboxMessages as endpoint92 } from "@/app/actions/instance";
+import { recordBackupRestoreVerification as endpoint93 } from "@/app/actions/instance";
+import { acceptOrganisationInvite as endpoint94 } from "@/app/actions/invite-acceptance";
+import { unblockAddress as endpoint95 } from "@/app/actions/ip-blocks";
+import { submitJoin as endpoint96 } from "@/app/actions/join";
+import { createMemberInvite as endpoint97 } from "@/app/actions/join";
+import { revokeMemberInvite as endpoint98 } from "@/app/actions/join";
+import { uploadOrganisationLogo as endpoint99 } from "@/app/actions/media";
+import { uploadAccountProfileImage as endpoint100 } from "@/app/actions/media";
+import { previewMemberImport as endpoint101 } from "@/app/actions/member-import";
+import { commitMemberImport as endpoint102 } from "@/app/actions/member-import";
+import { startMemberCheckout as endpoint103 } from "@/app/actions/member-payments";
+import { confirmMemberRazorpay as endpoint104 } from "@/app/actions/member-payments";
+import { submitPaymentClaim as endpoint105 } from "@/app/actions/member-payments";
+import { setMemberPhoto as endpoint106 } from "@/app/actions/member-photo";
+import { setMemberPortal as endpoint107 } from "@/app/actions/member-portal";
+import { addMember as endpoint108 } from "@/app/actions/members";
+import { updateMember as endpoint109 } from "@/app/actions/members";
+import { decideMemberships as endpoint110 } from "@/app/actions/members";
+import { renewMember as endpoint111 } from "@/app/actions/members";
+import { extendMembership as endpoint112 } from "@/app/actions/members";
+import { assignMemberRoles as endpoint113 } from "@/app/actions/members";
+import { saveOrgEmailSettings as endpoint114 } from "@/app/actions/org-email";
+import { sendOrgTestEmail as endpoint115 } from "@/app/actions/org-email";
+import { createOrgInvite as endpoint116 } from "@/app/actions/org-invites";
+import { revokeOrgInvite as endpoint117 } from "@/app/actions/org-invites";
+import { updateOrganisation as endpoint118 } from "@/app/actions/org";
+import { checkOrganisationSlug as endpoint119 } from "@/app/actions/organisation-application";
+import { submitOrganisationApplication as endpoint120 } from "@/app/actions/organisation-application";
+import { resubmitOrganisationApplication as endpoint121 } from "@/app/actions/organisation-application";
+import { requestPasswordReset as endpoint122 } from "@/app/actions/password-reset";
+import { confirmPasswordReset as endpoint123 } from "@/app/actions/password-reset";
+import { savePaymentGateway as endpoint124 } from "@/app/actions/payment-settings";
+import { testPaymentGateway as endpoint125 } from "@/app/actions/payment-settings";
+import { saveTaxSettings as endpoint126 } from "@/app/actions/payment-settings";
+import { saveOfflinePaymentSettings as endpoint127 } from "@/app/actions/payment-settings";
+import { saveRefundPolicy as endpoint128 } from "@/app/actions/payment-settings";
+import { recordPayment as endpoint129 } from "@/app/actions/payments";
+import { confirmPayment as endpoint130 } from "@/app/actions/payments";
+import { rejectPayment as endpoint131 } from "@/app/actions/payments";
+import { cancelOpenPayment as endpoint132 } from "@/app/actions/payments";
+import { waiveFee as endpoint133 } from "@/app/actions/payments";
+import { releaseDocument as endpoint134 } from "@/app/actions/payments";
+import { clearFlag as endpoint135 } from "@/app/actions/payments";
+import { createPlan as endpoint136 } from "@/app/actions/plans";
+import { updatePlan as endpoint137 } from "@/app/actions/plans";
+import { setPlanArchived as endpoint138 } from "@/app/actions/plans";
+import { savePlanFields as endpoint139 } from "@/app/actions/plans";
+import { renewMembership as endpoint140 } from "@/app/actions/portal";
+import { withdrawTerm as endpoint141 } from "@/app/actions/portal";
+import { leaveMembership as endpoint142 } from "@/app/actions/portal";
+import { requestMembershipRefund as endpoint143 } from "@/app/actions/portal";
+import { withdrawMembershipRefund as endpoint144 } from "@/app/actions/portal";
+import { updateMemberProfile as endpoint145 } from "@/app/actions/portal";
+import { withdrawConsent as endpoint146 } from "@/app/actions/portal";
+import { requestDataErasure as endpoint147 } from "@/app/actions/portal";
+import { withdrawDataErasure as endpoint148 } from "@/app/actions/portal";
+import { savePublicPageDraft as endpoint149 } from "@/app/actions/public-page";
+import { publishPublicPage as endpoint150 } from "@/app/actions/public-page";
+import { discardPublicPageDraft as endpoint151 } from "@/app/actions/public-page";
+import { unpublishPublicPage as endpoint152 } from "@/app/actions/public-page";
+import { uploadPublicPageImage as endpoint153 } from "@/app/actions/public-page";
+import { refundPayment as endpoint154 } from "@/app/actions/refunds";
+import { approveRefund as endpoint155 } from "@/app/actions/refunds";
+import { declineRefund as endpoint156 } from "@/app/actions/refunds";
+import { setReportDigest as endpoint157 } from "@/app/actions/report-digest";
+import { sendRenewalReminders as endpoint158 } from "@/app/actions/reports";
+import { beginMfaEnrollment as endpoint159 } from "@/app/actions/security";
+import { confirmMfaEnrollment as endpoint160 } from "@/app/actions/security";
+import { disableMfa as endpoint161 } from "@/app/actions/security";
+import { revokeAllSessions as endpoint162 } from "@/app/actions/security";
+import { saveSignInProviders as endpoint163 } from "@/app/actions/sign-in-providers";
+import { setUnitLevels as endpoint164 } from "@/app/actions/structure";
+import { createUnit as endpoint165 } from "@/app/actions/structure";
+import { renameUnit as endpoint166 } from "@/app/actions/structure";
+import { setUnitArchived as endpoint167 } from "@/app/actions/structure";
+import { createMemberRole as endpoint168 } from "@/app/actions/structure";
+import { updateMemberRole as endpoint169 } from "@/app/actions/structure";
+import { updateOrganisationPreferences as endpoint170 } from "@/app/actions/structure";
+import { reviewOrganisation as endpoint171 } from "@/app/actions/super-admin-organisations";
+import { setOrganisationLimits as endpoint172 } from "@/app/actions/super-admin-organisations";
+import { createOrganisationForOwner as endpoint173 } from "@/app/actions/super-admin-organisations";
+import { resendOwnerInvite as endpoint174 } from "@/app/actions/super-admin-organisations";
+import { setOrganisationVisibility as endpoint175 } from "@/app/actions/super-admin-organisations";
+import { updateTeamRole as endpoint176 } from "@/app/actions/team";
+import { removeTeamMember as endpoint177 } from "@/app/actions/team";
+import { deleteOrganisation as endpoint178 } from "@/app/actions/team";
+import { setTeamMemberUnit as endpoint179 } from "@/app/actions/team";
 
 export const viewReaders = Object.freeze({
   "app__account__layout:loadAccountShell": endpoint0,
@@ -207,147 +214,154 @@ export const viewReaders = Object.freeze({
   "app__dashboard__orgSlug__reports__renewals__page:loadOrgReportsRenewals": endpoint29,
   "app__dashboard__orgSlug__reports__tax__page:loadOrgReportsTax": endpoint30,
   "app__dashboard__orgSlug__settings__cards__page:loadOrgCardSettingsView": endpoint31,
-  "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView": endpoint32,
-  "app__dashboard__orgSlug__settings__page:loadOrgSettingsView": endpoint33,
-  "app__dashboard__orgSlug__settings__payments__page:loadPaymentSettingsView": endpoint34,
-  "app__dashboard__orgSlug__settings__public-page__page:loadPublicPageEditorView": endpoint35,
-  "app__dashboard__orgSlug__settings__structure__page:loadOrgStructureView": endpoint36,
-  "app__dashboard__orgSlug__team__page:loadOrgMembersView": endpoint37,
-  "app__dashboard__page:loadDashboardView": endpoint38,
-  "app__join__org__token__page:loadJoinOrganisationView": endpoint39,
-  "app__o__orgSlug__join__planSlug__page:loadJoinView": endpoint40,
-  "app__o__orgSlug__layout:loadPublicOrgLayout": endpoint41,
-  "app__o__orgSlug__page:loadPublicOrgPage": endpoint42,
-  "app__organisations__page:loadOrganisationsDirectory": endpoint43,
-  "app__sitemap:loadSitemapOrganisations": endpoint44,
-  "app__start__page:loadStartView": endpoint45,
-  "app__super-admin-mfa__page:loadSuperAdminMfaView": endpoint46,
-  "app__super-admin__audit__page:loadSuperAdminAuditView": endpoint47,
-  "app__super-admin__auth__page:loadSuperAdminAuthView": endpoint48,
-  "app__super-admin__email__page:loadSuperAdminEmailView": endpoint49,
-  "app__super-admin__layout:loadSuperAdminShell": endpoint50,
-  "app__super-admin__monitoring__page:loadSuperAdminMonitoringView": endpoint51,
-  "app__super-admin__operations__page:loadSuperAdminOperationsView": endpoint52,
-  "app__super-admin__orgs__new__page:loadSuperAdminNewOrgView": endpoint53,
-  "app__super-admin__orgs__orgId__page:loadSuperAdminOrgDetailView": endpoint54,
-  "app__super-admin__orgs__page:loadSuperAdminOrgsView": endpoint55,
-  "app__super-admin__page:loadSuperAdminOverviewView": endpoint56,
-  "app__super-admin__reports__page:loadSuperAdminReportsView": endpoint57,
-  "app__super-admin__security__page:loadSuperAdminSecurityView": endpoint58,
-  "app__super-admin__settings__page:loadSuperAdminSettingsView": endpoint59,
-  "app__super-admin__storage__page:loadSuperAdminStorageView": endpoint60,
-  "app__super-admin__users__page:loadSuperAdminUsersView": endpoint61,
-  "app__super-admin__users__userId__page:loadSuperAdminUserDetailView": endpoint62,
-  "app__verify__token__page:loadVerifyView": endpoint63,
+  "app__dashboard__orgSlug__settings__email__page:loadOrgEmailSettingsView": endpoint32,
+  "app__dashboard__orgSlug__settings__money__page:loadOrgMoneySettingsView": endpoint33,
+  "app__dashboard__orgSlug__settings__notifications__page:loadOrgNotificationsView": endpoint34,
+  "app__dashboard__orgSlug__settings__page:loadOrgSettingsView": endpoint35,
+  "app__dashboard__orgSlug__settings__payments__page:loadPaymentSettingsView": endpoint36,
+  "app__dashboard__orgSlug__settings__public-page__page:loadPublicPageEditorView": endpoint37,
+  "app__dashboard__orgSlug__settings__structure__page:loadOrgStructureView": endpoint38,
+  "app__dashboard__orgSlug__team__page:loadOrgMembersView": endpoint39,
+  "app__dashboard__page:loadDashboardView": endpoint40,
+  "app__join__org__token__page:loadJoinOrganisationView": endpoint41,
+  "app__o__orgSlug__join__planSlug__page:loadJoinView": endpoint42,
+  "app__o__orgSlug__layout:loadPublicOrgLayout": endpoint43,
+  "app__o__orgSlug__page:loadPublicOrgPage": endpoint44,
+  "app__organisations__page:loadOrganisationsDirectory": endpoint45,
+  "app__pay__token__page:loadPayLinkView": endpoint46,
+  "app__sitemap:loadSitemapOrganisations": endpoint47,
+  "app__start__page:loadStartView": endpoint48,
+  "app__super-admin__audit__page:loadSuperAdminAuditView": endpoint49,
+  "app__super-admin__auth__page:loadSuperAdminAuthView": endpoint50,
+  "app__super-admin__email__page:loadSuperAdminEmailView": endpoint51,
+  "app__super-admin__layout:loadSuperAdminShell": endpoint52,
+  "app__super-admin__monitoring__page:loadSuperAdminMonitoringView": endpoint53,
+  "app__super-admin__operations__page:loadSuperAdminOperationsView": endpoint54,
+  "app__super-admin__orgs__new__page:loadSuperAdminNewOrgView": endpoint55,
+  "app__super-admin__orgs__orgId__page:loadSuperAdminOrgDetailView": endpoint56,
+  "app__super-admin__orgs__page:loadSuperAdminOrgsView": endpoint57,
+  "app__super-admin__page:loadSuperAdminOverviewView": endpoint58,
+  "app__super-admin__reports__page:loadSuperAdminReportsView": endpoint59,
+  "app__super-admin__security__page:loadSuperAdminSecurityView": endpoint60,
+  "app__super-admin__settings__page:loadSuperAdminSettingsView": endpoint61,
+  "app__super-admin__storage__page:loadSuperAdminStorageView": endpoint62,
+  "app__super-admin__users__page:loadSuperAdminUsersView": endpoint63,
+  "app__super-admin__users__userId__page:loadSuperAdminUserDetailView": endpoint64,
+  "app__verify__token__page:loadVerifyView": endpoint65,
 });
 export const backendActions = Object.freeze({
-  "account-organisations:leaveOrganisation": endpoint64,
-  "account:updateAccountProfile": endpoint65,
-  "account:updateAccountPassword": endpoint66,
-  "accounts:addLedgerEntry": endpoint67,
-  "accounts:voidLedgerEntry": endpoint68,
-  "accounts:setOpeningBalance": endpoint69,
-  "auth:signUpWithPassword": endpoint70,
-  "auth:confirmEmailVerification": endpoint71,
-  "auth:resendEmailVerification": endpoint72,
-  "card-design:saveCardDesign": endpoint73,
-  "card-design:revertToOrganisationCardDesign": endpoint74,
-  "card-design:uploadCardWatermark": endpoint75,
-  "cards:issueMemberCard": endpoint76,
-  "cards:reissueMemberCard": endpoint77,
-  "cards:revokeMemberCard": endpoint78,
-  "cards:emailMemberCard": endpoint79,
-  "cards:requestCardExport": endpoint80,
-  "erasure:decideErasureRequest": endpoint81,
-  "instance-settings:setNewUserRegistrationEnabled": endpoint82,
-  "instance-settings:setOrganisationApplicationsEnabled": endpoint83,
-  "instance-settings:saveInstanceServiceSettings": endpoint84,
-  "instance:deliverInstanceOutbox": endpoint85,
-  "instance:purgeExpiredVerificationTokens": endpoint86,
-  "instance:retryFailedOutboxMessages": endpoint87,
-  "instance:recordBackupRestoreVerification": endpoint88,
-  "invite-acceptance:acceptOrganisationInvite": endpoint89,
-  "join:submitJoin": endpoint90,
-  "join:createMemberInvite": endpoint91,
-  "join:revokeMemberInvite": endpoint92,
-  "media:uploadOrganisationLogo": endpoint93,
-  "media:uploadAccountProfileImage": endpoint94,
-  "member-import:previewMemberImport": endpoint95,
-  "member-import:commitMemberImport": endpoint96,
-  "member-payments:startMemberCheckout": endpoint97,
-  "member-payments:confirmMemberRazorpay": endpoint98,
-  "member-payments:submitPaymentClaim": endpoint99,
-  "member-photo:setMemberPhoto": endpoint100,
-  "members:addMember": endpoint101,
-  "members:updateMember": endpoint102,
-  "members:decideMemberships": endpoint103,
-  "members:renewMember": endpoint104,
-  "members:extendMembership": endpoint105,
-  "members:assignMemberRoles": endpoint106,
-  "org-invites:createOrgInvite": endpoint107,
-  "org-invites:revokeOrgInvite": endpoint108,
-  "org:updateOrganisation": endpoint109,
-  "organisation-application:checkOrganisationSlug": endpoint110,
-  "organisation-application:submitOrganisationApplication": endpoint111,
-  "organisation-application:resubmitOrganisationApplication": endpoint112,
-  "password-reset:requestPasswordReset": endpoint113,
-  "password-reset:confirmPasswordReset": endpoint114,
-  "payment-settings:savePaymentGateway": endpoint115,
-  "payment-settings:testPaymentGateway": endpoint116,
-  "payment-settings:saveTaxSettings": endpoint117,
-  "payment-settings:saveOfflinePaymentSettings": endpoint118,
-  "payment-settings:saveRefundPolicy": endpoint119,
-  "payments:recordPayment": endpoint120,
-  "payments:confirmPayment": endpoint121,
-  "payments:rejectPayment": endpoint122,
-  "payments:cancelOpenPayment": endpoint123,
-  "payments:waiveFee": endpoint124,
-  "payments:releaseDocument": endpoint125,
-  "payments:clearFlag": endpoint126,
-  "plans:createPlan": endpoint127,
-  "plans:updatePlan": endpoint128,
-  "plans:setPlanArchived": endpoint129,
-  "plans:savePlanFields": endpoint130,
-  "portal:renewMembership": endpoint131,
-  "portal:withdrawTerm": endpoint132,
-  "portal:leaveMembership": endpoint133,
-  "portal:requestMembershipRefund": endpoint134,
-  "portal:withdrawMembershipRefund": endpoint135,
-  "portal:updateMemberProfile": endpoint136,
-  "portal:withdrawConsent": endpoint137,
-  "portal:requestDataErasure": endpoint138,
-  "portal:withdrawDataErasure": endpoint139,
-  "public-page:savePublicPageDraft": endpoint140,
-  "public-page:publishPublicPage": endpoint141,
-  "public-page:discardPublicPageDraft": endpoint142,
-  "public-page:unpublishPublicPage": endpoint143,
-  "public-page:uploadPublicPageImage": endpoint144,
-  "refunds:refundPayment": endpoint145,
-  "refunds:approveRefund": endpoint146,
-  "refunds:declineRefund": endpoint147,
-  "report-digest:setReportDigest": endpoint148,
-  "reports:sendRenewalReminders": endpoint149,
-  "security:beginMfaEnrollment": endpoint150,
-  "security:confirmMfaEnrollment": endpoint151,
-  "security:disableMfa": endpoint152,
-  "security:revokeAllSessions": endpoint153,
-  "sign-in-providers:saveSignInProviders": endpoint154,
-  "structure:setUnitLevels": endpoint155,
-  "structure:createUnit": endpoint156,
-  "structure:renameUnit": endpoint157,
-  "structure:setUnitArchived": endpoint158,
-  "structure:createMemberRole": endpoint159,
-  "structure:updateMemberRole": endpoint160,
-  "structure:updateOrganisationPreferences": endpoint161,
-  "super-admin-mfa:verifySuperAdminMfa": endpoint162,
-  "super-admin-organisations:reviewOrganisation": endpoint163,
-  "super-admin-organisations:setOrganisationLimits": endpoint164,
-  "super-admin-organisations:createOrganisationForOwner": endpoint165,
-  "super-admin-organisations:resendOwnerInvite": endpoint166,
-  "super-admin-organisations:setPlatformAdmin": endpoint167,
-  "super-admin-organisations:setOrganisationVisibility": endpoint168,
-  "team:updateTeamRole": endpoint169,
-  "team:removeTeamMember": endpoint170,
-  "team:deleteOrganisation": endpoint171,
-  "team:setTeamMemberUnit": endpoint172,
+  "account-organisations:leaveOrganisation": endpoint66,
+  "account:updateAccountProfile": endpoint67,
+  "account:updateAccountPassword": endpoint68,
+  "accounts:addLedgerEntry": endpoint69,
+  "accounts:voidLedgerEntry": endpoint70,
+  "accounts:setOpeningBalance": endpoint71,
+  "auth:signUpWithPassword": endpoint72,
+  "auth:confirmEmailVerification": endpoint73,
+  "auth:resendEmailVerification": endpoint74,
+  "card-design:saveCardDesign": endpoint75,
+  "card-design:revertToOrganisationCardDesign": endpoint76,
+  "card-design:uploadCardWatermark": endpoint77,
+  "cards:issueMemberCard": endpoint78,
+  "cards:reissueMemberCard": endpoint79,
+  "cards:revokeMemberCard": endpoint80,
+  "cards:emailMemberCard": endpoint81,
+  "cards:requestCardExport": endpoint82,
+  "chat-channels:saveChatChannel": endpoint83,
+  "chat-channels:deleteChatChannel": endpoint84,
+  "chat-channels:testChatChannel": endpoint85,
+  "erasure:decideErasureRequest": endpoint86,
+  "instance-settings:setNewUserRegistrationEnabled": endpoint87,
+  "instance-settings:setOrganisationApplicationsEnabled": endpoint88,
+  "instance-settings:saveInstanceServiceSettings": endpoint89,
+  "instance:deliverInstanceOutbox": endpoint90,
+  "instance:purgeExpiredVerificationTokens": endpoint91,
+  "instance:retryFailedOutboxMessages": endpoint92,
+  "instance:recordBackupRestoreVerification": endpoint93,
+  "invite-acceptance:acceptOrganisationInvite": endpoint94,
+  "ip-blocks:unblockAddress": endpoint95,
+  "join:submitJoin": endpoint96,
+  "join:createMemberInvite": endpoint97,
+  "join:revokeMemberInvite": endpoint98,
+  "media:uploadOrganisationLogo": endpoint99,
+  "media:uploadAccountProfileImage": endpoint100,
+  "member-import:previewMemberImport": endpoint101,
+  "member-import:commitMemberImport": endpoint102,
+  "member-payments:startMemberCheckout": endpoint103,
+  "member-payments:confirmMemberRazorpay": endpoint104,
+  "member-payments:submitPaymentClaim": endpoint105,
+  "member-photo:setMemberPhoto": endpoint106,
+  "member-portal:setMemberPortal": endpoint107,
+  "members:addMember": endpoint108,
+  "members:updateMember": endpoint109,
+  "members:decideMemberships": endpoint110,
+  "members:renewMember": endpoint111,
+  "members:extendMembership": endpoint112,
+  "members:assignMemberRoles": endpoint113,
+  "org-email:saveOrgEmailSettings": endpoint114,
+  "org-email:sendOrgTestEmail": endpoint115,
+  "org-invites:createOrgInvite": endpoint116,
+  "org-invites:revokeOrgInvite": endpoint117,
+  "org:updateOrganisation": endpoint118,
+  "organisation-application:checkOrganisationSlug": endpoint119,
+  "organisation-application:submitOrganisationApplication": endpoint120,
+  "organisation-application:resubmitOrganisationApplication": endpoint121,
+  "password-reset:requestPasswordReset": endpoint122,
+  "password-reset:confirmPasswordReset": endpoint123,
+  "payment-settings:savePaymentGateway": endpoint124,
+  "payment-settings:testPaymentGateway": endpoint125,
+  "payment-settings:saveTaxSettings": endpoint126,
+  "payment-settings:saveOfflinePaymentSettings": endpoint127,
+  "payment-settings:saveRefundPolicy": endpoint128,
+  "payments:recordPayment": endpoint129,
+  "payments:confirmPayment": endpoint130,
+  "payments:rejectPayment": endpoint131,
+  "payments:cancelOpenPayment": endpoint132,
+  "payments:waiveFee": endpoint133,
+  "payments:releaseDocument": endpoint134,
+  "payments:clearFlag": endpoint135,
+  "plans:createPlan": endpoint136,
+  "plans:updatePlan": endpoint137,
+  "plans:setPlanArchived": endpoint138,
+  "plans:savePlanFields": endpoint139,
+  "portal:renewMembership": endpoint140,
+  "portal:withdrawTerm": endpoint141,
+  "portal:leaveMembership": endpoint142,
+  "portal:requestMembershipRefund": endpoint143,
+  "portal:withdrawMembershipRefund": endpoint144,
+  "portal:updateMemberProfile": endpoint145,
+  "portal:withdrawConsent": endpoint146,
+  "portal:requestDataErasure": endpoint147,
+  "portal:withdrawDataErasure": endpoint148,
+  "public-page:savePublicPageDraft": endpoint149,
+  "public-page:publishPublicPage": endpoint150,
+  "public-page:discardPublicPageDraft": endpoint151,
+  "public-page:unpublishPublicPage": endpoint152,
+  "public-page:uploadPublicPageImage": endpoint153,
+  "refunds:refundPayment": endpoint154,
+  "refunds:approveRefund": endpoint155,
+  "refunds:declineRefund": endpoint156,
+  "report-digest:setReportDigest": endpoint157,
+  "reports:sendRenewalReminders": endpoint158,
+  "security:beginMfaEnrollment": endpoint159,
+  "security:confirmMfaEnrollment": endpoint160,
+  "security:disableMfa": endpoint161,
+  "security:revokeAllSessions": endpoint162,
+  "sign-in-providers:saveSignInProviders": endpoint163,
+  "structure:setUnitLevels": endpoint164,
+  "structure:createUnit": endpoint165,
+  "structure:renameUnit": endpoint166,
+  "structure:setUnitArchived": endpoint167,
+  "structure:createMemberRole": endpoint168,
+  "structure:updateMemberRole": endpoint169,
+  "structure:updateOrganisationPreferences": endpoint170,
+  "super-admin-organisations:reviewOrganisation": endpoint171,
+  "super-admin-organisations:setOrganisationLimits": endpoint172,
+  "super-admin-organisations:createOrganisationForOwner": endpoint173,
+  "super-admin-organisations:resendOwnerInvite": endpoint174,
+  "super-admin-organisations:setOrganisationVisibility": endpoint175,
+  "team:updateTeamRole": endpoint176,
+  "team:removeTeamMember": endpoint177,
+  "team:deleteOrganisation": endpoint178,
+  "team:setTeamMemberUnit": endpoint179,
 });

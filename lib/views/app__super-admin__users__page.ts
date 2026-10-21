@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 type Props = {
@@ -13,7 +13,7 @@ const filters = {
 type FilterKey = keyof typeof filters;
 
 export async function loadSuperAdminUsersView({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const filter: FilterKey = sp.filter && sp.filter in filters ? (sp.filter as FilterKey) : "all";

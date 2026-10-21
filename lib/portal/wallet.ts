@@ -44,7 +44,7 @@ export async function loadWallet(userId: string, now = new Date()): Promise<Wall
   const email = await verifiedEmail(userId);
   if (!email) return null;
   const members = await prisma.member.findMany({
-    where: { email, anonymisedAt: null, organisation: { status: { in: [...PORTAL_ORGANISATION_STATUSES] } } },
+    where: { email, anonymisedAt: null, organisation: { status: { in: [...PORTAL_ORGANISATION_STATUSES] }, memberPortal: true } },
     orderBy: { createdAt: "asc" },
     take: 100,
     select: {

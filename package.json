@@ -1,6 +1,6 @@
 {
   "name": "spaceworks-organization",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "engines": {
@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "admin": "node docker/ops/admin.mjs",
     "db:seed-demo": "node scripts/seed-demo.mjs",
     "db:seed-reports": "node scripts/seed-reports.mjs",
     "test": "npm run test:unit",

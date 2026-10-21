@@ -1,11 +1,10 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminUserDetailView } from "@/lib/views/app__super-admin__users__userId__page";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ROLE_LABELS } from "@/lib/permissionRoles";
 import { AdminPanel, MetricRows, NameCell } from "@/components/super-admin/AdminPanel";
 import { AuditTable } from "@/components/super-admin/AuditTable";
-import { PlatformAdminToggle } from "@/components/super-admin/PlatformAdminToggle";
 import { Avatar, Chip, EmptyState } from "@/components/ui/display";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
@@ -15,7 +14,7 @@ type Props = {
 
 /** Support lookup for one person: account posture, organisation teams and their audit trail. */
 export default async function SuperAdminUserDetailPage({ params }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { user, hasPassword, accounts, activeSessions, memberships, auditEvents, displayName, viewerId } = await loadSuperAdminUserDetailView({ params });
   return (
     <div className="flex flex-col gap-6">
@@ -41,7 +40,7 @@ export default async function SuperAdminUserDetailPage({ params }: Props) {
         </div>
       </header>
 
-      <PlatformAdminToggle userId={user.id} isAdmin={user.isSuperAdmin} isSelf={user.id === viewerId} emailVerified={Boolean(user.emailVerified)} />
+      {user.isSuperAdmin ? <p className="text-caption text-ink-muted">Super admin. Super admins are added, removed and given passwords only on the server: <code>bash scripts/admin.sh</code>.</p> : null}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <AdminPanel title="Summary">

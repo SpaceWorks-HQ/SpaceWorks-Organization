@@ -3,6 +3,7 @@ import "server-only";
 import type { MembershipPlan, MembershipTerm, Organisation, Prisma, TermKind, TermStatus } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { issueCardOnActivation } from "@/lib/cards/issue";
 import { canTransition, chargesJoiningFee, statusAt, type TermAction } from "./lifecycle";
 import { graceUntil, localDate, renewalStartDay, termWindow } from "./periods";
@@ -126,6 +127,7 @@ export async function openTerm(
     term = await activateTerm(tx, { org, termId: term.id, actorUserId: args.actorUserId, cause: due > 0 ? "activated-before-payment" : "free-plan", now });
   } else {
     await notifyMember(tx, term, needsApproval ? "application-received" : "payment-requested");
+    if (needsApproval) await queueChatAlerts(tx, org.id, "application", { termId: term.id });
   }
   return term;
 }

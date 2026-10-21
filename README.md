@@ -70,7 +70,9 @@ Grouped the way an organisation's year actually goes.
 ### Member portal
 
 - Members sign in once and see every organisation they belong to: status, history, cards and receipts.
-- Pay what is due, renew, update their details, export their data or ask to be erased.
+- Pay what is due, renew, update their details, ask for a refund, export their data or ask to be erased.
+- Optional per organisation: with **Member accounts** off, the organisation just keeps records and payments;
+  "Pay now" emails carry a secure pay link, and card checks on `/verify` keep working.
 
 ### Public pages
 
@@ -183,7 +185,8 @@ runs from one published image, `ghcr.io/spaceworks-hq/spaceworks-organization-ba
   confirmation; curl (or wget) and tar must already exist;
 - internet access to `github.com` and `ghcr.io`, and at least 8 GiB free disk;
 - for HTTPS, a domain whose DNS points at the server, with ports 80 and 443 open;
-- an SMTP relay on a verified sending domain (Brevo, Amazon SES, Postmark…) and your super-admin email.
+- an SMTP relay on a verified sending domain (Brevo, Amazon SES, Postmark…), and the email and password for
+  your super admin (passwords are only ever set on the server, never by email).
 
 All deployment decisions come first, in this order:
 
@@ -194,7 +197,9 @@ All deployment decisions come first, in this order:
    certificate email), or an existing reverse proxy forwarding to `127.0.0.1:8080`. A Netlify backend requires
    HTTPS.
 4. **Storage:** bundled Silo (default), or an external S3-compatible bucket (endpoint, region, bucket, keys).
-5. **Super-admin email**, then **email**: sender, SMTP host, port, login and password.
+5. **Super-admin email and password** (asked twice, hidden), then **email**: sender, SMTP host, port, login and
+   password. The installer creates the super admin; later password changes happen only on the server with
+   `bash scripts/admin.sh set-password --email …`.
 6. **Sign-in options** besides email and password: Google, Apple, GitHub as a comma list, or none. Google and
    GitHub ask for their client ID and secret (blank adds them later); Apple is set up in Super admin → Settings.
 7. **Install a GitHub Actions runner on this server for automatic deploys? [y/N]** (Linux with systemd only).
@@ -252,7 +257,7 @@ bash "$SWO_DIR/scripts/update.sh" --force --version <that release>
 ```bash
 bash scripts/update.sh --force
 # Or deploy an exact published main release:
-bash scripts/update.sh --force --version 0.6.0-main.42.a1b2c3d4e5f6
+bash scripts/update.sh --force --version 0.7.0-main.42.a1b2c3d4e5f6
 # Return to the release that ran before the last update:
 bash scripts/update.sh --rollback
 ```

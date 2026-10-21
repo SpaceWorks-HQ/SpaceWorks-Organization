@@ -29,6 +29,7 @@ export function LoginForm({ accountCreationEnabled, providers }: { accountCreati
   const [password, setPassword] = useState("");
   const [totp, setTotp] = useState("");
   const [mfaRequired, setMfaRequired] = useState(false);
+  const [emailCodeRequired, setEmailCodeRequired] = useState(false);
   const [name, setName] = useState("");
   const [message, setMessage] = useState<string | null>(() =>
     sp.get("verified") === "1" ? "Email verified. You can now sign in." : null,
@@ -72,6 +73,7 @@ export function LoginForm({ accountCreationEnabled, providers }: { accountCreati
 
   function resetMfaChallenge() {
     setMfaRequired(false);
+    setEmailCodeRequired(false);
     setTotp("");
   }
 
@@ -85,7 +87,7 @@ export function LoginForm({ accountCreationEnabled, providers }: { accountCreati
       r = await signIn("credentials", {
         email: credentials.email,
         password: credentials.password,
-        totp,
+        ...(emailCodeRequired ? { emailCode: totp } : { totp }),
         redirect: false,
       });
     } catch {
@@ -103,12 +105,22 @@ export function LoginForm({ accountCreationEnabled, providers }: { accountCreati
         setMfaRequired(true);
         return;
       }
+      if (r.code === "address_blocked") {
+        setError(loginErrorMessage("address_blocked"));
+        return;
+      }
+      if (r.code === "email_code_required") {
+        if (emailCodeRequired && totp) setError("That code didn't match or has expired.");
+        setEmailCodeRequired(true);
+        setTotp("");
+        return;
+      }
       if (r.code === "email_verification_required") {
         setNeedsEmailVerification(true);
         setMessage("Verify your email before signing in. You can request a new link below.");
         return;
       }
-      setError(mfaRequired ? "Invalid authenticator or recovery code." : "Invalid email or password.");
+      setError(mfaRequired ? "Invalid authenticator or recovery code." : emailCodeRequired ? "That code didn't match or has expired." : "Invalid email or password.");
       return;
     }
     router.push(callbackUrl);
@@ -161,9 +173,10 @@ export function LoginForm({ accountCreationEnabled, providers }: { accountCreati
 
   const isSignUp = mode === "signup";
 
-  if (mfaRequired) {
+  if (mfaRequired || emailCodeRequired) {
     return (
       <MfaStep
+        kind={emailCodeRequired ? "email" : "authenticator"}
         email={email}
         code={totp}
         onCodeChange={setTotp}

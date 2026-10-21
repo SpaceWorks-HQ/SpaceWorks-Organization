@@ -68,7 +68,10 @@ for (const [index, [name, color]] of roleNames.entries()) roles.push(await prism
 
 // Team: a Viewer and a Manager limited to the South Kerala region.
 const passwordHash = await bcrypt.hash(password, 12);
-const teamUser = (email, name) => prisma.user.upsert({ where: { email }, create: { email, name, emailVerified: now, passwordHash }, update: { name, emailVerified: now, passwordHash } });
+// Staff need an authenticator: reuse the demo owner's (set by seed-demo from DEMO_MFA_SECRET), if there is one.
+const ownerMfa = await prisma.user.findUnique({ where: { email: "owner@demo.test" }, select: { mfaSecretEncrypted: true, mfaEnabledAt: true } });
+const mfa = ownerMfa?.mfaSecretEncrypted ? { mfaSecretEncrypted: ownerMfa.mfaSecretEncrypted, mfaEnabledAt: ownerMfa.mfaEnabledAt } : {};
+const teamUser = (email, name) => prisma.user.upsert({ where: { email }, create: { email, name, emailVerified: now, passwordHash, ...mfa }, update: { name, emailVerified: now, passwordHash, ...mfa } });
 const viewer = await teamUser("viewer@demo.test", "Ajzal P");
 const regional = await teamUser("south@demo.test", "Anin Arafath");
 const owner = await prisma.user.findUnique({ where: { email: "owner@demo.test" } });

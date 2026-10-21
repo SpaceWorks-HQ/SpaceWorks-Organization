@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminMonitoringView } from "@/lib/views/app__super-admin__monitoring__page";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Histogram } from "@/components/super-admin/Histogram";
@@ -15,7 +15,7 @@ function OkChip(props: { ok: boolean; labelOk?: string; labelBad?: string; }) {
 }
 
 export default async function SuperAdminMonitoringPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { dbName, dbOk, configuredDbUrl, configuredAuthSecret, configuredSuperAdmin, snapshot } = await loadSuperAdminMonitoringView();
   return (
     <div className="flex flex-col gap-6">

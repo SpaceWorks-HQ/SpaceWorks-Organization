@@ -9,7 +9,7 @@ import { Callout } from "@/components/ui/display";
 import { Field, Input } from "@/components/ui/field";
 
 /** "I've paid": the member gives the UPI or bank reference so the team can match the transfer. */
-export function PaymentClaimForm({ termId }: { termId: string }) {
+export function PaymentClaimForm({ termId, payToken }: { termId: string; payToken?: string }) {
   const router = useRouter();
   const [method, setMethod] = useState<"upi" | "bank_transfer">("upi");
   const [utr, setUtr] = useState("");
@@ -22,7 +22,7 @@ export function PaymentClaimForm({ termId }: { termId: string }) {
         event.preventDefault();
         startTransition(async () => {
           setError(null);
-          const result = await submitPaymentClaim({ termId, method, utr });
+          const result = await submitPaymentClaim({ termId, payToken, method, utr });
           if (!result.ok) setError(result.error);
           else router.refresh();
         });

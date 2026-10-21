@@ -45,7 +45,7 @@ export async function deliverRefundNotice(payload: RefundPayload, messageId: str
     });
     const to = team.map((member) => member.user.email).filter((email): email is string => Boolean(email));
     if (to.length === 0) return "dropped";
-    await sendBrandedEmail({
+    await sendBrandedEmail({ organisationId: payload.organisationId,
       to: to.join(", "),
       messageId,
       subject: `${org.name}: a member asked to cancel with a refund`,
@@ -63,7 +63,7 @@ export async function deliverRefundNotice(payload: RefundPayload, messageId: str
   if (!user?.email || !user.emailVerified) return "dropped";
   const approved = payload.event === "approved";
   const refunded = request.refund ? amount(request.refund.amountMinor) : amount(request.suggestedMinor);
-  await sendBrandedEmail({
+  await sendBrandedEmail({ organisationId: payload.organisationId,
     to: user.email,
     messageId,
     subject: approved ? `${org.name} approved your refund` : `${org.name} declined your refund request`,

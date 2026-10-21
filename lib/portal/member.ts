@@ -27,7 +27,7 @@ export async function findOwnMember(userId: string, organisationSlug: string) {
     where: {
       email,
       anonymisedAt: null,
-      organisation: { slug: organisationSlug, status: { in: [...PORTAL_ORGANISATION_STATUSES] } },
+      organisation: { slug: organisationSlug, status: { in: [...PORTAL_ORGANISATION_STATUSES] }, memberPortal: true },
     },
     include: {
       organisation: { select: { id: true, slug: true, name: true, status: true, timezone: true, financialYearStartMonth: true, locale: true, logoUrl: true, accentColor: true, unitLevels: true } },

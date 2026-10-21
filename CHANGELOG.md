@@ -4,6 +4,26 @@ Releases are published from `main` and titled **`Space Works Organization <versi
 file selects the series; each build is tagged `v<series>-main.<run>.<sha>`, which is what a deployment pins
 to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
+## 0.7.0 (2026-10-21)
+
+Safer sign-in, organisations in their own voice, and the option to keep records without member accounts.
+
+- **Super admins on the server only.** The installer creates the super admin with a password; afterwards
+  `bash scripts/admin.sh` creates, revokes and sets passwords. Super admins sign in with email and password only:
+  no emailed resets, no in-app password changes, no Google, GitHub or Apple sign-in, and no separate super-admin
+  authenticator step. Signing up with `SUPER_ADMIN_EMAIL` no longer grants anything (an existing account is
+  kept on upgrade).
+- **Staff need an authenticator app** before the dashboard opens; members never do.
+- **Sign-in protections:** an emailed code for sign-ins from a new browser (accounts without an authenticator),
+  new-device alert emails, automatic blocking of addresses with repeated failed sign-ins (super admins can lift
+  blocks), and refusal of passwords found in known data breaches (`PWNED_PASSWORDS_CHECK`).
+- **Organisation email:** each organisation can send member emails through its own SMTP and sender; without
+  it they come from the platform in the organisation's name with replies to its contact address.
+- **Chat alerts** to Slack, Discord, Mattermost, Telegram and WhatsApp per organisation, with per-channel alerts,
+  test sends and optional member names.
+- **Member accounts switch:** organisations that only keep records can turn member sign-in off; payment emails
+  then carry secure pay links, and card checks keep working.
+
 ## 0.6.0 (2026-10-21)
 
 Money in and out, refunds members can ask for, and a release pipeline that tests everything.

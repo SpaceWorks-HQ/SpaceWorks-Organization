@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { paymentVolume } from "@/lib/reports/finance/forecast";
 import { FINANCE_TABLES_READY, loadPlatformPayments } from "@/lib/reports/finance/source";
 import { platformAudit, rollupAcrossTenants, systemHealth, tenantPipeline, usageVsLimits } from "@/lib/reports/platform";
@@ -14,7 +14,7 @@ type Props = { searchParams: Promise<{ window?: string }> };
  * health and A8 the platform audit. Counts only: no member's personal data appears here.
  */
 export async function loadSuperAdminReportsView({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { window: requested } = await searchParams;
   const key = (Object.hasOwn(WINDOWS, requested ?? "") ? requested : "90d") as keyof typeof WINDOWS;
   const now = new Date();

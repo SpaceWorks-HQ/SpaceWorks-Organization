@@ -6,14 +6,28 @@ import { SignInMethodsCard } from "@/components/security/SignInMethodsCard";
 import { SecurityActivityCard } from "@/components/security/SecurityActivityCard";
 import { SignOutEverywhereCard } from "@/components/security/SignOutEverywhereCard";
 import { securityActivityLabel } from "@/lib/accountSecurity";
+import Link from "next/link";
+import { Callout, Card, CardHeader } from "@/components/ui/display";
 
 export const metadata: Metadata = { title: "Account security" };
 
 export default async function AccountSecurityPage() {
-  const { hasPassword, user, providers, activity } = await loadAccountSecurityView();
+  const { hasPassword, superAdmin, authenticatorRequired, isStaff, user, providers, activity } = await loadAccountSecurityView();
   return (
     <div className="flex flex-col gap-6">
-      <AccountPasswordForm hasPassword={hasPassword} />
+      {authenticatorRequired ? (
+        <Callout tone="warning" title="Set up an authenticator app to open the dashboard">
+          You&apos;re on an organisation&apos;s team, so your account needs an authenticator app (such as Google Authenticator, Microsoft Authenticator or 1Password). Turn on two-step sign-in below. Members&apos; accounts don&apos;t need one.
+        </Callout>
+      ) : isStaff && user.mfaEnabledAt ? (
+        <Callout tone="success">Your authenticator app is on. <Link href="/dashboard" className="font-semibold underline underline-offset-4">Go to the dashboard</Link>.</Callout>
+      ) : null}
+      {superAdmin ? (
+        <Card as="section" className="rounded-xl">
+          <CardHeader title="Password" description="This is a super-admin account, so its password is set on the server, never here or by email." />
+          <p className="text-body-ui text-ink-secondary">On the server, run <code className="rounded bg-subtle px-1.5 py-0.5 text-sm">scripts/spaceworks-compose.sh bundled run --rm ops admin set-password --email {"<your email>"}</code>.</p>
+        </Card>
+      ) : <AccountPasswordForm hasPassword={hasPassword} />}
       <AccountSecurityClient mfaEnabled={Boolean(user.mfaEnabledAt)} />
       <SignInMethodsCard hasPassword={hasPassword} providers={providers} />
       <SecurityActivityCard

@@ -38,7 +38,7 @@ async function liveTerm(orgKey: string, memberId: string, days: number) {
 
 beforeAll(async () => {
   for (const key of ["shaan", "abhiram", "owner", "unverified"]) {
-    const user = await prisma.user.create({ data: { email: `${key}-${suffix}@example.test`, emailVerified: key === "unverified" ? null : new Date(), name: key } });
+    const user = await prisma.user.create({ data: { email: `${key}-${suffix}@example.test`, emailVerified: key === "unverified" ? null : new Date(), name: key, mfaEnabledAt: new Date() } });
     people[key] = { id: user.id, email: user.email! };
   }
   for (const key of ["spaceworks", "tinkerspace"]) {

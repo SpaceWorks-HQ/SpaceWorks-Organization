@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("bcryptjs", () => ({ default: { hash: mocks.hash } }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: mocks.rateLimit }));
+vi.mock("@/lib/ipBlock", () => ({ currentRequestBlocked: async () => false }));
 vi.mock("@/lib/instanceSettings", () => ({ isNewUserRegistrationEnabled: mocks.registrationEnabled }));
 vi.mock("@/lib/emailVerification", () => ({
   issueEmailVerification: mocks.issueVerification,

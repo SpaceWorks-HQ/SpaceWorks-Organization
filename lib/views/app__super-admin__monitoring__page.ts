@@ -1,9 +1,9 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { getApiMonitorSnapshot } from "@/lib/apiMonitor";
 
 export async function loadSuperAdminMonitoringView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const snapshot = getApiMonitorSnapshot();
   let dbOk = true;
   let dbName: string | null = null;

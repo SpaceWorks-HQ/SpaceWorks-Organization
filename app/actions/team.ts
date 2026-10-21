@@ -10,6 +10,8 @@ import {
   canManageTeamMember,
   getMembership,
   orgActionAccess,
+  hasAuthenticator,
+  STAFF_AUTHENTICATOR_MESSAGE,
 } from "@/lib/permissions";
 import { z } from "zod";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
@@ -55,6 +57,7 @@ export async function updateTeamRole(
   if (!actor || !canManageTeam(actor)) {
     return { ok: false, error: "Only owners and managers can change team roles." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   if (!(await hasRecentAuthentication())) {
     return { ok: false, error: "For security, sign in again before changing team roles." };
   }
@@ -117,6 +120,7 @@ export async function removeTeamMember(input: unknown): Promise<ActionResult> {
   if (!actor || !canManageTeam(actor)) {
     return { ok: false, error: "You do not have permission to remove people from the team." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
 
   const target = await getMembership(targetUserId, org.id);
   if (!target) return { ok: false, error: "Team member not found." };
@@ -167,6 +171,7 @@ export async function deleteOrganisation(input: unknown): Promise<ActionResult> 
   if (!canDeleteOrg(membership)) {
     return { ok: false, error: "Only the organisation owner can delete it." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   if (!(await hasRecentAuthentication())) {
     return { ok: false, error: "For security, sign in again before deleting an organisation." };
   }

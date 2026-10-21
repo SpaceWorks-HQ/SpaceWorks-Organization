@@ -6,6 +6,7 @@ import { CopyOrganisationUrl } from "@/components/org/CopyOrganisationUrl";
 import { DeleteOrganisationButton } from "@/components/dashboard/DeleteOrganisationButton";
 import { OrgPageHeader } from "@/components/dashboard/org/OrgPageHeader";
 import { SettingsTabs } from "@/components/settings/SettingsTabs";
+import { MemberPortalSwitch } from "@/components/settings/MemberPortalSwitch";
 import { cn } from "@/lib/cn";
 
 import type { Metadata } from "next";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 const sectionCard = "rounded-xl border border-line bg-panel p-5 sm:p-6";
 
 export default async function OrgSettingsPage({ params }: Props) {
-  const { org, canDelete } = await loadOrgSettingsView({ params });
+  const { org, canDelete, canEditPortal } = await loadOrgSettingsView({ params });
   return (
     <div className="flex flex-col gap-7">
       <OrgPageHeader
@@ -57,6 +58,11 @@ export default async function OrgSettingsPage({ params }: Props) {
               <ExternalLink aria-hidden className="size-3.5" />
             </Link>
           </div>
+        </section>
+
+        <section id="member-accounts" aria-labelledby="member-accounts-title" className={sectionCard}>
+          <h2 id="member-accounts-title" className="mb-3 text-h4 text-ink">Member accounts</h2>
+          <MemberPortalSwitch slug={org.slug} enabled={org.memberPortal} canEdit={canEditPortal} />
         </section>
 
         {canDelete ? (

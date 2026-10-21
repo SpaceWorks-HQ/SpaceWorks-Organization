@@ -33,8 +33,9 @@ for (const [kind, entries] of [["view", catalog.readers], ["action", catalog.act
 }
 const permissionsSource = ts.createSourceFile("permissions.ts", readFileSync(path.join(root, "lib/permissions.ts"), "utf8"), ts.ScriptTarget.Latest, true);
 const guards = permissionsSource.statements.filter((node) => ts.isFunctionDeclaration(node) && node.name && node.modifiers?.some((item) => item.kind === ts.SyntaxKind.ExportKeyword) && node.modifiers.some((item) => item.kind === ts.SyntaxKind.AsyncKeyword));
-writeFileSync(path.join(target, "lib/permissions.ts"), `import "server-only";\nimport type * as Backend from "../../lib/permissions";\nexport type * from "../../lib/permissions";\nexport * from "./permissionRoles";\nimport { invokeBackend } from "@/lib/frontend/client";\n` + guards.map((node) => node.name.text === "requireSuperAdminMfa"
-  ? `export const requireSuperAdminMfa: typeof Backend.requireSuperAdminMfa = async (...args) => invokeBackend("view", "frontend-gates:loadSuperAdminGate", args);`
+writeFileSync(path.join(target, "lib/permissions.ts"), `import "server-only";\nimport type * as Backend from "../../lib/permissions";\nexport type * from "../../lib/permissions";\nexport * from "./permissionRoles";\nimport { invokeBackend } from "@/lib/frontend/client";\n` + guards.map((node) => node.name.text === "requireSuperAdmin"
+  // The backend's super-admin shell reader runs the same gate; its redirect or not-found travels back.
+  ? `export const requireSuperAdmin: typeof Backend.requireSuperAdmin = async () => invokeBackend("view", "app__super-admin__layout:loadSuperAdminShell", []);`
   : `export const ${node.name.text}: typeof Backend.${node.name.text} = async () => { throw new Error("Backend-only operation reached the frontend."); };`).join("\n") + "\n");
 writeFileSync(path.join(target, "lib/db.ts"), `import type { PrismaClient } from "@prisma/client";\nthrow new Error("Database access cannot run in the frontend workspace. Move it into a guarded view reader.");\nexport const prisma = {} as PrismaClient;\n`);
 const enums = Prisma.dmmf.datamodel.enums.map((item) => `export const ${item.name} = ${JSON.stringify(Object.fromEntries(item.values.map((value) => [value.name, value.name])))} as const;\nexport type ${item.name} = (typeof ${item.name})[keyof typeof ${item.name}];`).join("\n");

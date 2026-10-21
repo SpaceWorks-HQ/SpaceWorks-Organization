@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminStorageView } from "@/lib/views/app__super-admin__storage__page";
 import { AdminPanel, NameCell } from "@/components/super-admin/AdminPanel";
 import { EmptyState, PageHeader, StatTile } from "@/components/ui/display";
@@ -6,7 +6,7 @@ import { formatBytes } from "@/lib/superAdminInsights";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 export default async function SuperAdminStoragePage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { dbSizeBytes, assetSummary, sortedTypes, recentAssets, tableSizes, perOrgCounts, assetTotals } = await loadSuperAdminStorageView();
   return (
     <div className="flex flex-col gap-6">

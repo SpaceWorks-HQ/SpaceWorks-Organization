@@ -3,7 +3,6 @@ import "server-only";
 import { OrganisationStatus, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { isIndianStateCode } from "@/lib/indianStates";
-import { isBootstrapSuperAdminEmail } from "@/lib/superAdminEmail";
 import { organisationSlugSchema } from "@/lib/validators";
 import { enqueueOutbox, type OutboxClient } from "@/lib/outbox";
 import type { OrganisationNotice } from "@/lib/organisationLifecycle";
@@ -36,11 +35,11 @@ export function applicationSnapshot(profile: OrganisationProfile & { slug: strin
 /** Verified platform admins who should hear about new applications. */
 export async function platformAdminEmails(client: OutboxClient): Promise<string[]> {
   const flagged = await client.user.findMany({
-    where: { emailVerified: { not: null }, email: { not: null }, OR: [{ isSuperAdmin: true }, ...(process.env.SUPER_ADMIN_EMAIL ? [{ email: { equals: process.env.SUPER_ADMIN_EMAIL.trim(), mode: "insensitive" as const } }] : [])] },
-    select: { email: true, isSuperAdmin: true },
+    where: { emailVerified: { not: null }, email: { not: null }, isSuperAdmin: true },
+    select: { email: true },
     take: 50,
   });
-  return [...new Set(flagged.filter((user) => user.isSuperAdmin || isBootstrapSuperAdminEmail(user.email)).map((user) => user.email!.toLowerCase()))];
+  return [...new Set(flagged.map((user) => user.email!.toLowerCase()))];
 }
 
 /** Queue a lifecycle email to every owner of an organisation (within the caller's transaction). */

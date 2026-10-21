@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminEmailView } from "@/lib/views/app__super-admin__email__page";
 import Link from "next/link";
 import { EMAIL_SERIES } from "@/lib/superAdminSeries";
@@ -18,7 +18,7 @@ const seriesLabels: Record<(typeof EMAIL_SERIES)[number], string> = {
 };
 
 export default async function SuperAdminEmailPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { totals, stuckPending, stuckProcessing, daily, kinds } = await loadSuperAdminEmailView();
   return (
     <div className="flex flex-col gap-6">

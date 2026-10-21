@@ -38,8 +38,10 @@ FROM node:22-alpine AS ops-modules
 WORKDIR /opt/ops
 COPY --from=deps /app/node_modules/ioredis/package.json /tmp/ioredis-package.json
 COPY --from=deps /app/node_modules/@aws-sdk/client-s3/package.json /tmp/s3-package.json
+COPY --from=deps /app/node_modules/bcryptjs/package.json /tmp/bcryptjs-package.json
 RUN npm install --omit=dev --no-save --no-audit --no-fund \
       "ioredis@$(node -p "require('/tmp/ioredis-package.json').version")" \
+      "bcryptjs@$(node -p "require('/tmp/bcryptjs-package.json').version")" \
       "@aws-sdk/client-s3@$(node -p "require('/tmp/s3-package.json').version")" \
     && npm cache clean --force
 

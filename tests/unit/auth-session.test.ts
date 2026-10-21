@@ -9,6 +9,9 @@ vi.mock("next-auth", () => ({
 }));
 vi.mock("next-auth/providers/credentials", () => ({ default: (options: unknown) => options }));
 vi.mock("@/lib/authAdapter", () => ({ authAdapter: {} }));
+vi.mock("@/lib/loginSecurity", () => ({ recognisedDevice: async () => ({ id: "device_1" }), rememberDevice: async () => undefined, issueLoginCode: async () => undefined, consumeLoginCode: async () => true, justVerified: () => true }));
+vi.mock("@/lib/ipBlock", () => ({ isIpBlocked: async () => false, recordFailedLogin: async () => false }));
+vi.mock("@/lib/rateLimit", () => ({ getClientIpFromHeaders: () => "203.0.113.7" }));
 vi.mock("@/lib/db", () => ({ prisma: { user: { findUnique: mocks.find }, account: { findUnique: mocks.accountFind } } }));
 vi.mock("bcryptjs", () => ({ default: { compare: mocks.compare } }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: mocks.limit }));
