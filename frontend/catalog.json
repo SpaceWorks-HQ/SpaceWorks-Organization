@@ -56,6 +56,11 @@
       "id": "app__dashboard__layout:loadDashboardShell"
     },
     {
+      "module": "lib/views/app__dashboard__orgSlug__accounts__page",
+      "name": "loadAccountsView",
+      "id": "app__dashboard__orgSlug__accounts__page:loadAccountsView"
+    },
+    {
       "module": "lib/views/app__dashboard__orgSlug__application__page",
       "name": "loadOrgApplicationView",
       "id": "app__dashboard__orgSlug__application__page:loadOrgApplicationView"
@@ -333,6 +338,21 @@
       "id": "account:updateAccountPassword"
     },
     {
+      "module": "app/actions/accounts",
+      "name": "addLedgerEntry",
+      "id": "accounts:addLedgerEntry"
+    },
+    {
+      "module": "app/actions/accounts",
+      "name": "voidLedgerEntry",
+      "id": "accounts:voidLedgerEntry"
+    },
+    {
+      "module": "app/actions/accounts",
+      "name": "setOpeningBalance",
+      "id": "accounts:setOpeningBalance"
+    },
+    {
       "module": "app/actions/auth",
       "name": "signUpWithPassword",
       "id": "auth:signUpWithPassword"
@@ -578,6 +598,11 @@
       "id": "payment-settings:saveOfflinePaymentSettings"
     },
     {
+      "module": "app/actions/payment-settings",
+      "name": "saveRefundPolicy",
+      "id": "payment-settings:saveRefundPolicy"
+    },
+    {
       "module": "app/actions/payments",
       "name": "recordPayment",
       "id": "payments:recordPayment"
@@ -649,6 +674,16 @@
     },
     {
       "module": "app/actions/portal",
+      "name": "requestMembershipRefund",
+      "id": "portal:requestMembershipRefund"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawMembershipRefund",
+      "id": "portal:withdrawMembershipRefund"
+    },
+    {
+      "module": "app/actions/portal",
       "name": "updateMemberProfile",
       "id": "portal:updateMemberProfile"
     },
@@ -696,6 +731,16 @@
       "module": "app/actions/refunds",
       "name": "refundPayment",
       "id": "refunds:refundPayment"
+    },
+    {
+      "module": "app/actions/refunds",
+      "name": "approveRefund",
+      "id": "refunds:approveRefund"
+    },
+    {
+      "module": "app/actions/refunds",
+      "name": "declineRefund",
+      "id": "refunds:declineRefund"
     },
     {
       "module": "app/actions/report-digest",

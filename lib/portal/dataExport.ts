@@ -32,6 +32,7 @@ export async function loadMembershipExportSource(email: string) {
       },
       consents: { orderBy: { grantedAt: "asc" }, select: { purpose: true, noticeVersion: true, grantedAt: true, withdrawnAt: true, byGuardian: true } },
       erasureRequests: { orderBy: { createdAt: "asc" }, select: { status: true, createdAt: true, decidedAt: true } },
+      refundRequests: { orderBy: { createdAt: "asc" }, select: { status: true, reason: true, suggestedMinor: true, currency: true, createdAt: true, decidedAt: true, decisionNote: true } },
       payments: {
         orderBy: { createdAt: "asc" },
         take: 500,
@@ -89,6 +90,7 @@ export function buildMembershipExport(source: MembershipExportSource) {
       })),
       consents: member.consents.map((consent) => ({ purpose: consent.purpose, noticeVersion: consent.noticeVersion, grantedAt: consent.grantedAt.toISOString(), withdrawnAt: iso(consent.withdrawnAt), byGuardian: consent.byGuardian })),
       erasureRequests: member.erasureRequests.map((request) => ({ status: request.status, requestedAt: request.createdAt.toISOString(), decidedAt: iso(request.decidedAt) })),
+      refundRequests: member.refundRequests.map((request) => ({ status: request.status, reason: request.reason, offeredMinor: request.suggestedMinor, currency: request.currency, requestedAt: request.createdAt.toISOString(), decidedAt: iso(request.decidedAt), note: request.decisionNote })),
       payments: member.payments.map((payment) => ({
         plan: payment.term?.plan.name ?? null,
         status: payment.status,

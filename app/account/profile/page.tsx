@@ -1,6 +1,5 @@
 import { loadAccountProfileView } from "@/lib/views/app__account__profile__page";
 import type { Metadata } from "next";
-import { gravatarUrl } from "@/lib/gravatar";
 import { AccountProfileForm } from "@/components/account/AccountProfileForm";
 import { AccountEmailCard } from "@/components/account/AccountEmailCard";
 import { AccountAppearanceCard } from "@/components/account/AccountAppearanceCard";
@@ -16,7 +15,6 @@ export default async function AccountProfilePage() {
         email={user.email}
         image={user.image}
         profileImageUrl={user.profileImageUrl}
-        gravatarUrl={user.email ? gravatarUrl(user.email) : null}
       />
       <AccountEmailCard
         email={user.email}

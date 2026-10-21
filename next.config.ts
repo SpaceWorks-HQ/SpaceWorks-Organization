@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client", "sharp"],
   output: "standalone",
   poweredByHeader: false,
+  // AGENTS.md is a copy of CLAUDE.md (CI diffs them), so next dev must not append its own block.
+  agentRules: false,
   allowedDevOrigins,
   experimental: {
     ...(process.env.SWO_DISABLE_BUILD_CACHE === "1" ? { turbopackFileSystemCacheForBuild: false } : {}),

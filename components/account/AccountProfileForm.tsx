@@ -18,13 +18,11 @@ export function AccountProfileForm(props: {
   email: string | null;
   image: string | null;
   profileImageUrl: string | null;
-  gravatarUrl: string | null;
 }) {
   const {
     email,
     image,
     profileImageUrl: initialProfileImageUrl,
-    gravatarUrl,
   } = props;
   const router = useRouter();
   const [name, setName] = useState(props.initialName);
@@ -36,12 +34,12 @@ export function AccountProfileForm(props: {
   const [pending, startTransition] = useTransition();
   const { showToast } = useToast();
   const avatarSource =
-    profileImageUrl.trim() || image || gravatarUrl || undefined;
+    profileImageUrl.trim() || image || undefined;
   const avatarSourceDescription = profileImageUrl.trim()
     ? "Custom profile image."
     : image
       ? "Profile image from your sign-in provider."
-      : "Uses your Gravatar when available, otherwise your initials.";
+      : "Shows your initials until you add an image.";
 
   return (
     <form
@@ -94,7 +92,7 @@ export function AccountProfileForm(props: {
                 <p className="truncate text-[17px] font-bold text-ink">{name || "Your profile"}</p>
                 <div className="flex items-center gap-1">
                   <p className="text-caption text-ink-muted">{avatarSourceDescription}</p>
-                  <Tooltip content="Remove your uploaded image to use your provider image or Gravatar when available.">
+                  <Tooltip content="Remove your uploaded image to use your sign-in provider's image, or your initials.">
                     <IconButton label="Profile image source" size="sm" className="size-7 shrink-0 [&_svg]:size-4"><Info /></IconButton>
                   </Tooltip>
                 </div>

@@ -3,7 +3,7 @@ run-name: Release ${{ github.ref_name }}@${{ github.sha }}
 
 # Every commit that reaches main is a releasable build; dev is staging. VERSION
 # selects the release series shown to users; the run number and commit SHA keep
-# each image retry-safe, for example: 0.5.0-main.42.a1b2c3d4e5f6.
+# each image retry-safe, for example: 0.6.0-main.42.a1b2c3d4e5f6.
 #   main  publishes both images, a GitHub release, then promotes the images to
 #         latest, main and the series (0.1) and optionally deploys a server.
 #   dev   publishes both images tagged dev and <VERSION>-dev.<run>.<sha>; never
@@ -72,25 +72,34 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Preparing $version"
 
-  publish:
+  # Each platform builds on its own native runner (no emulation, which could stall for the whole
+  # job timeout), pushes by digest, and `publish` joins the two digests into one multi-platform
+  # image under every tag.
+  build:
     permissions:
       contents: read
       packages: write
     needs: prepare
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
+        target: [runner, frontend]
+        platform: [linux/amd64, linux/arm64]
         include:
           - target: runner
             image: spaceworks-organization-backend
           - target: frontend
             image: spaceworks-organization-frontend
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            arch: arm64
     steps:
       - uses: actions/checkout@v4
-
-      - uses: docker/setup-qemu-action@v3
 
       - uses: docker/setup-buildx-action@v3
 
@@ -112,34 +121,99 @@ jobs:
         id: meta
         with:
           images: ghcr.io/${{ needs.prepare.outputs.registry_owner }}/${{ matrix.image }}
-          tags: |
-            type=raw,value=${{ needs.prepare.outputs.version }}
-            type=raw,value=sha-${{ needs.prepare.outputs.short_sha }}
-            type=raw,value=dev,enable=${{ needs.prepare.outputs.channel == 'dev' }}
           labels: |
             org.opencontainers.image.licenses=AGPL-3.0-or-later
 
-      - name: Build and publish ${{ matrix.image }}
+      - name: Build ${{ matrix.image }} for ${{ matrix.platform }}
+        id: build
         uses: docker/build-push-action@v6
+        timeout-minutes: 30
         env:
           NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${{ env.BUILD_ACTIONS_KEY }}
         with:
           context: .
           file: ./Dockerfile
           target: ${{ matrix.target }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=ghcr.io/${{ needs.prepare.outputs.registry_owner }}/${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             NEXT_PUBLIC_BASE_URL=https://spaceworks-organization-origin.invalid
             NEXT_PUBLIC_BACKEND_ORIGIN=https://spaceworks-organization-backend.invalid
           secret-envs: |
             NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
           # The throwaway key changes every run; never reuse a cached build stage.
           no-cache-filters: builder,frontend-builder
+
+      - name: Record the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.image }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    permissions:
+      contents: read
+      packages: write
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [spaceworks-organization-backend, spaceworks-organization-frontend]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digest-${{ matrix.image }}-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ needs.prepare.outputs.registry_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=${{ needs.prepare.outputs.version }}
+            type=raw,value=sha-${{ needs.prepare.outputs.short_sha }}
+            type=raw,value=dev,enable=${{ needs.prepare.outputs.channel == 'dev' }}
+
+      - name: Publish ${{ matrix.image }} for amd64 and arm64 under every tag
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ghcr.io/${{ needs.prepare.outputs.registry_owner }}/${{ matrix.image }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          digests=(*)
+          if [ "${#digests[@]}" -ne 2 ]; then
+            echo "::error::Expected an amd64 and an arm64 digest, found ${#digests[@]}."
+            exit 1
+          fi
+          tags=()
+          while IFS= read -r tag; do tags+=(-t "$tag"); done < <(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          sources=()
+          for digest in "${digests[@]}"; do sources+=("$IMAGE@sha256:$digest"); done
+          docker buildx imagetools create "${tags[@]}" "${sources[@]}"
+          docker buildx imagetools inspect "$IMAGE:$VERSION"
 
   github-release:
     permissions:
@@ -155,7 +229,7 @@ jobs:
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          # Product name then version, e.g. "Space Works Organization 0.5.0". The immutable
+          # Product name then version, e.g. "Space Works Organization 0.6.0". The immutable
           # `tag_name` keeps its full `v<base>-main.<run>.<sha>` form: the title is what a
           # human reads on the releases page, the tag is what a deployment pins to.
           name: Space Works Organization ${{ needs.prepare.outputs.base }}
@@ -177,7 +251,8 @@ jobs:
 
   promote-latest:
     permissions:
-      contents: read
+      # write: marks the GitHub Release as latest (softprops/action-gh-release make_latest)
+      contents: write
       packages: write
     needs:
       - prepare

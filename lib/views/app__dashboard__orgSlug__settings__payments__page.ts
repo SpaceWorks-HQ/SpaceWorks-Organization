@@ -29,6 +29,7 @@ export async function loadPaymentSettingsView({ params }: { params: Promise<{ or
       webhookUrls: canEdit ? { RAZORPAY: `${origin}${webhookPath("RAZORPAY", settings.webhookPublicCode)}`, STRIPE: `${origin}${webhookPath("STRIPE", settings.webhookPublicCode)}` } : null,
     },
     offline: { upiVpa: settings.upiVpa ?? "", upiPayeeName: settings.upiPayeeName ?? "", offlineInstructions: settings.offlineInstructions },
+    refunds: { refundPolicy: settings.refundPolicy, refundWindowDays: settings.refundWindowDays, refundPolicyText: settings.refundPolicyText },
     tax: {
       mode: tax?.mode ?? "NONE",
       scheme: tax?.scheme ?? "REGULAR",

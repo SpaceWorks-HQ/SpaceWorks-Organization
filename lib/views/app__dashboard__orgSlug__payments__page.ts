@@ -13,6 +13,7 @@ function filterWhere(filter: PaymentFilter): Prisma.PaymentWhereInput {
     case "paid": return { status: { in: ["PAID", "WAIVED"] } };
     case "open": return { status: "PENDING" };
     case "refunds": return { refunds: { some: {} } };
+    case "requests": return { refundRequests: { some: { status: "OPEN" } } };
     case "failed": return { status: { in: ["FAILED", "CANCELLED"] } };
     default: return {};
   }
@@ -44,7 +45,7 @@ export async function loadPaymentsDirectory({ params, searchParams }: { params: 
       : {}),
   };
   const where: Prisma.PaymentWhereInput = { AND: [base, filterWhere(filter)] };
-  const [org, counts, total, payments, settings] = await Promise.all([
+  const [org, counts, total, payments, settings, stuckRefunds] = await Promise.all([
     prisma.organisation.findUniqueOrThrow({ where: { id: organisation.id }, select: { name: true, slug: true, logoUrl: true, status: true, locale: true, timezone: true, offlineConfirmationRequired: true } }),
     Promise.all(PAYMENT_FILTERS.map((key) => prisma.payment.count({ where: { AND: [base, filterWhere(key)] } }))),
     prisma.payment.count({ where }),
@@ -62,6 +63,7 @@ export async function loadPaymentsDirectory({ params, searchParams }: { params: 
       },
     }),
     prisma.orgPaymentSettings.findUnique({ where: { organisationId: organisation.id }, select: { provider: true, testMode: true } }),
+    prisma.refund.count({ where: { organisationId: organisation.id, status: "PENDING", createdAt: { lt: new Date(Date.now() - 86_400_000) }, payment: { member: memberWhere(scope) } } }),
   ]);
   return {
     org,
@@ -73,6 +75,7 @@ export async function loadPaymentsDirectory({ params, searchParams }: { params: 
     counts: Object.fromEntries(PAYMENT_FILTERS.map((key, index) => [key, counts[index]])) as Record<PaymentFilter, number>,
     payments,
     gateway: settings && settings.provider !== "NONE" ? settings : null,
+    stuckRefunds,
     canManage: can(membership.role, "payments.manage"),
     canConfigure: can(membership.role, "payments.settings"),
     userId: membership.userId,

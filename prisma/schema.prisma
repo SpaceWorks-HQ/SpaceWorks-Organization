@@ -256,6 +256,9 @@ model Organisation {
   page          OrganisationPage?
   erasureRequests ErasureRequest[]
   dailyStats    OrgDailyStats[]
+  ledgerEntries LedgerEntry[]
+  openingBalances OpeningBalance[]
+  refundRequests RefundRequest[]
   statsDirtyDays OrgStatsDirtyDay[]
 
   @@index([status, createdAt])
@@ -580,6 +583,7 @@ model Member {
   roles        MemberRoleAssignment[]
   consents     ConsentRecord[]
   payments     Payment[]
+  refundRequests RefundRequest[]
   cards        MemberCard[]
   erasureRequests ErasureRequest[]
 
@@ -638,6 +642,7 @@ model MembershipTerm {
   events       TermStatusEvent[]
   reminders    ReminderLog[]
   payments     Payment[]
+  refundRequests RefundRequest[]
 
   @@unique([organisationId, id])
   @@index([organisationId, status, endsAt])
@@ -758,6 +763,19 @@ enum RefundStatus {
   FAILED
 }
 
+enum RefundPolicy {
+  NONE
+  FULL
+  PRO_RATA
+}
+
+enum RefundRequestStatus {
+  OPEN
+  APPROVED
+  DECLINED
+  WITHDRAWN
+}
+
 enum TaxMode {
   GST
   SIMPLE
@@ -797,6 +815,10 @@ model OrgPaymentSettings {
   upiVpa                 String?
   upiPayeeName           String?
   offlineInstructions    String          @default("")
+  /// What members may get back when they cancel: nothing, everything, or the unused share of the fee.
+  refundPolicy           RefundPolicy    @default(NONE)
+  refundWindowDays       Int             @default(14)
+  refundPolicyText       String          @default("")
   updatedAt              DateTime        @updatedAt
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
@@ -866,6 +888,7 @@ model Payment {
   lines        PaymentLine[]
   refunds      Refund[]
   documents    TaxDocument[]
+  refundRequests RefundRequest[]
 
   @@unique([organisationId, id])
   @@unique([provider, gatewayOrderId])
@@ -918,6 +941,9 @@ model Refund {
   failureReason   String?
   createdAt       DateTime     @default(now())
   processedAt     DateTime?
+  /// When the scheduler last asked the gateway about this pending refund.
+  lastCheckedAt   DateTime?
+  request         RefundRequest?
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
   payment      Payment      @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
@@ -1158,4 +1184,86 @@ model OrgStatsDirtyDay {
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@id([organisationId, day])
+}
+
+// ── Accounts: the organisation's own receipts and payments (owner, 2026-10-20) ──
+
+enum LedgerDirection {
+  RECEIPT
+  PAYMENT
+}
+
+/// Money in or out that isn't a member's payment: donations, grants, rent, equipment, GST paid and so on.
+/// Membership fees and refunds come from the payments tables. Entries are never deleted; a mistake is voided.
+model LedgerEntry {
+  id             String          @id @default(cuid())
+  organisationId String
+  direction      LedgerDirection
+  /// The day the money moved, as a calendar date in the organisation's timezone (stored at UTC midnight).
+  occurredOn     DateTime        @db.Date
+  category       String
+  /// Who paid it (receipts) or who was paid (payments).
+  party          String          @default("")
+  description    String          @default("")
+  currency       String
+  amountMinor    Int
+  /// cash, bank_transfer, upi, cheque, card or other: cash moves the cash balance, everything else the bank.
+  method         String
+  reference      String?
+  recordedById   String?
+  voidedAt       DateTime?
+  voidedById     String?
+  voidReason     String?
+  createdAt      DateTime        @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+
+  @@unique([organisationId, id])
+  @@index([organisationId, occurredOn])
+}
+
+/// Cash in hand and at the bank at the start of a financial year, per currency, as the accounts carried forward.
+model OpeningBalance {
+  organisationId String
+  financialYear  String
+  currency       String
+  cashMinor      Int      @default(0)
+  bankMinor      Int      @default(0)
+  updatedById    String?
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([organisationId, financialYear, currency])
+}
+
+/// A member asking for their money back, which also asks to end the membership. A manager approves (refund
+/// plus cancellation) or declines; the member may withdraw while it is open. One open request per payment.
+model RefundRequest {
+  id                String              @id @default(cuid())
+  organisationId    String
+  paymentId         String
+  termId            String
+  memberId          String
+  requestedByUserId String?
+  reason            String
+  status            RefundRequestStatus @default(OPEN)
+  /// What the policy offered when the member asked; the manager may approve another amount.
+  suggestedMinor    Int
+  currency          String
+  decidedById       String?
+  decidedAt         DateTime?
+  decisionNote      String?
+  refundId          String?             @unique
+  createdAt         DateTime            @default(now())
+
+  organisation Organisation   @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  payment      Payment        @relation(fields: [organisationId, paymentId], references: [organisationId, id], onDelete: Restrict)
+  term         MembershipTerm @relation(fields: [organisationId, termId], references: [organisationId, id], onDelete: Restrict)
+  member       Member         @relation(fields: [organisationId, memberId], references: [organisationId, id], onDelete: Restrict)
+  refund       Refund?        @relation(fields: [refundId], references: [id], onDelete: Restrict)
+
+  @@unique([organisationId, id])
+  @@index([organisationId, status, createdAt])
+  @@index([paymentId])
 }

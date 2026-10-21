@@ -11,7 +11,7 @@ them, or reviews the ones that sign up. There are **no events** in this product.
 
 - **Rebuild in progress:** the phased plan is in `docs/plans/2026-10-19-membership-rebuild.md`. Follow it phase
   by phase. Commit each phase once its gates pass.
-- **Legacy app:** the old Express + Vite + Supabase app ("Aarannu") lives only in git history, at commit
+- **Legacy app:** the old Express + Vite + Supabase app lives only in git history, at commit
   `1194cb4` and earlier.
 
 ## Stack
@@ -47,7 +47,7 @@ npm run lint           # ESLint (next core-web-vitals + typescript)
 npm run typecheck      # next typegen + tsc --noEmit
 npm run test:unit      # Vitest unit tests (tests/unit)
 npm run test:integration   # needs TEST_DATABASE_URL pointing at a disposable Postgres
-npm run test:e2e       # Playwright
+npm run test:e2e       # Playwright (tests/e2e); signed-in journeys need db:seed-demo, db:seed-reports and DEMO_PASSWORD
 npm run build          # production build (standalone output)
 npm run db:migrate     # create/apply a migration in development
 npm run db:deploy      # apply migrations
@@ -84,6 +84,11 @@ npx vitest run tests/unit/health.test.ts
   - Payments live in `lib/payments/*` (see `docs/PAYMENTS.md` and `docs/GST.md`). Settle money only through
     `settlePayment` (lock order payment → term → counter); triggers in migration 0005 enforce immutability.
     Gateway secrets need `PAYMENT_SECRETS_KEY`.
+  - Refunds go through `createRefund` then `sendRefundToGateway` (`lib/payments/refundGateway.ts`). Member refund
+    requests, the policy and approve/decline live in `lib/payments/refundRequests.ts` and `refundPolicy.ts`;
+    `reconcileGatewayRefunds` follows up pending gateway refunds from the scheduler.
+  - Other receipts and expenses are `LedgerEntry` rows (`app/actions/accounts.ts`), voided once and never
+    deleted (trigger in migration 0009). The receipts and payments account is pure in `lib/accounts/statement.ts`.
 - **Member cards** (`lib/cards/*`):
   - One live card per member and plan. The verify token (in the QR) is 32 random bytes; reissuing revokes the old card. Renewals keep the card, because `/verify` reads `deriveStatus` live.
   - A card is issued from `activateTerm` on first activation; managers issue, reissue, revoke and email it from the member page.

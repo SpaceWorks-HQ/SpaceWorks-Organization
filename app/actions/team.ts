@@ -172,7 +172,7 @@ export async function deleteOrganisation(input: unknown): Promise<ActionResult> 
   }
 
   // Money records are kept for audit (8 years); an organisation that has taken payments is archived instead.
-  if (await prisma.payment.count({ where: { organisationId: org.id, status: { in: ["PAID", "WAIVED"] } } })) {
+  if ((await prisma.payment.count({ where: { organisationId: org.id, status: { in: ["PAID", "WAIVED"] } } })) || (await prisma.ledgerEntry.count({ where: { organisationId: org.id } }))) {
     return { ok: false, error: "This organisation has taken payments, so its records must be kept. Ask a platform admin to archive it instead." };
   }
 

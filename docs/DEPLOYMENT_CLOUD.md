@@ -34,7 +34,7 @@ git clone https://github.com/SpaceWorks-HQ/SpaceWorks-Organization.git /opt/spac
 cd /opt/spaceworks-organization
 sudo install -D -m 600 .env.production.example /etc/spaceworks-organization/cloud.env
 sudoedit /etc/spaceworks-organization/cloud.env      # fill every value; see docs/CONFIGURATION.md
-export SWO_IMAGE_TAG=0.5.0-main.42.a1b2c3d4e5f6     # a published release, or latest
+export SWO_IMAGE_TAG=0.6.0-main.42.a1b2c3d4e5f6     # a published release, or latest
 scripts/spaceworks-compose.sh cloud pull
 scripts/spaceworks-compose.sh cloud up -d --wait
 scripts/spaceworks-compose.sh cloud run --rm ops     # TLS, migrations, Redis, bucket, readiness

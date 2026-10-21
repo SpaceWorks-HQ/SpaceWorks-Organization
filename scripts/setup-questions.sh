@@ -53,7 +53,10 @@ ask_setup_questions() {
   echo 'Outgoing email needs an authenticated SMTP relay on a verified sending domain (Brevo, Amazon SES, Postmark...).'
   local mail_host="${SITE_ORIGIN#https://}"
   mail_host="${mail_host:-$WEBHOST}"
-  question EMAIL_FROM 'Sender, as Name <address@your-domain>' "Space Works Organization <noreply@$mail_host>" sender || return 1
+  # Only a real domain makes a usable default sender; localhost or an IP leaves it to the operator.
+  local sender_default=''
+  [[ "$mail_host" != *.* || "$mail_host" =~ ^[0-9.]+$ ]] || sender_default="Space Works Organization <noreply@$mail_host>"
+  question EMAIL_FROM 'Sender, as Name <address@your-domain>' "$sender_default" sender || return 1
   question SMTP_HOST 'SMTP host' smtp-relay.brevo.com domain || return 1
   question SMTP_PORT 'SMTP port (implicit TLS: 465)' 587 port || return 1
   question SMTP_USER 'SMTP login' '' text || return 1

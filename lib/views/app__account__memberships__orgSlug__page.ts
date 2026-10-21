@@ -5,6 +5,7 @@ import { statusAt } from "@/lib/membership/lifecycle";
 import { findOwnMember } from "@/lib/portal/member";
 import { unpaidLiveTerms, walletState } from "@/lib/portal/walletStatus";
 import { termTotalMinor } from "@/lib/payments/tax";
+import { memberRefundState } from "@/lib/payments/refundRequests";
 
 /**
  * One organisation's membership, seen by the member: each plan's standing and history (terms and their
@@ -46,6 +47,7 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
     select: { key: true, label: true, helpText: true, type: true, required: true, options: true },
   })).filter((field, index, all) => all.findIndex((other) => other.key === field.key) === index);
 
+  const refunds = new Map(await Promise.all(planIds.map(async (planId) => [planId, await memberRefundState(prisma, org.id, member.id, terms.filter((term) => term.planId === planId), now)] as const)));
   const memberships = planIds.map((planId) => {
     const chain = terms.filter((term) => term.planId === planId);
     const plan = chain[0].plan;
@@ -56,6 +58,7 @@ export async function loadMembershipDetailView({ params }: { params: Promise<{ o
       plan: { id: plan.id, name: plan.name, slug: plan.slug },
       state,
       due: unpaid ? { minor: termTotalMinor(unpaid, taxSettings, unpaid.currency, member.stateCode), currency: unpaid.currency } : null,
+      refund: refunds.get(planId) ?? null,
       terms: [...chain].reverse().map((term) => ({
         id: term.id, kind: term.kind, status: statusAt(term, now, successors.has(term.id)), startsAt: term.startsAt, endsAt: term.endsAt,
         createdAt: term.createdAt, currency: term.currency, amountMinor: term.priceMinor + term.joiningFeeMinor, reason: term.reason,

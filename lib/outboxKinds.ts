@@ -9,6 +9,7 @@ import { asPaymentNoticePayload, deliverPaymentNotice } from "@/lib/email/paymen
 import { asReportDigestPayload, deliverReportDigest } from "@/lib/email/reportDigest";
 import { asMemberCardPayload, deliverMemberCard } from "@/lib/email/memberCard";
 import { asErasurePayload, deliverErasureNotice } from "@/lib/email/erasure";
+import { asRefundPayload, deliverRefundNotice } from "@/lib/email/refunds";
 
 /** What a handler reports after a delivery attempt. Throw to retry; throw PermanentOutboxError to give up. */
 export type DeliveryOutcome = "sent" | "dropped";
@@ -167,6 +168,15 @@ const erasureNotice: OutboxKindHandler = {
   },
 };
 
+const refundNotice: OutboxKindHandler = {
+  capability: false,
+  async deliver(value, messageId) {
+    const payload = asRefundPayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverRefundNotice(payload, messageId);
+  },
+};
+
 const reportDigest: OutboxKindHandler = {
   capability: false,
   async deliver(value, messageId) {
@@ -190,6 +200,7 @@ export const OUTBOX_KINDS = {
   "report-digest": reportDigest,
   "member-card": memberCard,
   "erasure-notice": erasureNotice,
+  "refund-notice": refundNotice,
 } satisfies Record<string, OutboxKindHandler>;
 
 export type OutboxKind = keyof typeof OUTBOX_KINDS;

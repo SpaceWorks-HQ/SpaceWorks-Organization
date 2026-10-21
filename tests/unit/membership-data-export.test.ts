@@ -20,6 +20,7 @@ const source = [{
   }],
   consents: [{ purpose: "membership", noticeVersion: "2026-10", grantedAt: new Date("2026-04-02T06:00:00Z"), withdrawnAt: null, byGuardian: false }],
   erasureRequests: [],
+  refundRequests: [],
   payments: [],
   hiddenKeys: ["interview_score"],
 }] as unknown as MembershipExportSource;

@@ -15,6 +15,8 @@ import { memberProfileSchema, validateFieldValues } from "@/lib/membership/valid
 import { findOwnMember, type OwnMember } from "@/lib/portal/member";
 import { walletState } from "@/lib/portal/walletStatus";
 import { requestErasure, withdrawErasure } from "@/lib/portal/erasure";
+import { PaymentError, ORG_FOR_PAYMENTS } from "@/lib/payments/charges";
+import { requestRefund, withdrawRefundRequest } from "@/lib/payments/refundRequests";
 import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
 
@@ -43,7 +45,7 @@ function refresh(member: OwnMember) {
 }
 
 function failure(error: unknown): { ok: false; error: string } {
-  if (error instanceof MembershipError) return { ok: false, error: error.message };
+  if (error instanceof MembershipError || error instanceof PaymentError) return { ok: false, error: error.message };
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { ok: false, error: "You already have an open renewal on this plan." };
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2004") return { ok: false, error: "That would overlap a membership you already have." };
   throw error;
@@ -115,6 +117,47 @@ export async function leaveMembership(input: unknown): Promise<ActionResult> {
       await enqueueOutbox(tx, "membership-notice", { termId: ending.at(-1)!.id, organisationId: member.organisationId, notice: "left" });
     });
     refresh(member);
+    return { ok: true };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+const refundRequestSchema = z.object({ organisationSlug: slug, termId: id, reason: z.string().trim().min(3, "Tell the organisation why").max(500) });
+
+/** Ask to cancel a paid membership and get money back under the organisation's refund policy. */
+export async function requestMembershipRefund(input: unknown): Promise<ActionResult> {
+  const parsed = refundRequestSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid request." };
+  const ctx = await own(parsed.data.organisationSlug);
+  if (!ctx.ok) return ctx;
+  const { member } = ctx;
+  try {
+    const org = await prisma.organisation.findUniqueOrThrow({ where: { id: member.organisationId }, select: ORG_FOR_PAYMENTS });
+    await prisma.$transaction((tx) => requestRefund(tx, { org, memberId: member.id, termId: parsed.data.termId, reason: parsed.data.reason, userId: ctx.userId }));
+    refresh(member);
+    revalidatePath(`/dashboard/${member.organisation.slug}/payments`);
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { ok: false, error: "You've already asked for a refund on this membership." };
+    return failure(error);
+  }
+}
+
+const requestIdSchema = z.object({ organisationSlug: slug, requestId: id });
+
+/** Call off an open refund request; the membership carries on. */
+export async function withdrawMembershipRefund(input: unknown): Promise<ActionResult> {
+  const parsed = requestIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid request." };
+  const ctx = await own(parsed.data.organisationSlug);
+  if (!ctx.ok) return ctx;
+  const { member } = ctx;
+  try {
+    const org = await prisma.organisation.findUniqueOrThrow({ where: { id: member.organisationId }, select: ORG_FOR_PAYMENTS });
+    await prisma.$transaction((tx) => withdrawRefundRequest(tx, { org, memberId: member.id, requestId: parsed.data.requestId, userId: ctx.userId }));
+    refresh(member);
+    revalidatePath(`/dashboard/${member.organisation.slug}/payments`);
     return { ok: true };
   } catch (error) {
     return failure(error);

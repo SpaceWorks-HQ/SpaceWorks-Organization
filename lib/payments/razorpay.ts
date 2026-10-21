@@ -17,6 +17,11 @@ function entity(body: Record<string, unknown>, name: string): Record<string, unk
 }
 
 /** Razorpay Orders API with Checkout.js on the pay page. Webhooks are signed with the webhook secret. */
+function razorpayRefund(refund: Record<string, unknown>) {
+  const status = refund.status === "processed" ? "processed" as const : refund.status === "failed" ? "failed" as const : "pending" as const;
+  return { gatewayRefundId: str(refund.id) ?? "", status };
+}
+
 export const razorpay: PaymentGateway = {
   async createCheckout(credentials, request) {
     const order = await gatewayRequest(`${API}/orders`, {
@@ -95,8 +100,16 @@ export const razorpay: PaymentGateway = {
       auth: auth(credentials.keyId, credentials.secret),
       body: JSON.stringify({ amount: args.amountMinor, notes: { refundId: args.refundId } }),
     });
-    const status = refund.status === "processed" ? "processed" : refund.status === "failed" ? "failed" : "pending";
-    return { gatewayRefundId: str(refund.id) ?? "", status };
+    return razorpayRefund(refund);
+  },
+
+  async fetchRefund(credentials, args) {
+    const key = auth(credentials.keyId, credentials.secret);
+    if (args.gatewayRefundId) return razorpayRefund(await gatewayRequest(`${API}/refunds/${encodeURIComponent(args.gatewayRefundId)}`, { method: "GET", auth: key }));
+    const list = await gatewayRequest(`${API}/payments/${encodeURIComponent(args.gatewayPaymentId)}/refunds?count=100`, { method: "GET", auth: key });
+    const items = Array.isArray(list.items) ? (list.items as Array<Record<string, unknown>>) : [];
+    const match = items.find((item) => ((item.notes ?? {}) as Record<string, unknown>).refundId === args.refundId);
+    return match ? razorpayRefund(match) : null;
   },
 
   async testConnection(credentials) {
