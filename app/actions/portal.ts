@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { recordAuditEvent } from "@/lib/audit";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { canTransition, PENDING_STATUSES, statusAt } from "@/lib/membership/lifecycle";
 import { decideTerm, MembershipError, startRenewal } from "@/lib/membership/service";
 import { memberProfileSchema, validateFieldValues } from "@/lib/membership/validators";
@@ -115,6 +116,7 @@ export async function leaveMembership(input: unknown): Promise<ActionResult> {
       for (const term of ending) await decideTerm(tx, { org: member.organisation, termId: term.id, action: "withdraw", actorUserId: ctx.userId, reason: "Left from their account", now });
       await recordAuditEvent({ action: "MEMBER_LEFT", actorUserId: ctx.userId, organisationId: member.organisationId, targetType: "Member", targetId: member.id, client: tx });
       await enqueueOutbox(tx, "membership-notice", { termId: ending.at(-1)!.id, organisationId: member.organisationId, notice: "left" });
+      await queueChatAlerts(tx, member.organisationId, "member-left", { termId: ending.at(-1)!.id });
     });
     refresh(member);
     return { ok: true };

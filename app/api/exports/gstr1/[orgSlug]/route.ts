@@ -4,6 +4,7 @@ import { recordAuditEvent } from "@/lib/audit";
 import { checkRateLimitById } from "@/lib/rateLimit";
 import { localDate } from "@/lib/membership/periods";
 import { can, organisationAllows } from "@/lib/permissionRoles";
+import { hasAuthenticator, STAFF_AUTHENTICATOR_MESSAGE } from "@/lib/permissions";
 import { buildReportContext } from "@/lib/reports/context";
 import { periodBuckets } from "@/lib/reports/period";
 import { loadRefunds, loadTaxDocuments } from "@/lib/reports/finance/source";
@@ -29,6 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orgS
   const org = await prisma.organisation.findUnique({ where: { slug: orgSlug }, select: { id: true, slug: true, status: true } });
   const membership = org ? await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: org.id } } }) : null;
   if (!org || !membership) return refuse(404, "Not found.");
+  if (!(await hasAuthenticator(userId))) return refuse(403, STAFF_AUTHENTICATOR_MESSAGE);
   if (!organisationAllows(org.status, "reports.finance") || !can(membership.role, "reports.finance") || membership.unitId) return refuse(403, "Only organisation-wide finance roles can download GSTR-1.");
   if (!(await checkRateLimitById("reportExport", `user:${userId}`))) return refuse(429, "Too many exports. Try again later.");
   const tax = await prisma.orgTaxSettings.findUnique({ where: { organisationId: org.id }, select: { mode: true, gstin: true, stateCode: true } });

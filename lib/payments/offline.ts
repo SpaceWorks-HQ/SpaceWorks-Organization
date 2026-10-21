@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { markTermPaid } from "@/lib/membership/service";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
 import { createTermPayment, lockPayment, lockTermForPayment, PaymentError, payable, type OrgForPayments } from "./charges";
@@ -33,18 +34,22 @@ export async function recordOfflinePayment(tx: Tx, args: { org: OrgForPayments; 
     now,
   });
   await recordAuditEvent({ action: "PAYMENT_RECORDED", actorUserId: args.actorUserId, organisationId: args.org.id, targetType: "Payment", targetId: payment.id, metadata: { method: args.method }, client: tx });
-  if (args.org.offlineConfirmationRequired) return { payment, settled: false };
+  if (args.org.offlineConfirmationRequired) {
+    await queueChatAlerts(tx, args.org.id, "payment-to-confirm", { paymentId: payment.id });
+    return { payment, settled: false };
+  }
   const { payment: settled } = await settlePayment(tx, { org: args.org, paymentId: payment.id, confirmedById: args.actorUserId, now });
   return { payment: settled, settled: true };
 }
 
 /** A member says they've paid by UPI or bank transfer. The reference must be new to this organisation. */
-export async function claimOfflinePayment(tx: Tx, args: { org: OrgForPayments; termId: string; method: "upi" | "bank_transfer"; utr: string; userId: string; now?: Date }) {
+export async function claimOfflinePayment(tx: Tx, args: { org: OrgForPayments; termId: string; method: "upi" | "bank_transfer"; utr: string; userId: string | null; now?: Date }) {
   const utr = args.utr.trim().toUpperCase();
   const clash = await tx.payment.findFirst({ where: { organisationId: args.org.id, provider: "OFFLINE", utr, status: { notIn: ["CANCELLED", "FAILED"] } }, select: { id: true } });
   if (clash) throw new PaymentError("That reference has already been submitted.");
   const payment = await createTermPayment(tx, { org: args.org, termId: args.termId, provider: "OFFLINE", status: "AWAITING_CONFIRMATION", method: args.method, utr, recordedById: args.userId, note: "Submitted by the member.", now: args.now });
   await enqueueOutbox(tx, "payment-notice", { organisationId: args.org.id, paymentId: payment.id, notice: "claim-received" });
+  await queueChatAlerts(tx, args.org.id, "payment-to-confirm", { paymentId: payment.id });
   return payment;
 }
 

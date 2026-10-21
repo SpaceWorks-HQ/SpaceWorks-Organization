@@ -1,15 +1,17 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { TeamRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { DAY_MS, SECURITY_AUDIT_ACTIONS } from "@/lib/superAdminInsights";
 import { auditRowSelect } from "@/components/super-admin/AuditTable";
+import { listBlockedIps } from "@/lib/ipBlock";
 const ACTION_WINDOW_DAYS = 7;
 
 export async function loadSuperAdminSecurityView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const now = new Date();
   const actionSince = new Date(now.getTime() - ACTION_WINDOW_DAYS * DAY_MS);
-  const managerWhere = { teamMembers: { some: { role: { in: [TeamRole.OWNER, TeamRole.ADMIN] } } } };
+  // Every staff role needs an authenticator before the dashboard opens.
+  const managerWhere = { teamMembers: { some: { role: { in: [TeamRole.OWNER, TeamRole.ADMIN, TeamRole.TREASURER, TeamRole.VIEWER] } } } };
   const [
     users,
     mfaUsers,
@@ -22,6 +24,7 @@ export async function loadSuperAdminSecurityView() {
     actionCounts,
     recentSecurityEvents,
     platformAdmins,
+    blockedAddresses,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { mfaEnabledAt: { not: null } } }),
@@ -48,7 +51,8 @@ export async function loadSuperAdminSecurityView() {
       take: 50,
       select: { id: true, name: true, email: true, mfaEnabledAt: true, emailVerified: true },
     }),
+    listBlockedIps().catch(() => []),
   ]);
   const sortedActions = [...actionCounts].sort((a, b) => b._count._all - a._count._all);
-  return { mfaUsers, users, managersWithoutMfa, managers, unverifiedUsers, passwordUsers, providerGroups, activeSessions, sortedActions, recentSecurityEvents, platformAdmins };
+  return { mfaUsers, users, managersWithoutMfa, managers, unverifiedUsers, passwordUsers, providerGroups, activeSessions, sortedActions, recentSecurityEvents, platformAdmins, blockedAddresses };
 }

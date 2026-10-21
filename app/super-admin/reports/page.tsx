@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminReportsView } from "@/lib/views/app__super-admin__reports__page";
 import { formatBytes } from "@/lib/superAdminInsights";
 import { formatHours, formatValue } from "@/lib/reports/chartScale";
@@ -21,7 +21,7 @@ const JOB_LABELS: Record<string, string> = { "outbox-scheduler": "Email and memb
 const when = (date: Date | null) => (date ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(date)) : "Never");
 
 export default async function SuperAdminReportsPage({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const view = await loadSuperAdminReportsView({ searchParams });
   const { pipeline, tenants, health } = view;
   const latest = tenants.series.at(-1);

@@ -51,6 +51,7 @@ model User {
 
   accounts          Account[]
   sessions          Session[]
+  knownDevices      KnownDevice[]
   teamMembers       TeamMember[]
   teamInvitesCreated TeamInvite[] @relation("TeamInviteCreatedBy")
   teamInvitesUsed    TeamInvite[] @relation("TeamInviteUsedBy")
@@ -207,6 +208,9 @@ model Organisation {
   /// Free-text kind, e.g. "Club", "Association", "Student society".
   kind        String             @default("")
   contactEmail String?
+  /// Members can sign in to their own portal (memberships, payments, profile). Off: the organisation just keeps
+  /// records; "Pay now" emails carry a secure pay link instead, and /verify still checks cards.
+  memberPortal Boolean            @default(true)
   contactPhone String?
   addressLine String?
   city        String?
@@ -259,6 +263,8 @@ model Organisation {
   ledgerEntries LedgerEntry[]
   openingBalances OpeningBalance[]
   refundRequests RefundRequest[]
+  emailSettings  OrgEmailSettings?
+  chatChannels   ChatChannel[]
   statsDirtyDays OrgStatsDirtyDay[]
 
   @@index([status, createdAt])
@@ -1266,4 +1272,73 @@ model RefundRequest {
   @@unique([organisationId, id])
   @@index([organisationId, status, createdAt])
   @@index([paymentId])
+}
+
+/// An organisation's own outgoing email for member emails. Without it (or while disabled) member emails go
+/// through the platform's SMTP, sent as the organisation's name with replies to its contact email. Account
+/// emails (password reset, verification) always use the platform's.
+model OrgEmailSettings {
+  organisationId        String    @id
+  enabled               Boolean   @default(false)
+  fromName              String    @default("")
+  fromAddress           String?
+  replyTo               String?
+  smtpHost              String?
+  smtpPort              Int       @default(587)
+  /// Implicit TLS (port 465); otherwise STARTTLS is required in production.
+  smtpSecure            Boolean   @default(false)
+  smtpUser              String?
+  smtpPasswordEncrypted String?
+  verifiedAt            DateTime?
+  updatedAt             DateTime  @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+enum ChatChannelKind {
+  SLACK
+  DISCORD
+  MATTERMOST
+  TELEGRAM
+  WHATSAPP
+}
+
+/// A chat destination for team alerts. Webhook URLs, bot tokens and WhatsApp credentials live encrypted in
+/// `configEncrypted`; `target` is a safe, non-secret description for the settings page.
+model ChatChannel {
+  id              String          @id @default(cuid())
+  organisationId  String
+  kind            ChatChannelKind
+  name            String
+  configEncrypted String
+  target          String          @default("")
+  events          String[]
+  includeNames    Boolean         @default(false)
+  enabled         Boolean         @default(true)
+  lastDeliveredAt DateTime?
+  lastError       String?
+  failures        Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, id])
+  @@index([organisationId])
+}
+
+/// A browser that has signed in to an account before, recognised by a long-lived cookie stored only as a hash.
+/// A sign-in from anywhere else needs an emailed code (accounts without an authenticator) and sends an alert.
+model KnownDevice {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  label       String   @default("")
+  lastIp      String?
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lastSeenAt])
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { OutboxStatus } from "@prisma/client";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { prisma } from "@/lib/db";
 import { deliverOutboxBatch } from "@/lib/outbox";
@@ -9,7 +9,7 @@ import { recordAuditEvent } from "@/lib/audit";
 import type { ActionResult } from "./org";
 
 export async function deliverInstanceOutbox(): Promise<ActionResult<{ sent: number; failed: number }>> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const result = await deliverOutboxBatch(50);
   await recordAuditEvent({
@@ -21,7 +21,7 @@ export async function deliverInstanceOutbox(): Promise<ActionResult<{ sent: numb
 }
 
 export async function purgeExpiredVerificationTokens(): Promise<ActionResult<{ deleted: number }>> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const result = await prisma.verificationToken.deleteMany({ where: { expires: { lt: new Date() } } });
   await recordAuditEvent({
@@ -33,7 +33,7 @@ export async function purgeExpiredVerificationTokens(): Promise<ActionResult<{ d
 }
 
 export async function retryFailedOutboxMessages(): Promise<ActionResult<{ retried: number }>> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const result = await prisma.outboxMessage.updateMany({
     where: { status: OutboxStatus.FAILED },
@@ -48,7 +48,7 @@ export async function retryFailedOutboxMessages(): Promise<ActionResult<{ retrie
 }
 
 export async function recordBackupRestoreVerification(): Promise<ActionResult> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   await recordAuditEvent({
     action: "BACKUP_RESTORE_VERIFIED",

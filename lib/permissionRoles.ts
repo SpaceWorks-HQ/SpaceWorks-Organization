@@ -81,3 +81,7 @@ export const ROLE_DESCRIPTIONS: Record<TeamRole, string> = {
 export function roleLabel(role: TeamRole) {
   return ROLE_LABELS[role];
 }
+
+/** Staff (anyone on an organisation's team) must use an authenticator app; members and super admins need not. */
+export const STAFF_AUTHENTICATOR_SETUP = "/account/security?authenticator=required";
+export const STAFF_AUTHENTICATOR_MESSAGE = "Your role in this organisation needs an authenticator app. Set one up under Account, Security, then try again.";

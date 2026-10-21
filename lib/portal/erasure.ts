@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { uploadKeyFromUrl } from "@/lib/uploadUrl";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
 import { decideTerm, MembershipError } from "@/lib/membership/service";
@@ -81,6 +82,7 @@ export async function requestErasure(tx: Tx, args: { organisationId: string; mem
   const request = await tx.erasureRequest.create({ data: { organisationId: args.organisationId, memberId: args.memberId, requestedByUserId: args.userId, reason: args.reason } });
   await recordAuditEvent({ action: "ERASURE_REQUESTED", actorUserId: args.userId, organisationId: args.organisationId, targetType: "ErasureRequest", targetId: request.id, client: tx });
   await enqueueOutbox(tx, "erasure-notice", { requestId: request.id, organisationId: args.organisationId, event: "requested" });
+  await queueChatAlerts(tx, args.organisationId, "erasure-requested", { requestId: request.id });
   return request;
 }
 

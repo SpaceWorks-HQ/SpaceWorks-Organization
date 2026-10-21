@@ -1,8 +1,8 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 
 export async function loadSuperAdminStorageView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   let dbSizeBytes: number | null = null;
   let tableSizes:
     | Array<{ table_name: string; total_bytes: number; total_pretty: string; }>

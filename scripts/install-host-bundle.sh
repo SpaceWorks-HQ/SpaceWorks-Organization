@@ -7,7 +7,7 @@ HOST_BUNDLE_FILES=(
   docker/compose.build.yml docker/compose.tls.yml docker/compose.proxy.yml docker/compose.external-storage.yml
   deploy/Caddyfile deploy/backup.sh deploy/certificates.sh deploy/createbuckets.sh deploy/init-database.sh
   deploy/pg_hba.conf deploy/postgres-start.sh deploy/redis-start.sh deploy/storage-policy.json
-  scripts/backup.sh scripts/install-host-bundle.sh scripts/install-owner.sh scripts/install-runner.sh
+  scripts/admin.sh scripts/backup.sh scripts/install-host-bundle.sh scripts/install-owner.sh scripts/install-runner.sh
   scripts/restore.sh scripts/runner-release.py scripts/setup-first-run.sh scripts/setup-question-input.sh
   scripts/setup-questions.sh scripts/setup-write-environment.sh scripts/spaceworks-compose.sh
   scripts/spaceworks-repository.sh scripts/update-lock.sh scripts/update-rollback.sh scripts/update.sh

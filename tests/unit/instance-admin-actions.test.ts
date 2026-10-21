@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  requireSuperAdminMfa: vi.fn(),
+  requireSuperAdmin: vi.fn(),
   rateLimit: vi.fn(),
   findSetting: vi.fn(),
   upsertSetting: vi.fn(),
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   outboxUpdate: vi.fn(),
 }));
 
-vi.mock("@/lib/permissions", () => ({ requireSuperAdminMfa: mocks.requireSuperAdminMfa }));
+vi.mock("@/lib/permissions", () => ({ requireSuperAdmin: mocks.requireSuperAdmin }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: mocks.rateLimit }));
 vi.mock("@/lib/db", () => ({ prisma: {
   instanceSetting: { findUnique: mocks.findSetting, upsert: mocks.upsertSetting },
@@ -35,7 +35,7 @@ import {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.requireSuperAdminMfa.mockResolvedValue({ user: { id: "admin_1" } });
+  mocks.requireSuperAdmin.mockResolvedValue({ user: { id: "admin_1" } });
   mocks.rateLimit.mockResolvedValue(false);
   mocks.findSetting.mockResolvedValue(null);
   mocks.encrypt.mockImplementation((value: string) => `encrypted:${value}`);
@@ -45,13 +45,13 @@ beforeEach(() => {
 });
 
 describe("super-admin instance mutations", () => {
-  it("requires the action-level fresh MFA gate for every maintenance mutation", async () => {
+  it("requires the super-admin gate for every maintenance mutation", async () => {
     await deliverInstanceOutbox();
     await purgeExpiredVerificationTokens();
     await retryFailedOutboxMessages();
     await recordBackupRestoreVerification();
 
-    expect(mocks.requireSuperAdminMfa).toHaveBeenCalledTimes(4);
+    expect(mocks.requireSuperAdmin).toHaveBeenCalledTimes(4);
     expect(mocks.rateLimit).toHaveBeenCalledTimes(4);
   });
 

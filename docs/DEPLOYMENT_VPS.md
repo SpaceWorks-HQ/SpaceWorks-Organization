@@ -93,6 +93,23 @@ migrations bring an older dump up to the running release.
 **New server:** install with the same answers, stop the stack, put the old `.env` and `tls/` back from the
 settings archive, start it, then restore the dump (and `backups/storage` with `--with-storage`).
 
+## Super admins
+
+Super admins sign in with their email and password only. Their accounts and passwords are managed on the
+server, never by email and never in the app:
+
+```bash
+bash scripts/admin.sh create --email you@example.org          # make (or promote) a super admin; asks for a password
+bash scripts/admin.sh set-password --email you@example.org    # change a super admin's password; signs them out everywhere
+bash scripts/admin.sh reset-mfa --email you@example.org       # remove an authenticator from a super-admin account
+bash scripts/admin.sh revoke --email you@example.org          # take super-admin access away
+bash scripts/admin.sh list
+```
+
+The installer creates the first one from the email and password you give. On an upgrade from 0.6 or earlier,
+the existing `SUPER_ADMIN_EMAIL` account is kept as super admin automatically. Without Docker
+(`npm run admin -- …`) the same commands run against `DATABASE_URL`.
+
 ## Updates and rollback
 
 ```bash

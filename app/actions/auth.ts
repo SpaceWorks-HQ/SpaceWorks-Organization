@@ -3,6 +3,7 @@
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { newPasswordSchema } from "@/lib/passwordPolicy";
+import { BREACHED_PASSWORD_MESSAGE, isBreachedPassword } from "@/lib/breachedPassword";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
@@ -10,6 +11,7 @@ import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
 import { issueEmailVerification, verifyEmail } from "@/lib/emailVerification";
 import { isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
+import { currentRequestBlocked } from "@/lib/ipBlock";
 
 const signUpSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
@@ -35,11 +37,13 @@ export async function signUpWithPassword(
   }
 
   const { name, email, password } = parsed.data;
+  if (await currentRequestBlocked()) return { ok: false, error: "Too many failed sign-ins from your network. Try again in an hour." };
 
   if (!(await isNewUserRegistrationEnabled())) {
     return { ok: false, error: "New account creation is currently unavailable." };
   }
 
+  if (await isBreachedPassword(password)) return { ok: false, error: BREACHED_PASSWORD_MESSAGE, fieldErrors: { password: [BREACHED_PASSWORD_MESSAGE] } };
   const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({
     where: { email },

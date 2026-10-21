@@ -1,11 +1,11 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminSettingsView } from "@/lib/views/app__super-admin__settings__page";
 import { InstanceServiceSettingsForm } from "@/components/super-admin/InstanceServiceSettingsForm";
 import { SignInProvidersForm } from "@/components/super-admin/SignInProvidersForm";
 import { PageHeader, SectionHeading } from "@/components/ui/display";
 
 export default async function SuperAdminSettingsPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { initial, providers } = await loadSuperAdminSettingsView();
   return (
     <div className="flex flex-col gap-8">

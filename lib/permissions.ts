@@ -3,11 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { hasValidSuperAdminMfaProof, SUPER_ADMIN_MFA_COOKIE } from "@/lib/superAdminMfa";
 import type { Session } from "next-auth";
-import { isBootstrapSuperAdminEmail } from "@/lib/superAdminEmail";
 
-export { isBootstrapSuperAdminEmail };
 
 
 export async function getMembership(
@@ -34,8 +31,8 @@ export async function requireAuth(): Promise<Session & { user: { id: string; }; 
 }
 
 /**
- * Instance-wide super-admin gate: a verified user flagged `isSuperAdmin`, or the verified email in
- * SUPER_ADMIN_EMAIL (which bootstraps the first one). Anyone else gets notFound(), so the panel's
+ * Instance-wide super-admin gate: a verified user flagged `isSuperAdmin`. Super admins are created and their
+ * passwords set only on the server (`docker/ops/admin.mjs`). Anyone else gets notFound(), so the panel's
  * existence is never revealed.
  */
 export async function requireSuperAdmin(): Promise<
@@ -50,30 +47,12 @@ export async function requireSuperAdmin(): Promise<
   });
   const userEmail = user?.email;
   if (!userEmail || !user.emailVerified) notFound();
-  if (!user.isSuperAdmin && !isBootstrapSuperAdminEmail(userEmail)) notFound();
+  if (!user.isSuperAdmin) notFound();
 
   return {
     ...session,
     user: { ...session.user, id: session.user.id, email: userEmail },
   } as Session & { user: { id: string; email: string; }; };
-}
-
-/**
- * Require a fresh, separate TOTP challenge for the instance-wide admin panel.
- * The proof is a short-lived, signed HttpOnly cookie bound to the current user
- * and session version, so account/session revocation invalidates it immediately.
- */
-export async function requireSuperAdminMfa() {
-  const session = await requireSuperAdmin();
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { mfaEnabledAt: true, sessionVersion: true },
-  });
-  const proof = (await cookies()).get(SUPER_ADMIN_MFA_COOKIE)?.value;
-  if (!user?.mfaEnabledAt || !hasValidSuperAdminMfaProof(proof, session.user.id, user.sessionVersion)) {
-    redirect("/super-admin-mfa");
-  }
-  return session;
 }
 
 export type OrgAccessContext = {
@@ -92,7 +71,14 @@ export async function requireOrgTeam(orgSlug: string): Promise<OrgAccessContext>
   if (!org) redirect("/dashboard");
   const membership = await getMembership(session.user.id, org.id);
   if (!membership) redirect("/dashboard");
+  if (!(await hasAuthenticator(session.user.id))) redirect(STAFF_AUTHENTICATOR_SETUP);
   return { organisation: org, membership, userId: session.user.id };
+}
+
+/** Staff (anyone on an organisation's team) must use an authenticator app; members and super admins need not. */
+export async function hasAuthenticator(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { mfaEnabledAt: true } });
+  return Boolean(user?.mfaEnabledAt);
 }
 
 /** Team access with a minimum role. Organisations that are not active are sent to their application page. */
@@ -145,9 +131,10 @@ export async function orgActionAccess(orgSlug: unknown, capability: Capability):
     return { ok: false, error: org.status === "SUSPENDED" ? "This organisation is suspended, so this can't be changed right now." : "This organisation isn't approved yet." };
   }
   if (!can(membership.role, capability)) return { ok: false, error: "Your role doesn't allow this." };
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   return { ok: true, organisation: org, membership, userId: session.user.id };
 }
 
-export { can, hasRoleAtLeast, isOrgAdmin, canManageTeam, canManageTeamMember, canDeleteOrg, organisationAllows } from "@/lib/permissionRoles";
+export { can, hasRoleAtLeast, isOrgAdmin, canManageTeam, canManageTeamMember, canDeleteOrg, organisationAllows, STAFF_AUTHENTICATOR_MESSAGE, STAFF_AUTHENTICATOR_SETUP } from "@/lib/permissionRoles";
 
-import { can, hasRoleAtLeast, organisationAllows, type Capability } from "./permissionRoles";
+import { can, hasRoleAtLeast, organisationAllows, STAFF_AUTHENTICATOR_MESSAGE, STAFF_AUTHENTICATOR_SETUP, type Capability } from "./permissionRoles";

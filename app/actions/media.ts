@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { can, getMembership, organisationAllows } from "@/lib/permissions";
+import { can, getMembership, hasAuthenticator, organisationAllows, STAFF_AUTHENTICATOR_MESSAGE } from "@/lib/permissions";
 import { ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { createSafeWebpDerivative } from "@/lib/imageValidation";
@@ -45,6 +45,7 @@ export async function uploadOrganisationLogo(
   const membership = await getMembership(session.user.id, org.id);
   if (!membership || !can(membership.role, "org.settings"))
     return { ok: false, error: "Only organisation owners and managers can upload logos." };
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   const derivative = await imageFile(formData);
   if ("error" in derivative) return { ok: false, error: derivative.error };
   try {

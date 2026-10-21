@@ -1,9 +1,9 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { INSTANCE_SETTINGS_ID } from "@/lib/instanceSettings";
 
 export async function loadSuperAdminSettingsView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const settings = await prisma.instanceSetting.findUnique({ where: { id: INSTANCE_SETTINGS_ID } });
   const env = process.env;
   return {

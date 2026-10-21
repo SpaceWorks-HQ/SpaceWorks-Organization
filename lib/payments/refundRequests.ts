@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { recordAuditEvent } from "@/lib/audit";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { canTransition, statusAt } from "@/lib/membership/lifecycle";
 import { decideTerm } from "@/lib/membership/service";
 import { lockPayment, PaymentError, type OrgForPayments } from "./charges";
@@ -66,6 +67,7 @@ export async function requestRefund(tx: Tx, args: { org: OrgForPayments; memberI
   });
   await recordAuditEvent({ action: "REFUND_REQUESTED", actorUserId: args.userId, organisationId: args.org.id, targetType: "RefundRequest", targetId: request.id, metadata: { paymentId: paid.id, suggestedMinor: request.suggestedMinor }, client: tx });
   await enqueueOutbox(tx, "refund-notice", { requestId: request.id, organisationId: args.org.id, event: "requested" });
+  await queueChatAlerts(tx, args.org.id, "refund-requested", { requestId: request.id });
   return request;
 }
 

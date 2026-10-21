@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { auditRowSelect } from "@/components/super-admin/AuditTable";
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 export async function loadSuperAdminUserDetailView({ params }: Props) {
 
   // Layout checks don't re-run on client navigation, so every page checks too.
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   const { userId } = await params;
   const now = new Date();
 

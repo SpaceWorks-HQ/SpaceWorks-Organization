@@ -1,11 +1,11 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { OutboxStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { OUTBOX_SCHEDULER_HEARTBEAT_KEY } from "@/lib/operationalHeartbeat";
 import { INSTANCE_SETTINGS_ID } from "@/lib/instanceSettings";
 export async function loadSuperAdminOperationsView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const now = new Date();
   const heartbeat = (prisma as unknown as {
     operationalHeartbeat?: Pick<typeof prisma.operationalHeartbeat, "findUnique">;

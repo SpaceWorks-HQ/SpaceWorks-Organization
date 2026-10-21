@@ -4,6 +4,7 @@ import { revalidatePath as nextRevalidatePath } from "next/cache";
 import { trackedRevalidation } from "@/lib/frontend/revalidation";
 import bcrypt from "bcryptjs";
 import { newPasswordSchema } from "@/lib/passwordPolicy";
+import { BREACHED_PASSWORD_MESSAGE, isBreachedPassword } from "@/lib/breachedPassword";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/permissions";
@@ -15,6 +16,7 @@ import type { ActionResult } from "./org";
 import { isUploadedImageUrl, isUserUploadUrl } from "@/lib/uploadUrl";
 
 const revalidatePath = trackedRevalidation(nextRevalidatePath);
+const SUPER_ADMIN_PASSWORD_ON_SERVER = "Super-admin passwords are set on the server. Run the admin set-password command there (docs/DEPLOYMENT_VPS.md).";
 
 const updateProfileSchema = z.object({
   name: z
@@ -101,8 +103,9 @@ export async function updateAccountPassword(
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { email: true, passwordHash: true, sessionVersion: true },
+    select: { email: true, passwordHash: true, sessionVersion: true, isSuperAdmin: true },
   });
+  if (user?.isSuperAdmin) return { ok: false, error: SUPER_ADMIN_PASSWORD_ON_SERVER };
   if (!user?.email)
     return {
       ok: false,
@@ -125,6 +128,7 @@ export async function updateAccountPassword(
     };
   }
 
+  if (await isBreachedPassword(parsed.data.newPassword)) return { ok: false, error: BREACHED_PASSWORD_MESSAGE, fieldErrors: { newPassword: [BREACHED_PASSWORD_MESSAGE] } };
   const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
   const changed = await prisma.$transaction(async (tx) => {
     const updated = await tx.user.updateMany({

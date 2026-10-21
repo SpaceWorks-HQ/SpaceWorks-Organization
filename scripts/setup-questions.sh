@@ -49,7 +49,15 @@ ask_setup_questions() {
       echo 'A secret key is required.'
     done
   fi
-  question SUPER_ADMIN_EMAIL 'Super-admin email (sign up with it to run this platform)' '' email || return 1
+  question SUPER_ADMIN_EMAIL 'Super-admin email (you sign in with it to run this platform)' '' email || return 1
+  echo 'The super-admin password is set only here or later on the server (bash scripts/admin.sh), never by email.'
+  local repeat=''
+  while true; do
+    question SUPER_ADMIN_PASSWORD 'Super-admin password (12+ characters)' '' password || return 1
+    question repeat 'Repeat the password' '' password || return 1
+    [[ "$repeat" == "$SUPER_ADMIN_PASSWORD" ]] && break
+    echo 'The two passwords did not match.'
+  done
   echo 'Outgoing email needs an authenticated SMTP relay on a verified sending domain (Brevo, Amazon SES, Postmark...).'
   local mail_host="${SITE_ORIGIN#https://}"
   mail_host="${mail_host:-$WEBHOST}"
@@ -106,7 +114,7 @@ setup_summary() {
   [[ "$STORAGE" == 1 ]] && storage='bundled Silo' || storage="external S3 bucket $S3_BUCKET at $S3_ENDPOINT (region $S3_REGION, keys hidden)"
   printf '  Website here: %s; HTTPS: %s; storage: %s\n' "$website" "$https" "$storage"
   printf '  Server: %s://%s; certificate email: %s\n' "$scheme" "$WEBHOST" "${TLS_EMAIL:-none}"
-  printf '  Super admin: %s (sign up with this address, verify it, then open /super-admin)\n' "$SUPER_ADMIN_EMAIL"
+  printf '  Super admin: %s (password set; sign in at /login, then open /super-admin)\n' "$SUPER_ADMIN_EMAIL"
   printf '  Email: %s via %s:%s as %s (password hidden)\n' "$EMAIL_FROM" "$SMTP_HOST" "$SMTP_PORT" "$SMTP_USER"
   printf '  Sign-in options: email + password, %s (Google: %s, GitHub: %s; Apple and the rest later in Super admin -> Settings)\n' \
     "$SETUP_SOCIAL_PROVIDERS" "$([[ -n "$GOOGLE_CLIENT_ID" ]] && echo configured || echo later)" "$([[ -n "$GITHUB_CLIENT_ID" ]] && echo configured || echo later)"

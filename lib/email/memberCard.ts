@@ -28,12 +28,12 @@ export async function deliverMemberCard(payload: CardPayload, messageId: string)
   if (!loaded || loaded.card.organisationId !== payload.organisationId || loaded.card.revokedAt) return "dropped";
   const org = loaded.ctx.organisation;
   if (!["ACTIVE", "SUSPENDED"].includes(org.status)) return "dropped";
-  const member = await prisma.member.findFirst({ where: { id: loaded.card.memberId, organisationId: payload.organisationId, anonymisedAt: null }, select: { email: true } });
+  const member = await prisma.member.findFirst({ where: { id: loaded.card.memberId, organisationId: payload.organisationId, anonymisedAt: null }, select: { email: true, organisation: { select: { memberPortal: true } } } });
   if (!member) return "dropped";
   const holder = loaded.holder;
   const pdf = await renderMemberCard(loaded.input, holder, "pdf", { title: `${holder.displayName} membership card` });
   const first = holder.displayName.split(/\s+/)[0] || holder.displayName;
-  await sendBrandedEmail({
+  await sendBrandedEmail({ organisationId: payload.organisationId,
     to: member.email,
     messageId,
     subject: `Your ${org.name} membership card`,
@@ -42,7 +42,7 @@ export async function deliverMemberCard(payload: CardPayload, messageId: string)
       `Hi ${first}, your ${loaded.card.plan.name} card from ${org.name} is attached as a PDF. Print it on card stock or keep it on your phone.`,
       "Anyone can scan the QR code on the front to check that your membership is current. Renewing keeps the same card.",
     ],
-    action: { label: "See your membership", url: absoluteUrl("/account") },
+    ...(member.organisation.memberPortal ? { action: { label: "See your membership", url: absoluteUrl("/account") } } : {}),
     attachments: [{ filename: `${loaded.card.cardNumber}-${slugForFile(holder.displayName, "member")}.pdf`, content: Buffer.from(pdf), contentType: "application/pdf" }],
   });
   return "sent";

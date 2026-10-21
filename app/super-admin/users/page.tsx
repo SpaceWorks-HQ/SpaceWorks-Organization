@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminUsersView } from "@/lib/views/app__super-admin__users__page";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
@@ -21,7 +21,7 @@ const filters = {
 type FilterKey = keyof typeof filters;
 
 export default async function SuperAdminUsersPage({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { q, filter, users, page } = await loadSuperAdminUsersView({ searchParams });
 
   const filterHref = (key: FilterKey) => `/super-admin/users?q=${encodeURIComponent(q)}${key === "all" ? "" : `&filter=${key}`}`;

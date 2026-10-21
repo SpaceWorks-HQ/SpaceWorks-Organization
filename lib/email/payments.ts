@@ -6,6 +6,7 @@ import type { DocumentSnapshot } from "@/lib/payments/documents";
 import { DOCUMENT_KIND_LABELS } from "@/lib/payments/numbering";
 import { documentAmount, renderDocumentPdf } from "@/lib/payments/pdf";
 import { absoluteUrl, sendBrandedEmail } from "./message";
+import { payLinkToken } from "@/lib/payments/payLink";
 
 export const PAYMENT_NOTICES = ["paid", "claim-received", "claim-rejected", "refunded"] as const;
 export type PaymentNotice = (typeof PAYMENT_NOTICES)[number];
@@ -25,7 +26,7 @@ export async function deliverPaymentNotice(payload: Payload, messageId: string):
     where: { id: payload.paymentId, organisationId: payload.organisationId },
     include: {
       member: { select: { name: true, email: true, anonymisedAt: true } },
-      organisation: { select: { name: true, locale: true } },
+      organisation: { select: { name: true, slug: true, locale: true, memberPortal: true } },
       documents: { where: { cancelledAt: null }, orderBy: { issuedAt: "desc" } },
     },
   });
@@ -33,7 +34,8 @@ export async function deliverPaymentNotice(payload: Payload, messageId: string):
   const org = payment.organisation;
   const first = payment.member.name.split(/\s+/)[0] || payment.member.name;
   const amount = documentAmount(payment.capturedMinor ?? payment.amountMinor, payment.currency, org.locale);
-  const account = absoluteUrl("/account");
+  // Without member accounts there is no account to send people to: the pay link (to resubmit) or the public page.
+  const account = org.memberPortal ? absoluteUrl("/account") : payload.notice === "claim-rejected" && payment.termId ? absoluteUrl(`/pay/${payLinkToken(payment.termId)}`) : absoluteUrl(`/o/${org.slug}`);
   const wanted = payload.notice === "refunded" ? payment.documents.find((doc) => doc.kind === "CREDIT_NOTE") : payment.documents.find((doc) => doc.kind !== "CREDIT_NOTE");
   const attachments = [];
   if (wanted && (payload.notice === "paid" || payload.notice === "refunded")) {
@@ -58,7 +60,7 @@ export async function deliverPaymentNotice(payload: Payload, messageId: string):
     "claim-rejected": {
       subject: `${org.name} couldn't confirm your payment`,
       heading: "Payment not confirmed",
-      paragraphs: [`Hi ${first}, ${org.name} couldn't match your payment of ${amount}${payment.utr ? ` with reference ${payment.utr}` : ""}.`, ...(payment.note ? [`Their note: ${payment.note}`] : []), "You can check the reference and submit it again from your account."],
+      paragraphs: [`Hi ${first}, ${org.name} couldn't match your payment of ${amount}${payment.utr ? ` with reference ${payment.utr}` : ""}.`, ...(payment.note ? [`Their note: ${payment.note}`] : []), org.memberPortal ? "You can check the reference and submit it again from your account." : "You can check the reference and submit it again from the link below."],
     },
     refunded: {
       subject: `Refund from ${org.name}`,
@@ -66,6 +68,6 @@ export async function deliverPaymentNotice(payload: Payload, messageId: string):
       paragraphs: [`Hi ${first}, ${org.name} has refunded ${wanted ? documentAmount(wanted.totalMinor, wanted.currency, org.locale) : "part of your payment"}.`, wanted ? `Credit note ${wanted.number} is attached.` : ""].filter(Boolean),
     },
   }[payload.notice];
-  await sendBrandedEmail({ to: payment.member.email, messageId, ...content, action: { label: "See your account", url: account }, attachments });
+  await sendBrandedEmail({ organisationId: payload.organisationId, to: payment.member.email, messageId, ...content, action: { label: org.memberPortal ? "See your account" : payload.notice === "claim-rejected" ? "Submit it again" : `Visit ${org.name}`, url: account }, attachments });
   return "sent";
 }

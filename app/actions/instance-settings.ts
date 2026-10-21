@@ -5,7 +5,7 @@ import { revalidatePath as nextRevalidatePath } from "next/cache";
 import { trackedRevalidation } from "@/lib/frontend/revalidation";
 import { prisma } from "@/lib/db";
 import { INSTANCE_SETTINGS_ID } from "@/lib/instanceSettings";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { recordAuditEvent } from "@/lib/audit";
 import { encryptInstanceConfigSecret } from "@/lib/instanceConfigSecrets";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
@@ -27,7 +27,7 @@ const serviceSettingsSchema = z.object({
 });
 
 export async function setNewUserRegistrationEnabled(input: unknown): Promise<ActionResult> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const parsed = signupSettingSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid account creation setting." };
@@ -53,7 +53,7 @@ const applicationsSettingSchema = z.object({ allowOrganisationApplications: z.bo
 
 /** Open or close self-service organisation applications at /start. */
 export async function setOrganisationApplicationsEnabled(input: unknown): Promise<ActionResult> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const parsed = applicationsSettingSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid application setting." };
@@ -76,7 +76,7 @@ export async function setOrganisationApplicationsEnabled(input: unknown): Promis
 }
 
 export async function saveInstanceServiceSettings(input: unknown): Promise<ActionResult> {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return { ok: false, error: "Too many requests. Try again shortly." };
   const parsed = serviceSettingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid instance settings." };

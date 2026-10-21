@@ -5,7 +5,7 @@ import { revalidatePath as nextRevalidatePath } from "next/cache";
 import { trackedRevalidation } from "@/lib/frontend/revalidation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { canManageTeam, canManageTeamMember, getMembership } from "@/lib/permissions";
+import { canManageTeam, canManageTeamMember, getMembership, hasAuthenticator, STAFF_AUTHENTICATOR_MESSAGE } from "@/lib/permissions";
 import { createOrgInviteSchema, revokeOrgInviteSchema } from "@/lib/validators";
 import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
@@ -52,6 +52,7 @@ export async function createOrgInvite(input: unknown): Promise<
   if (!membership || !canManageTeam(membership)) {
     return { ok: false, error: "You do not have permission to invite people to the team." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   if (!canManageTeamMember(membership.role, role)) {
     return { ok: false, error: "Managers can invite treasurers and viewers only." };
   }
@@ -122,6 +123,7 @@ export async function revokeOrgInvite(input: unknown): Promise<ActionResult> {
   if (!membership || !canManageTeam(membership)) {
     return { ok: false, error: "You do not have permission." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
 
   const invite = await prisma.teamInvite.findFirst({
     where: { id: inviteId, organisationId: org.id },

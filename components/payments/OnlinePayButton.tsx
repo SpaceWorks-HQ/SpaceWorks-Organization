@@ -31,7 +31,7 @@ function loadRazorpay(): Promise<RazorpayConstructor> {
 }
 
 /** Pay online: Razorpay opens over the page; Stripe sends the member to its own checkout and back. */
-export function OnlinePayButton({ termId, label, organisationName, description }: { termId: string; label: string; organisationName: string; description: string }) {
+export function OnlinePayButton({ termId, payToken, label, organisationName, description }: { termId: string; payToken?: string; label: string; organisationName: string; description: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export function OnlinePayButton({ termId, label, organisationName, description }
     startTransition(async () => {
       setError(null);
       setNote(null);
-      const result = await startMemberCheckout({ termId });
+      const result = await startMemberCheckout({ termId, payToken });
       if (!result.ok || !result.data) {
         setError(result.ok ? "Couldn't start the payment." : result.error);
         return;
@@ -66,7 +66,7 @@ export function OnlinePayButton({ termId, label, organisationName, description }
           modal: { ondismiss: () => setNote("Payment window closed. Nothing was charged unless you finished paying.") },
           handler: (response: RazorpayResponse) => {
             startTransition(async () => {
-              const confirmed = await confirmMemberRazorpay({ paymentId: checkout.paymentId, orderId: response.razorpay_order_id, gatewayPaymentId: response.razorpay_payment_id, signature: response.razorpay_signature });
+              const confirmed = await confirmMemberRazorpay({ payToken, paymentId: checkout.paymentId, orderId: response.razorpay_order_id, gatewayPaymentId: response.razorpay_payment_id, signature: response.razorpay_signature });
               if (!confirmed.ok) setError(confirmed.error);
               else if (confirmed.data?.status !== "PAID") setNote("Payment received by Razorpay. It will show here within a few minutes.");
               router.refresh();

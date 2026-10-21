@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { auditRowSelect } from "@/components/super-admin/AuditTable";
 type Props = {
@@ -6,7 +6,7 @@ type Props = {
 };
 
 export async function loadSuperAdminAuditView({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 120);
   const page = Math.max(0, Number.parseInt(sp.page ?? "0", 10) || 0);

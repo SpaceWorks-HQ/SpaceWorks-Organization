@@ -10,6 +10,7 @@ import { recordAuditEvent } from "@/lib/audit";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { isOrganisationUploadUrl } from "@/lib/uploadUrl";
 import { organisationAllows } from "@/lib/permissionRoles";
+import { hasAuthenticator, STAFF_AUTHENTICATOR_MESSAGE } from "@/lib/permissions";
 import { ORGANISATION_LOCKED } from "@/lib/organisationLifecycle";
 
 const revalidatePath = trackedRevalidation(nextRevalidatePath);
@@ -68,6 +69,7 @@ export async function updateOrganisation(
   ) {
     return { ok: false, error: "Only organisation owners and managers can edit settings." };
   }
+  if (!(await hasAuthenticator(session.user.id))) return { ok: false, error: STAFF_AUTHENTICATOR_MESSAGE };
   if (
     logoUrl &&
     !isOrganisationUploadUrl(logoUrl, org.id, "organisation-logos")

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminOrgsView } from "@/lib/views/app__super-admin__orgs__page";
 import { AdminPager, AdminSearchForm, NameCell } from "@/components/super-admin/AdminPanel";
 import { ORGANISATION_STATUS_LABELS, OrganisationStatusChip } from "@/components/org/OrganisationStatusChip";
@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default async function SuperAdminOrgsPage({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { applicationsOpen, q, status, page, orgs, total, counts } = await loadSuperAdminOrgsView({ searchParams });
   const chip = (href: string, label: string, count: number, active: boolean) => (
     <Link

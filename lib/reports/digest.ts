@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/db";
 import { enqueueOutbox } from "@/lib/outbox";
+import { queueChatAlerts } from "@/lib/chat/notify";
 import { can } from "@/lib/permissionRoles";
 import { addMonths, localDate, startOfLocalDay } from "@/lib/membership/periods";
 import { teamScope } from "@/lib/membership/scope";
@@ -46,6 +47,7 @@ export async function queueMonthlyDigests(now = new Date(), force = false) {
       if (claimed.length === 0) return 0;
       const team = await tx.teamMember.findMany({ where: { organisationId: org.id, reportDigest: true, role: { in: [...DIGEST_ROLES] }, user: { emailVerified: { not: null } } }, select: { userId: true } });
       for (const person of team) await enqueueOutbox(tx, "report-digest", { organisationId: org.id, userId: person.userId, month: monthKey(last) });
+      await queueChatAlerts(tx, org.id, "monthly-summary", { month: monthKey(last) });
       return team.length;
     });
   }

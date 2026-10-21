@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminOverviewView } from "@/lib/views/app__super-admin__page";
 import Link from "next/link";
 import { SparklineCard } from "@/components/super-admin/Sparkline";
@@ -8,7 +8,7 @@ import { PageHeader, StatTile } from "@/components/ui/display";
 import { Table, TBody, TD, TR } from "@/components/ui/table";
 
 export default async function SuperAdminOverviewPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { stats, attention, activity7d, recentOrgs } = await loadSuperAdminOverviewView();
   return (
     <div className="flex flex-col gap-6">

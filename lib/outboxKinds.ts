@@ -10,6 +10,8 @@ import { asReportDigestPayload, deliverReportDigest } from "@/lib/email/reportDi
 import { asMemberCardPayload, deliverMemberCard } from "@/lib/email/memberCard";
 import { asErasurePayload, deliverErasureNotice } from "@/lib/email/erasure";
 import { asRefundPayload, deliverRefundNotice } from "@/lib/email/refunds";
+import { asChatPayload, deliverChatNotice } from "@/lib/chat/notify";
+import { asLoginAlertPayload, asLoginCodePayload, deliverLoginAlert, deliverLoginCode } from "@/lib/email/loginSecurity";
 
 /** What a handler reports after a delivery attempt. Throw to retry; throw PermanentOutboxError to give up. */
 export type DeliveryOutcome = "sent" | "dropped";
@@ -177,6 +179,35 @@ const refundNotice: OutboxKindHandler = {
   },
 };
 
+const loginCode: OutboxKindHandler = {
+  // The code is a sign-in capability: the row is deleted after sending and retried only while it lasts.
+  capability: true,
+  shortLived: true,
+  async deliver(value, messageId) {
+    const payload = asLoginCodePayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverLoginCode(payload, messageId);
+  },
+};
+
+const loginAlert: OutboxKindHandler = {
+  capability: false,
+  async deliver(value, messageId) {
+    const payload = asLoginAlertPayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverLoginAlert(payload, messageId);
+  },
+};
+
+const chatNotice: OutboxKindHandler = {
+  capability: false,
+  async deliver(value) {
+    const payload = asChatPayload(value);
+    if (!payload) throw new PermanentOutboxError();
+    return deliverChatNotice(payload);
+  },
+};
+
 const reportDigest: OutboxKindHandler = {
   capability: false,
   async deliver(value, messageId) {
@@ -201,6 +232,9 @@ export const OUTBOX_KINDS = {
   "member-card": memberCard,
   "erasure-notice": erasureNotice,
   "refund-notice": refundNotice,
+  "chat-notice": chatNotice,
+  "login-code": loginCode,
+  "login-alert": loginAlert,
 } satisfies Record<string, OutboxKindHandler>;
 
 export type OutboxKind = keyof typeof OUTBOX_KINDS;

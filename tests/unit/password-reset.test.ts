@@ -10,6 +10,7 @@ const bcryptMock = vi.hoisted(() => ({ hash: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/actionRateLimit", () => ({ isActionRateLimited: rateLimitMock }));
+vi.mock("@/lib/ipBlock", () => ({ currentRequestBlocked: async () => false }));
 vi.mock("@/lib/outbox", () => ({ enqueuePasswordReset: enqueueResetMock }));
 vi.mock("bcryptjs", () => ({ default: bcryptMock }));
 
@@ -21,7 +22,8 @@ const tx = {
     deleteMany: vi.fn(),
     create: vi.fn(),
   },
-  user: { update: vi.fn() },
+  // A super admin is never reset by email; the test user isn't one.
+  user: { update: vi.fn(), findUnique: vi.fn(async () => ({ isSuperAdmin: false })) },
   session: { deleteMany: vi.fn() },
   auditEvent: { create: vi.fn() },
 };

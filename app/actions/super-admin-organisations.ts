@@ -8,7 +8,7 @@ import { trackedRevalidation } from "@/lib/frontend/revalidation";
 import { prisma } from "@/lib/db";
 import { recordAuditEvent } from "@/lib/audit";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { isReviewDecision, REVIEW_DECISIONS } from "@/lib/organisationLifecycle";
 import { applicationSnapshot, notifyOwners, organisationApplicationSchema, releaseHeldSlug } from "@/lib/organisations";
 import { enqueueOutbox } from "@/lib/outbox";
@@ -37,10 +37,9 @@ const createSchema = organisationApplicationSchema.extend({
   ownerEmail: z.string().trim().toLowerCase().email("Enter the owner's email address").max(320),
 });
 
-const platformAdminSchema = z.object({ userId: z.string().trim().min(1).max(64), grant: z.boolean() });
 
 async function superAdmin() {
-  const session = await requireSuperAdminMfa();
+  const session = await requireSuperAdmin();
   if (await isActionRateLimited("action", session.user.id)) return null;
   return session;
 }
@@ -170,26 +169,6 @@ export async function resendOwnerInvite(input: unknown): Promise<ActionResult> {
     await recordAuditEvent({ action: "ORGANISATION_INVITE_CREATED", actorUserId: session.user.id, organisationId, targetType: "TeamInvite", targetId: invite.id, metadata: { role: "OWNER" }, client: tx });
   });
   revalidatePath(`/super-admin/orgs/${organisationId}`);
-  return { ok: true };
-}
-
-/** Grant or remove the platform admin flag. Nobody removes their own, so the panel always has a way in. */
-export async function setPlatformAdmin(input: unknown): Promise<ActionResult> {
-  const session = await superAdmin();
-  if (!session) return TOO_MANY;
-  const parsed = platformAdminSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid request." };
-  const { userId, grant } = parsed.data;
-  if (!grant && userId === session.user.id) return { ok: false, error: "You can't remove your own platform admin access. Ask another platform admin." };
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { emailVerified: true, isSuperAdmin: true } });
-  if (!user) return { ok: false, error: "User not found." };
-  if (grant && !user.emailVerified) return { ok: false, error: "This person must verify their email address first." };
-  if (user.isSuperAdmin === grant) return { ok: true };
-  // Revoking also signs them out everywhere, so an open admin session ends now.
-  await prisma.user.update({ where: { id: userId }, data: grant ? { isSuperAdmin: true } : { isSuperAdmin: false, sessionVersion: { increment: 1 } } });
-  await recordAuditEvent({ action: grant ? "PLATFORM_ADMIN_GRANTED" : "PLATFORM_ADMIN_REVOKED", actorUserId: session.user.id, targetType: "User", targetId: userId });
-  revalidatePath(`/super-admin/users/${userId}`);
-  revalidatePath("/super-admin/security");
   return { ok: true };
 }
 

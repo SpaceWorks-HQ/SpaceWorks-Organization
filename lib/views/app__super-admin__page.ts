@@ -1,10 +1,10 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { OrganisationStatus, OutboxStatus, TeamRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { minutesAgo } from "@/lib/superAdminInsights";
 
 export async function loadSuperAdminOverviewView() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const [byStatus, users, teamMembers, failedEmails, stuckEmails, managersWithoutMfa, unverifiedUsers, staleApplications] = await Promise.all([
     prisma.organisation.groupBy({ by: ["status"], _count: { _all: true } }),
     prisma.user.count(),

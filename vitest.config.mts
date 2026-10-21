@@ -14,7 +14,8 @@ export default defineConfig({
     environment: "node",
     include: ["tests/unit/**/*.test.ts"],
     // Hermetic base URL, whatever a developer's shell or .env sets.
-    env: { NEXT_PUBLIC_BASE_URL: "http://localhost:3000" },
+    // Hermetic: no breached-password lookups over the network (tests/unit/login-protections.test.ts turns it on).
+    env: { NEXT_PUBLIC_BASE_URL: "http://localhost:3000", PWNED_PASSWORDS_CHECK: "0" },
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

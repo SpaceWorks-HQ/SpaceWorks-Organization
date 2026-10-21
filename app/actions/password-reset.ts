@@ -3,12 +3,14 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { newPasswordSchema } from "@/lib/passwordPolicy";
+import { BREACHED_PASSWORD_MESSAGE, isBreachedPassword } from "@/lib/breachedPassword";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import type { ActionResult } from "./org";
 import { flattenZodErrors } from "./utils";
 import { isActionRateLimited } from "@/lib/actionRateLimit";
 import { enqueuePasswordReset } from "@/lib/outbox";
+import { currentRequestBlocked } from "@/lib/ipBlock";
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
@@ -39,17 +41,17 @@ export async function requestPasswordReset(
   }
 
   const { email } = parsed.data;
-  if (await isActionRateLimited("passwordReset", email)) {
+  if ((await currentRequestBlocked()) || (await isActionRateLimited("passwordReset", email))) {
     // Keep this indistinguishable from the usual non-enumerating response.
     return { ok: true, data: { sent: true } };
   }
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, passwordHash: true },
+    select: { id: true, passwordHash: true, isSuperAdmin: true },
   });
 
-  // Always return success to prevent email enumeration
-  if (!user || !user.passwordHash) {
+  // Always return success to prevent email enumeration. Super-admin passwords are reset only on the server.
+  if (!user || !user.passwordHash || user.isSuperAdmin) {
     return { ok: true, data: { sent: true } };
   }
 
@@ -111,6 +113,7 @@ export async function confirmPasswordReset(
     return { ok: false, error: "Invalid or expired reset link." };
   }
   const tokenHash = hashToken(token);
+  if (await isBreachedPassword(password)) return { ok: false, error: BREACHED_PASSWORD_MESSAGE, fieldErrors: { password: [BREACHED_PASSWORD_MESSAGE] } };
 
   const passwordHash = await bcrypt.hash(password, 12);
   const result = await prisma.$transaction(async (tx) => {
@@ -125,6 +128,7 @@ export async function confirmPasswordReset(
       },
     });
     if (consumed.count !== 1) return false;
+    if ((await tx.user.findUnique({ where: { email }, select: { isSuperAdmin: true } }))?.isSuperAdmin) return false;
     const user = await tx.user.update({
       where: { email },
       data: { passwordHash, emailVerified: new Date(), sessionVersion: { increment: 1 } },

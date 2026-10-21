@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminAuditView } from "@/lib/views/app__super-admin__audit__page";
 import { AdminPager, AdminSearchForm } from "@/components/super-admin/AdminPanel";
 import { AuditTable } from "@/components/super-admin/AuditTable";
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default async function SuperAdminAuditPage({ searchParams }: Props) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { q, events, page } = await loadSuperAdminAuditView({ searchParams });
   return (
     <div className="flex flex-col gap-6">

@@ -1,4 +1,4 @@
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { loadSuperAdminShell } from "@/lib/views/app__super-admin__layout";
 import { SuperAdminTopBar } from "@/components/super-admin/SuperAdminTopBar";
 import type { Metadata } from "next";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function SuperAdminLayout(props: {
   children: React.ReactNode;
 }) {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   const { user } = await loadSuperAdminShell();
   return (
     <div className="flex min-h-dvh flex-col">

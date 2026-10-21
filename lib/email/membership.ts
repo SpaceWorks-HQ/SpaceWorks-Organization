@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { formatMoney, isCurrencyCode } from "@/lib/money/currencies";
 import { formatCalendarDate, lastValidDay } from "@/lib/membership/periods";
 import { absoluteUrl, sendBrandedEmail } from "./message";
+import { payLinkToken } from "@/lib/payments/payLink";
 
 export const MEMBERSHIP_NOTICES = [
   "application-received",
@@ -45,7 +46,7 @@ async function loadTerm(termId: string, organisationId: string) {
     include: {
       member: { select: { name: true, email: true, anonymisedAt: true } },
       plan: { select: { name: true } },
-      organisation: { select: { name: true, slug: true, timezone: true, locale: true, status: true } },
+      organisation: { select: { name: true, slug: true, timezone: true, locale: true, status: true, memberPortal: true } },
     },
   });
 }
@@ -60,7 +61,9 @@ export async function deliverMembershipNotice(payload: NoticePayload, messageId:
   if (!term || term.member.anonymisedAt) return "dropped";
   const org = term.organisation;
   const home = absoluteUrl(`/o/${org.slug}`);
-  const account = absoluteUrl("/account");
+  // Without member accounts, links go to the public page and "Pay now" carries a signed pay link.
+  const account = org.memberPortal ? absoluteUrl("/account") : home;
+  const payUrl = org.memberPortal ? absoluteUrl(`/account/pay/${term.id}`) : absoluteUrl(`/pay/${payLinkToken(term.id)}`);
   const due = money(term.priceMinor + term.joiningFeeMinor, term.currency, org.locale);
   const until = term.endsAt ? formatCalendarDate(lastValidDay(term.endsAt, org.timezone)) : null;
   const first = term.member.name.split(/\s+/)[0] || term.member.name;
@@ -75,13 +78,13 @@ export async function deliverMembershipNotice(payload: NoticePayload, messageId:
       subject: `Complete your ${org.name} membership`,
       heading: "One step left: payment",
       paragraphs: [`Hi ${first}, your ${term.plan.name} membership starts once ${due} is paid.`],
-      action: { label: "Pay now", url: absoluteUrl(`/account/pay/${term.id}`) },
+      action: { label: "Pay now", url: payUrl },
     },
     "approved-pay-now": {
       subject: `You're approved for ${org.name}`,
       heading: "You're approved",
       paragraphs: [`Hi ${first}, ${org.name} approved your application for ${term.plan.name}. Pay ${due} to start your membership.`],
-      action: { label: "Pay now", url: absoluteUrl(`/account/pay/${term.id}`) },
+      action: { label: "Pay now", url: payUrl },
     },
     activated: {
       subject: `Welcome to ${org.name}`,
@@ -114,7 +117,7 @@ export async function deliverMembershipNotice(payload: NoticePayload, messageId:
       action: { label: `Visit ${org.name}`, url: home },
     },
   }[payload.notice];
-  await sendBrandedEmail({ to: term.member.email, messageId, ...content });
+  await sendBrandedEmail({ organisationId: payload.organisationId, to: term.member.email, messageId, ...content });
   return "sent";
 }
 
@@ -127,7 +130,7 @@ export async function deliverRenewalReminder(payload: ReminderPayload, messageId
   const org = term.organisation;
   const until = formatCalendarDate(lastValidDay(term.endsAt, org.timezone));
   const after = payload.key.startsWith("after");
-  await sendBrandedEmail({
+  await sendBrandedEmail({ organisationId: payload.organisationId,
     to: term.member.email,
     messageId,
     subject: after ? `Your ${org.name} membership has ended` : `Renew your ${org.name} membership`,
@@ -137,7 +140,7 @@ export async function deliverRenewalReminder(payload: ReminderPayload, messageId
         ? `Your ${term.plan.name} membership ended on ${until}. Renew now to keep your card valid.`
         : `Your ${term.plan.name} membership is valid until ${until}. Renew now and the new year starts the day after.`,
     ],
-    action: { label: "Renew now", url: absoluteUrl("/account") },
+    action: org.memberPortal ? { label: "Renew now", url: absoluteUrl("/account") } : { label: `Contact ${org.name} to renew`, url: absoluteUrl(`/o/${org.slug}`) },
   });
   return "sent";
 }
@@ -159,7 +162,7 @@ export async function deliverMemberInvite(payload: InvitePayload, messageId: str
   if (!invite?.email || invite.revokedAt || invite.uses >= invite.maxUses || (invite.expiresAt && invite.expiresAt <= new Date())) return "dropped";
   const org = invite.plan.organisation;
   if (org.status !== "ACTIVE") return "dropped";
-  await sendBrandedEmail({
+  await sendBrandedEmail({ organisationId: payload.organisationId,
     to: invite.email,
     messageId,
     subject: `You're invited to join ${org.name}`,

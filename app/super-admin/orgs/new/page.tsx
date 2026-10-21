@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { requireSuperAdminMfa } from "@/lib/permissions";
+import { requireSuperAdmin } from "@/lib/permissions";
 import { ArrowLeft } from "lucide-react";
 import { loadSuperAdminNewOrgView } from "@/lib/views/app__super-admin__orgs__new__page";
 import { CreateOrganisationForm } from "@/components/super-admin/CreateOrganisationForm";
 import { PageHeader } from "@/components/ui/display";
 
 export default async function SuperAdminNewOrgPage() {
-  await requireSuperAdminMfa();
+  await requireSuperAdmin();
   await loadSuperAdminNewOrgView();
   return (
     <div className="flex max-w-[760px] flex-col gap-6">

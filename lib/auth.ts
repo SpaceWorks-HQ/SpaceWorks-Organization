@@ -13,6 +13,9 @@ import { prisma } from "@/lib/db";
 import { consumeRecoveryCode, decryptMfaSecret, consumeMfaCode } from "@/lib/mfa";
 import { isNewUserRegistrationEnabled } from "@/lib/instanceSettings";
 import { getOAuthSettings, providerVerifiedEmail } from "@/lib/oauthProviders";
+import { consumeLoginCode, issueLoginCode, justVerified, recognisedDevice, rememberDevice } from "@/lib/loginSecurity";
+import { isIpBlocked, recordFailedLogin } from "@/lib/ipBlock";
+import { getClientIpFromHeaders } from "@/lib/rateLimit";
 
 /**
  * The session cookie's name. Cookies ignore ports, so in development several servers on localhost (one per
@@ -34,6 +37,7 @@ const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   password: z.string().min(1).max(128),
   totp: z.string().trim().max(32).optional(),
+  emailCode: z.string().trim().max(12).optional(),
 });
 
 /**
@@ -47,6 +51,16 @@ class MfaRequiredError extends CredentialsSignin {
 
 class EmailVerificationRequiredError extends CredentialsSignin {
   code = "email_verification_required";
+}
+
+/** A sign-in from a new browser on an account without an authenticator: a code has been emailed. */
+class EmailCodeRequiredError extends CredentialsSignin {
+  code = "email_code_required";
+}
+
+/** Too many failed sign-ins from this address: it is blocked for a while (lib/ipBlock.ts). */
+class AddressBlockedError extends CredentialsSignin {
+  code = "address_blocked";
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
@@ -84,10 +98,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(raw) {
+      async authorize(raw, request) {
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
         const { email, password } = parsed.data;
+        const ip = getClientIpFromHeaders(request.headers);
+        if (await isIpBlocked(ip)) throw new AddressBlockedError();
+        // Every wrong password or code counts towards blocking the address.
+        const fail = async () => { if (await recordFailedLogin(ip)) throw new AddressBlockedError(); return null; };
         if (await isActionRateLimited("auth", email)) return null;
 
         const user = await prisma.user.findUnique({
@@ -106,16 +124,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
         // Equal bcrypt work for missing and OAuth-only accounts prevents the
         // obvious timing oracle. This is a fixed non-secret dummy hash.
         const ok = await bcrypt.compare(password, user?.passwordHash ?? "$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW");
-        if (!user?.passwordHash || !ok) return null;
+        if (!user?.passwordHash || !ok) return fail();
         if (!user.emailVerified) throw new EmailVerificationRequiredError();
 
+        const known = await recognisedDevice(user.id);
         if (user.mfaSecretEncrypted) {
           const code = parsed.data.totp ?? "";
           if (!user.email) return null;
           if (!code) throw new MfaRequiredError();
           const validTotp = await consumeMfaCode(decryptMfaSecret(user.mfaSecretEncrypted), user.email, code);
-          if (!validTotp && !(await consumeRecoveryCode(user.id, code))) return null;
+          if (!validTotp && !(await consumeRecoveryCode(user.id, code))) return fail();
+        } else if (!known && !justVerified(user.emailVerified) && user.email) {
+          // Unusual sign-in: a browser this account hasn't used. Prove the inbox with an emailed code.
+          const emailCode = parsed.data.emailCode ?? "";
+          if (!emailCode) {
+            await issueLoginCode({ id: user.id, email: user.email });
+            throw new EmailCodeRequiredError();
+          }
+          if (!(await consumeLoginCode(user.id, emailCode))) return fail();
         }
+        await rememberDevice(user.id, known);
 
         return {
           id: user.id,
@@ -135,8 +163,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
       if (!(await providerVerifiedEmail(account.provider, profile, account.access_token, email))) return "/login?error=unverified_email";
       user.email = email;
       const existing = await prisma.user.findUnique({
-        where: { email }, select: { passwordHash: true, emailVerified: true },
+        where: { email }, select: { passwordHash: true, emailVerified: true, isSuperAdmin: true },
       });
+      // Super admins sign in with their email and the password set on the server, never through a provider.
+      if (existing?.isSuperAdmin) return "/login?error=super_admin_password_only";
       // A pre-registered, unverified password must never survive linking to
       // the real inbox owner's provider identity.
       if (existing?.passwordHash && !existing.emailVerified) return false;
@@ -192,9 +222,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   },
   events: {
     async signIn({ user, account }) {
-      if (account && account.provider !== "credentials") {
+      if (account && account.provider !== "credentials" && user.id) {
         // Auth.js creates or links the adapter user after callbacks.signIn.
         await prisma.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
+        // The provider proved the identity; still remember the browser and alert on a new one.
+        await rememberDevice(user.id, await recognisedDevice(user.id));
       }
     },
   },

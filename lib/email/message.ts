@@ -1,4 +1,5 @@
 import { assertEmailAccepted, getEmailTransport } from "./transporter";
+import { organisationEmailTransport } from "./orgTransport";
 import { EMAIL_BUTTON_STYLE, EMAIL_COLORS, emailLayout } from "./brand";
 
 export function escapeHtml(value: string) {
@@ -15,6 +16,8 @@ export type BrandedEmail = {
   /** Small print under the action, e.g. how long a link lasts. */
   footnote?: string;
   messageId?: string;
+  /** Sent on behalf of this organisation: its own SMTP if set up, otherwise the platform's in its name. */
+  organisationId?: string;
   /** Attachments such as a receipt PDF or a membership card. */
   attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
 };
@@ -41,13 +44,13 @@ export function cleanSubject(subject: string) {
 
 /** Send a branded email. Without SMTP configured it is a no-op that never logs the recipient or links. */
 export async function sendBrandedEmail(email: BrandedEmail): Promise<void> {
-  const { transporter, from } = await getEmailTransport();
+  const { transporter, from, replyTo } = email.organisationId ? await organisationEmailTransport(email.organisationId) : { ...(await getEmailTransport()), replyTo: undefined };
   const { html, text } = renderBrandedEmail(email);
   if (!transporter) {
     console.log(`[EMAIL MOCK] ${email.subject.slice(0, 80)} queued`);
     return;
   }
-  const result = await transporter.sendMail({ messageId: email.messageId, from, to: email.to, subject: cleanSubject(email.subject), text, html, attachments: email.attachments });
+  const result = await transporter.sendMail({ messageId: email.messageId, from, replyTo, to: email.to, subject: cleanSubject(email.subject), text, html, attachments: email.attachments });
   assertEmailAccepted(result);
 }
 

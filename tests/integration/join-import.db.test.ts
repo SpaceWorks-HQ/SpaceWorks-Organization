@@ -24,7 +24,8 @@ const profile = (name: string, extra: Record<string, unknown> = {}) => ({ name, 
 
 beforeAll(async () => {
   for (const key of ["owner", "regional", "shaan", "abhiram", "stranger"]) {
-    const user = await prisma.user.create({ data: { email: `${key}-${suffix}@example.test`, emailVerified: new Date(), name: key } });
+    // Staff need an authenticator before dashboard actions; members don't mind having one.
+    const user = await prisma.user.create({ data: { email: `${key}-${suffix}@example.test`, emailVerified: new Date(), name: key, mfaEnabledAt: new Date() } });
     people[key] = { id: user.id, email: user.email! };
   }
   const org = await prisma.organisation.create({ data: { name: "Kunj-Company", slug, status: "ACTIVE", unitLevels: ["Chapter"] } });

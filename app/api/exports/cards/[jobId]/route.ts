@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { recordAuditEvent } from "@/lib/audit";
 import { download, notFoundResponse } from "@/lib/downloads";
 import { can, organisationAllows } from "@/lib/permissionRoles";
+import { hasAuthenticator } from "@/lib/permissions";
 import { downloadPrivateExport } from "@/lib/storage/private";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ job
   const job = await prisma.cardExportJob.findUnique({ where: { id: jobId }, include: { organisation: { select: { slug: true, status: true } } } });
   if (!job || job.requestedById !== userId || job.status !== "DONE" || !job.storageKey || (job.expiresAt && job.expiresAt <= new Date())) return notFoundResponse();
   const membership = await prisma.teamMember.findUnique({ where: { userId_organisationId: { userId, organisationId: job.organisationId } } });
-  if (!membership || !can(membership.role, "cards.manage") || !organisationAllows(job.organisation.status, "cards.manage")) return notFoundResponse();
+  if (!membership || !can(membership.role, "cards.manage") || !organisationAllows(job.organisation.status, "cards.manage") || !(await hasAuthenticator(userId))) return notFoundResponse();
   // The file was built for the requester's unit scope at the time; a changed scope can't fetch it.
   const filter = (job.filter ?? {}) as Record<string, unknown>;
   if ((typeof filter.scopeUnitId === "string" ? filter.scopeUnitId : null) !== membership.unitId) return notFoundResponse();

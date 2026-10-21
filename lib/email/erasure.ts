@@ -38,7 +38,7 @@ export async function deliverErasureNotice(payload: ErasurePayload, messageId: s
     });
     const to = managers.map((manager) => manager.user.email).filter((email): email is string => Boolean(email));
     if (to.length === 0) return "dropped";
-    await sendBrandedEmail({
+    await sendBrandedEmail({ organisationId: payload.organisationId,
       to: to.join(", "),
       messageId,
       subject: `${org.name}: a member asked to erase their details`,
@@ -55,7 +55,7 @@ export async function deliverErasureNotice(payload: ErasurePayload, messageId: s
   const user = request.requestedByUserId ? await prisma.user.findUnique({ where: { id: request.requestedByUserId }, select: { email: true, emailVerified: true } }) : null;
   if (!user?.email || !user.emailVerified) return "dropped";
   const approved = payload.event === "approved";
-  await sendBrandedEmail({
+  await sendBrandedEmail({ organisationId: payload.organisationId,
     to: user.email,
     messageId,
     subject: approved ? `${org.name} erased your details` : `${org.name} kept your details`,
