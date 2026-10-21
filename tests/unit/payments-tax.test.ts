@@ -132,3 +132,12 @@ describe("document numbers", () => {
     expect(RECEIPT_PREFIX_PATTERN.test("ab")).toBe(false);
   });
 });
+
+describe("charge line wording", () => {
+  it("names the plan once, whether or not its name already says membership", () => {
+    const line = (planName: string, renewal = false) => chargeLines({ renewal, rejoining: false, priceMinor: 1_000, joiningFeeMinor: 0, planName }, gst(), "KL")[0].description;
+    expect(line("Annual")).toBe("Annual membership");
+    expect(line("Annual membership")).toBe("Annual membership");
+    expect(line("Student Membership", true)).toBe("Student Membership renewal");
+  });
+});

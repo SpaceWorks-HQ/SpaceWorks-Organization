@@ -47,6 +47,8 @@ export interface PaymentGateway {
   parseEvent(rawBody: string, headers: Headers): GatewayEvent;
   fetchPayment(credentials: GatewayCredentials, orderId: string): Promise<FetchedPayment>;
   refund(credentials: GatewayCredentials, args: { gatewayPaymentId: string; amountMinor: number; currency: string; refundId: string }): Promise<RefundResult>;
+  /** Look a refund up by its gateway id, or by our refund id on the payment's refunds; null if it isn't there. */
+  fetchRefund(credentials: GatewayCredentials, args: { gatewayPaymentId: string; gatewayRefundId: string | null; refundId: string }): Promise<RefundResult | null>;
   testConnection(credentials: GatewayCredentials): Promise<{ ok: true } | { ok: false; error: string }>;
 }
 

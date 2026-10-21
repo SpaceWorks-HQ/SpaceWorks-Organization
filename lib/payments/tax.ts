@@ -97,7 +97,7 @@ export function chargeLines(
   pos: string | null,
 ): ChargeLine[] {
   const lines: ChargeLine[] = [];
-  if (term.priceMinor > 0) lines.push({ kind: "TERM_FEE", description: `${term.planName} membership${term.renewal ? " renewal" : ""}`, ...splitTax(term.priceMinor, snapshot, pos) });
+  if (term.priceMinor > 0) lines.push({ kind: "TERM_FEE", description: `${/membership$/i.test(term.planName.trim()) ? term.planName.trim() : `${term.planName} membership`}${term.renewal ? " renewal" : ""}`, ...splitTax(term.priceMinor, snapshot, pos) });
   if (term.joiningFeeMinor > 0) {
     const kind = term.rejoining ? "REJOIN_FEE" : "JOINING_FEE";
     lines.push({ kind, description: kind === "REJOIN_FEE" ? "Rejoining fee" : "Joining fee", ...splitTax(term.joiningFeeMinor, snapshot, pos) });

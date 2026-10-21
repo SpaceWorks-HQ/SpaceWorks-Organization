@@ -9,6 +9,7 @@ import {
 import { purgeExpiredOperationalData } from "@/lib/retention";
 import { runMembershipSweep } from "@/lib/membership/sweep";
 import { reconcileGatewayPayments } from "@/lib/payments/reconcile";
+import { reconcileGatewayRefunds } from "@/lib/payments/reconcileRefunds";
 import { queueMonthlyDigests } from "@/lib/reports/digest";
 import { kickCardExportJobs, runCardExportJobs } from "@/lib/cards/exportJobs";
 
@@ -37,6 +38,7 @@ export async function runOutboxScheduler(options: { awaitExports?: boolean } = {
     // Membership changes first, so reminders and notices they queue go out in the same pass.
     await runMembershipSweep().catch(() => console.error("[membership sweep] run failed"));
     await reconcileGatewayPayments().catch(() => console.error("[payments reconcile] run failed"));
+    await reconcileGatewayRefunds().catch(() => console.error("[refunds reconcile] run failed"));
     await queueMonthlyDigests().catch(() => console.error("[report digest] run failed"));
     const result = await deliverOutboxBatch();
     // Bulk card exports (background PDF/ZIP builds) run on their own, so a long render never holds this pass up.

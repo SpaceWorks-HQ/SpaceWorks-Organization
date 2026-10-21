@@ -87,6 +87,41 @@ Gateway refunds go to the provider after the refund row commits and stay `PENDIN
 webhook) confirms; a timeout keeps them pending rather than guessing. Each processed refund gets a
 **credit note** with tax apportioned pro rata.
 
+A manager may tick **Also end the membership** when refunding: the term the payment bought is cancelled
+(`withdraw`, so it shows as cancelled, not revoked) and its card stops verifying.
+
+### Refund policy and member requests
+
+Settings → Payments and tax → **Refunds** sets the policy (`OrgPaymentSettings.refundPolicy`):
+
+- **No refunds** (the default): members can still leave, but nothing is offered.
+- **Full refund within N days** of payment: everything still refundable.
+- **Unused share within N days**: the membership-fee lines (tax included) times the unused share of the term;
+  joining and rejoining fees are never offered. A lifetime term offers its whole membership fee. The maths is
+  `lib/payments/refundPolicy.ts` (pure, tested).
+
+A member with a paid, running membership inside the window sees **Cancel and request a refund** on their
+membership page, with the amount on offer and the policy text. That opens a `RefundRequest` (one open request
+per payment, enforced by a partial unique index) and emails the organisation-wide finance team. Nothing changes
+until a manager decides on the payment's page (or the **Refund requests** filter on Payments):
+
+- **Approve**: the amount is prefilled from the policy and may be changed up to what is left; the refund runs
+  as above and, unless unticked, the membership ends. The member is emailed.
+- **Decline**: needs a note, which is emailed to the member; the membership carries on.
+- The member may **withdraw** an open request. A refund made straight from the payment page closes any open
+  request on it.
+
+Requests are never deleted and are decided once (trigger in migration 0010). Erasure keeps them as money history
+but replaces the member's reason; the member's data export includes them.
+
+### Pending refund follow-up
+
+Each scheduler pass (at most every five minutes) asks Razorpay or Stripe about gateway refunds still `PENDING`
+after ten minutes, oldest-checked first, for up to 30 days: by the gateway refund id, or, when the original call
+timed out before answering, by our refund id among the payment's refunds (`notes.refundId` /
+`metadata.refundId`). Only the provider's answer settles or fails a refund. Refunds pending for more than a day
+are flagged on the Payments page.
+
 ## Immutability
 
 Database triggers enforce, with column allowlists:

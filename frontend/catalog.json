@@ -598,6 +598,11 @@
       "id": "payment-settings:saveOfflinePaymentSettings"
     },
     {
+      "module": "app/actions/payment-settings",
+      "name": "saveRefundPolicy",
+      "id": "payment-settings:saveRefundPolicy"
+    },
+    {
       "module": "app/actions/payments",
       "name": "recordPayment",
       "id": "payments:recordPayment"
@@ -669,6 +674,16 @@
     },
     {
       "module": "app/actions/portal",
+      "name": "requestMembershipRefund",
+      "id": "portal:requestMembershipRefund"
+    },
+    {
+      "module": "app/actions/portal",
+      "name": "withdrawMembershipRefund",
+      "id": "portal:withdrawMembershipRefund"
+    },
+    {
+      "module": "app/actions/portal",
       "name": "updateMemberProfile",
       "id": "portal:updateMemberProfile"
     },
@@ -716,6 +731,16 @@
       "module": "app/actions/refunds",
       "name": "refundPayment",
       "id": "refunds:refundPayment"
+    },
+    {
+      "module": "app/actions/refunds",
+      "name": "approveRefund",
+      "id": "refunds:approveRefund"
+    },
+    {
+      "module": "app/actions/refunds",
+      "name": "declineRefund",
+      "id": "refunds:declineRefund"
     },
     {
       "module": "app/actions/report-digest",

@@ -74,6 +74,16 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
           {counts.confirm} {counts.confirm === 1 ? "payment is" : "payments are"} waiting to be confirmed.
         </Callout>
       ) : null}
+      {counts.requests > 0 && filter !== "requests" && view.canManage ? (
+        <Callout tone="warning" action={<Link href={query({ status: "requests", page: "" })} className={buttonClasses({ variant: "secondary", size: "sm" })}>Review</Link>}>
+          {counts.requests} {counts.requests === 1 ? "member has" : "members have"} asked to cancel with a refund.
+        </Callout>
+      ) : null}
+      {view.stuckRefunds > 0 && view.canManage ? (
+        <Callout tone="warning" title="Refunds still pending">
+          {view.stuckRefunds} {view.stuckRefunds === 1 ? "refund has" : "refunds have"} waited more than a day for the payment provider. We keep checking; if it doesn&apos;t clear, look it up in the provider&apos;s dashboard.
+        </Callout>
+      ) : null}
       {counts.flagged > 0 && filter !== "flagged" && view.canManage ? (
         <Callout tone="warning" action={<Link href={query({ status: "flagged", page: "" })} className={buttonClasses({ variant: "secondary", size: "sm" })}>Review</Link>}>
           {counts.flagged} {counts.flagged === 1 ? "payment needs" : "payments need"} a look: paid late, twice, or for a different amount.

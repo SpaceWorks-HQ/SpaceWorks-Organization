@@ -6,6 +6,12 @@ to. Pushes to `dev` publish staging images tagged `dev` without a release.
 
 ## Unreleased
 
+- **Refunds.** A refund policy per organisation (none, full, or the unused share of the membership fee, within a
+  set number of days). Members can cancel and request a refund from their account; managers approve (refund and
+  end the membership) or decline with a note from a new Refund requests queue, and both sides are emailed.
+  Managers refunding by hand can end the membership too. The scheduler follows up refunds still pending at
+  Razorpay or Stripe. Receipt lines no longer say "membership" twice for plans named "… membership".
+
 - **Accounts.** Managers record other receipts (donations, grants, sponsorship) and expenses, set opening
   balances, and get a receipts and payments account per financial year, split into cash and bank, built from
   membership payments, refunds and those entries. Entries are never deleted, only voided with a reason.

@@ -84,6 +84,9 @@ npx vitest run tests/unit/health.test.ts
   - Payments live in `lib/payments/*` (see `docs/PAYMENTS.md` and `docs/GST.md`). Settle money only through
     `settlePayment` (lock order payment → term → counter); triggers in migration 0005 enforce immutability.
     Gateway secrets need `PAYMENT_SECRETS_KEY`.
+  - Refunds go through `createRefund` then `sendRefundToGateway` (`lib/payments/refundGateway.ts`). Member refund
+    requests, the policy and approve/decline live in `lib/payments/refundRequests.ts` and `refundPolicy.ts`;
+    `reconcileGatewayRefunds` follows up pending gateway refunds from the scheduler.
   - Other receipts and expenses are `LedgerEntry` rows (`app/actions/accounts.ts`), voided once and never
     deleted (trigger in migration 0009). The receipts and payments account is pure in `lib/accounts/statement.ts`.
 - **Member cards** (`lib/cards/*`):

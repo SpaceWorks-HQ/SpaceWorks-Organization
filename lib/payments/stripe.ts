@@ -31,6 +31,11 @@ function captured(eventId: string, session: Record<string, unknown>) {
 }
 
 /** Stripe Checkout Sessions (mode: payment) by redirect, on the organisation's own Stripe account. */
+function stripeRefund(refund: Record<string, unknown>) {
+  const status = refund.status === "succeeded" ? "processed" as const : refund.status === "failed" || refund.status === "canceled" ? "failed" as const : "pending" as const;
+  return { gatewayRefundId: str(refund.id) ?? "", status };
+}
+
 export const stripe: PaymentGateway = {
   async createCheckout(credentials, request) {
     if (isCurrencyCode(request.currency) && currencyExponent(request.currency) === 3 && request.amountMinor % 10 !== 0) {
@@ -119,8 +124,16 @@ export const stripe: PaymentGateway = {
       idempotencyKey: `refund-${args.refundId}`,
       body: form({ payment_intent: args.gatewayPaymentId, amount: args.amountMinor, "metadata[refundId]": args.refundId }),
     });
-    const status = refund.status === "succeeded" ? "processed" : refund.status === "failed" || refund.status === "canceled" ? "failed" : "pending";
-    return { gatewayRefundId: str(refund.id) ?? "", status };
+    return stripeRefund(refund);
+  },
+
+  async fetchRefund(credentials, args) {
+    const key = bearer(credentials.secret);
+    if (args.gatewayRefundId) return stripeRefund(await gatewayRequest(`${API}/refunds/${encodeURIComponent(args.gatewayRefundId)}`, { method: "GET", auth: key }));
+    const list = await gatewayRequest(`${API}/refunds?payment_intent=${encodeURIComponent(args.gatewayPaymentId)}&limit=100`, { method: "GET", auth: key });
+    const items = Array.isArray(list.data) ? (list.data as Array<Record<string, unknown>>) : [];
+    const match = items.find((item) => ((item.metadata ?? {}) as Record<string, unknown>).refundId === args.refundId);
+    return match ? stripeRefund(match) : null;
   },
 
   async testConnection(credentials) {

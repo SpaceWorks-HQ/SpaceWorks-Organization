@@ -40,6 +40,8 @@ export async function anonymiseMember(tx: Tx, args: { org: OrgClock; memberId: s
   }
   await tx.memberRoleAssignment.deleteMany({ where: { organisationId: args.org.id, memberId: member.id } });
   await tx.consentRecord.updateMany({ where: { organisationId: args.org.id, memberId: member.id, withdrawnAt: null }, data: { withdrawnAt: now } });
+  // Refund requests stay as money history; the member's own words go.
+  await tx.refundRequest.updateMany({ where: { organisationId: args.org.id, memberId: member.id }, data: { reason: "Removed on erasure" } });
   await tx.member.update({
     where: { id: member.id },
     data: {

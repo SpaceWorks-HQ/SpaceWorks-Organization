@@ -35,6 +35,7 @@ export async function people(count: number) {
 export async function removePaymentsOrg(organisationId: string, userIds: string[] = []) {
   await prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe(`SET LOCAL session_replication_role = replica`);
+    await tx.$executeRaw`DELETE FROM "RefundRequest" WHERE "organisationId" = ${organisationId}`;
     await tx.$executeRaw`DELETE FROM "TaxDocument" WHERE "organisationId" = ${organisationId}`;
     await tx.$executeRaw`DELETE FROM "Refund" WHERE "organisationId" = ${organisationId}`;
     await tx.$executeRaw`DELETE FROM "PaymentLine" WHERE "organisationId" = ${organisationId}`;

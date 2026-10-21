@@ -8,6 +8,7 @@ import { RoleChip } from "@/components/members/RoleChip";
 import { TermStatusChip } from "@/components/members/TermStatusChip";
 import { MembershipActions } from "@/components/portal/MembershipActions";
 import { MembershipHistory } from "@/components/portal/MembershipHistory";
+import { RefundRequestPanel } from "@/components/portal/RefundRequestPanel";
 import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
 import { ReceiptsSlot } from "@/components/portal/Slots";
 import { standingLine } from "@/components/portal/WalletCard";
@@ -60,6 +61,25 @@ export default async function MembershipDetailPage({ params }: { params: Promise
                   actions={membership.state.actions}
                   due={membership.due ? money(membership.due.minor, membership.due.currency, org.locale) : null}
                 />
+                {membership.refund ? (() => {
+                  const refund = membership.refund;
+                  const day = (date: Date) => formatCalendarDate(localDate(date, org.timezone));
+                  const amount = (minor: number) => money(minor, refund.currency, org.locale);
+                  return (
+                    <RefundRequestPanel
+                      organisationSlug={org.slug}
+                      organisationName={org.name}
+                      planName={membership.plan.name}
+                      termId={refund.termId}
+                      policyText={refund.policyText}
+                      offer={refund.offer.eligible ? amount(refund.offer.amountMinor) : null}
+                      deadline={refund.offer.deadline ? day(refund.offer.deadline) : null}
+                      windowClosed={!refund.offer.eligible && refund.offer.reason === "window-closed"}
+                      open={refund.open ? { id: refund.open.id, amount: amount(refund.open.suggestedMinor), date: day(refund.open.createdAt) } : null}
+                      last={refund.last ? { status: refund.last.status, note: refund.last.decisionNote, amount: refund.last.refundedMinor === null ? null : amount(refund.last.refundedMinor) } : null}
+                    />
+                  );
+                })() : null}
               </div>
               <h4 className="mb-3 text-label font-semibold text-ink">History</h4>
               <MembershipHistory terms={membership.terms} timeZone={org.timezone} locale={org.locale} />
